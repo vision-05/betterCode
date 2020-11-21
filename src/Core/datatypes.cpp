@@ -6,3 +6,10 @@ const Text updateText(const Text textEdit, char newChar) {
     //create a new text struct with the updated line and updated cursor
     return newText; //return the new text
 }
+
+Cursor findCursorPos(const int topLine, SDL_Event& event) {
+    //use line height to determine relative cursor position
+    //add to topline to find actual line number
+    //use column width to determine column number
+    return Cursor {};
+}

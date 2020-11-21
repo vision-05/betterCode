@@ -4,7 +4,6 @@
 #include <immer/flex_vector.hpp>
 
 #include "datatypes.hpp"
-Cursor findCursorPos(SDL_Event& event); //find the cursor position based on x and y of the cursor
 
 int main(int argc, char* argv[]) {
     SDL_SetMainReady();
@@ -26,15 +25,4 @@ int main(int argc, char* argv[]) {
     SDL_Quit();
 
     return 0;
-}
-
-//create function to update
-
-
-
-Cursor findCursorPos(const int topLine, SDL_Event& event) {
-    //use line height to determine relative cursor position
-    //add to topline to find actual line number
-    //use column width to determine column number
-    return Cursor {};
 }
