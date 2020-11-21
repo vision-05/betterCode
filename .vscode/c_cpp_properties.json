@@ -1,0 +1,24 @@
+{
+    "configurations": [
+        {
+            "name": "Win32",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "C:/Program Files/LLVM/lib/clang/11.0.0/include/SDL2-2.0.12/include/**",
+                "C:/Program Files/LLVM/lib/clang/11.0.0/include/immer-0.6.2/immer/**",
+                "C:/Program Files/LLVM/lib/clang/11.0.0/include/immer-0.6.2/"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE"
+            ],
+            "windowsSdkVersion": "10.0.18362.0",
+            "compilerPath": "C:/Program Files/LLVM/bin/clang",
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "clang-x64"
+        }
+    ],
+    "version": 4
+}
