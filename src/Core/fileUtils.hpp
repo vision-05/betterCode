@@ -4,6 +4,7 @@
 #include <fstream>
 #include <string>
 #include <immer/flex_vector.hpp>
+#include <immer/flex_vector_transient.hpp>
 
 namespace better {
 //TODO: finish these function definitions to get file I/O working

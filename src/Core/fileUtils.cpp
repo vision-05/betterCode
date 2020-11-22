@@ -5,7 +5,7 @@ int better::saveFile(immer::flex_vector<immer::flex_vector<char>> contents, char
 }
 
 immer::flex_vector<immer::flex_vector<char>> better::readFile(char filename[]) {
-    immer::flex_vector<immer::flex_vector<char>> textContents {};
+    immer::flex_vector_transient<immer::flex_vector<char>> textContents {};
     std::string buffer {};
 
     std::ifstream infile {};
@@ -16,13 +16,13 @@ immer::flex_vector<immer::flex_vector<char>> better::readFile(char filename[]) {
         buffer = "";
     }
 
-    return textContents;
+    return textContents.persistent();
 }
 
 immer::flex_vector<char> better::stringToVector(std::string string) {
-    immer::flex_vector<char> vector {};
+    immer::flex_vector_transient<char> vector {};
     for (const char character: string) {
         vector.push_back(character);
     }
-    return vector;
+    return vector.persistent();
 }
