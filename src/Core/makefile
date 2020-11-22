@@ -1,2 +1,2 @@
-main: main.cpp datatypes.cpp
-	clang++ -o main.exe main.cpp datatypes.cpp -I"C:/Program Files/LLVM/lib/clang/11.0.0/include/immer-0.6.2/" -I"C:/Program Files/LLVM/lib/clang/11.0.0/include/immer-0.6.2/immer/" -I"C:/Program Files/LLVM/lib/clang/11.0.0/include/immer-0.6.2/immer/detail/rbts/" -lC:/Users/TFran/VisionCode/src/Libs/SDL2main -lC:/Users/TFran/VisionCode/src/Libs/SDL2 -lC:/Users/TFran/VisionCode/src/Libs/SDL2_ttf
+main: main.cpp datatypes.cpp fileUtils.cpp
+	clang++ -o main.exe main.cpp datatypes.cpp fileUtils.cpp -I"C:/Program Files/LLVM/lib/clang/11.0.0/include/immer-0.6.2/" -I"C:/Program Files/LLVM/lib/clang/11.0.0/include/immer-0.6.2/immer/" -I"C:/Program Files/LLVM/lib/clang/11.0.0/include/immer-0.6.2/immer/detail/rbts/" -lC:/Users/TFran/VisionCode/src/Libs/SDL2main -lC:/Users/TFran/VisionCode/src/Libs/SDL2 -lC:/Users/TFran/VisionCode/src/Libs/SDL2_ttf

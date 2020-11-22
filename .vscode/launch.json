@@ -9,7 +9,14 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${fileDirname}\\${fileBasenameNoExtension}.exe",
-            "args": ["-lC:/Users/TFran/VisionCode/src/Libs/SDL2main","-lC:/Users/TFran/VisionCode/src/Libs/SDL2"],
+            "args": [
+                "-I\"C:/Program Files/LLVM/lib/clang/11.0.0/include/immer-0.6.2/\"",
+                "-I\"C:/Program Files/LLVM/lib/clang/11.0.0/include/immer-0.6.2/immer/\"",
+                "-I\"C:/Program Files/LLVM/lib/clang/11.0.0/include/immer-0.6.2/immer/detail/rbts/\"",
+                "-lC:/Users/TFran/VisionCode/src/Libs/SDL2main",
+                "-lC:/Users/TFran/VisionCode/src/Libs/SDL2",
+                "-lC:/Users/TFran/VisionCode/src/Libs/SDL2_ttf"
+                    ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
