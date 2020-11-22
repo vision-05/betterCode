@@ -11,7 +11,7 @@ better::Text better::updateText(better::Text textEdit, char newChar) {
     return newText; //return the new text
 }
 
-better::Text better::backspace(better::Text text) {
+better::Text better::backspace(better::Text text) { //find out why backspace stops working
     immer::flex_vector<char> newLine = text.textEdit[text.cursor.row].erase(text.cursor.column);
     return {text.textEdit.set(text.cursor.row,newLine), text.cursor, text.topLineNumber};
 }
