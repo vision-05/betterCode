@@ -17,6 +17,7 @@ struct Text{
     immer::flex_vector<immer::flex_vector<char>> textEdit; //keeps the text state
     better::Cursor cursor; //keeps the cursor state
     int topLineNumber; //keeps top line number so can calculate new line being clicked on
+    int topColumnNumber;
 };
 
 better::Text updateText(better::Text textEdit, char newChar);

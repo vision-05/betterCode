@@ -33,11 +33,11 @@ int main(int argc, char* argv[]) {
     format = surface->format;
 
     
-    char filename[] = "fileUtils.hpp";
-    better::Text firstText {better::readFile(filename), {0,0}, 0};
+    char filename[] = "main.cpp";
+    better::Text firstText {better::readFile(filename), {0,0}, 0, 0};
     texts.push_back(firstText);
 
-    better::renderText(surface, texts.back().textEdit);
+    better::renderText(surface, texts.back().textEdit, texts.back().topLineNumber, texts.back().topColumnNumber);
     SDL_UpdateWindowSurface(window);
     SDL_FillRect(surface, NULL, SDL_MapRGB(surface->format, 0x00, 0x00, 0x00));
 
@@ -54,28 +54,35 @@ int main(int argc, char* argv[]) {
 
             else if(event.type == SDL_KEYDOWN && (event.key.keysym.scancode == SDL_SCANCODE_DOWN || event.key.keysym.scancode == SDL_SCANCODE_UP)) {
                 texts[texts.size() - 1] = better::verticalNav(texts.back(), event.key.keysym.scancode);
+                better::renderText(surface, texts.back().textEdit, texts.back().topLineNumber, texts.back().topColumnNumber);
+                SDL_UpdateWindowSurface(window);
+                SDL_FillRect(surface, NULL, SDL_MapRGB(surface->format, 0x00, 0x00, 0x00));
             }
 
             else if(event.type == SDL_KEYDOWN && (event.key.keysym.scancode == SDL_SCANCODE_RIGHT || event.key.keysym.scancode == SDL_SCANCODE_LEFT)) {
                 texts[texts.size() - 1] = better::horizontalNav(texts.back(), event.key.keysym.scancode);
+                better::renderText(surface, texts.back().textEdit, texts.back().topLineNumber, texts.back().topColumnNumber);
+                SDL_UpdateWindowSurface(window);
+                SDL_FillRect(surface, NULL, SDL_MapRGB(surface->format, 0x00, 0x00, 0x00));
             }
 
             else if(event.type == SDL_KEYDOWN) {
                 switch(event.key.keysym.sym) {
                     case '\b':
                         texts.push_back(better::backspace(texts.back()));
-                        better::renderText(surface, texts.back().textEdit);
+                        better::renderText(surface, texts.back().textEdit, texts.back().topLineNumber, texts.back().topColumnNumber);
                         SDL_UpdateWindowSurface(window);
                         SDL_FillRect(surface, NULL, SDL_MapRGB(surface->format, 0x00, 0x00, 0x00));
                         break;
                     default:
                         texts.push_back(better::updateText(texts.back(),event.key.keysym.sym)); //save the text at its current state (find out why newline weird behaviour/still printing newline)
-                        better::renderText(surface, texts.back().textEdit);
+                        better::renderText(surface, texts.back().textEdit, texts.back().topLineNumber, texts.back().topColumnNumber);
                         SDL_UpdateWindowSurface(window);
                         SDL_FillRect(surface, NULL, SDL_MapRGB(surface->format, 0x00, 0x00, 0x00));
                 }
 
             }
+            better::renderCursor(surface, texts.back().cursor.column, texts.back().cursor.row, 93933, texts.back().topLineNumber, texts.back().topColumnNumber);
         }
     }
     
@@ -92,6 +99,9 @@ better::Text better::verticalNav(better::Text text, SDL_Keycode key) {
                 else {
                     text.cursor.row += 1;
                 }
+                if(text.cursor.row == text.topLineNumber + 66) {
+                    text.topLineNumber += 1; //scroll down
+                }
             }
             break;
 
@@ -103,6 +113,9 @@ better::Text better::verticalNav(better::Text text, SDL_Keycode key) {
                 }
                 else {
                     text.cursor.row -= 1;
+                }
+                if(text.cursor.row == text.topLineNumber) {
+                    text.topLineNumber -= 1;
                 }
             }
             break;
@@ -123,6 +136,9 @@ better::Text better::horizontalNav(better::Text text, SDL_Keycode key) {
                 else {
                     text.cursor.column += 1;
                 }
+                if(text.cursor.column == text.topColumnNumber + 150) {
+                    text.topColumnNumber += 1;
+                }
             }
             break;
 
@@ -134,6 +150,9 @@ better::Text better::horizontalNav(better::Text text, SDL_Keycode key) {
                 }
                 else {
                     text.cursor.column -= 1;
+                }
+                if(text.cursor.column == text.topColumnNumber) {
+                    text.topColumnNumber -= 1;
                 }
             }
             break;
