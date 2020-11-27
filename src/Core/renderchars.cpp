@@ -32,7 +32,7 @@ void better::renderCursor(SDL_Surface* surface, int column, int row, Uint32 colo
 }
 
 void better::createLetter(SDL_Surface* surface, char letter, int column, int row) {
-
+    //Make all these symbols the return value of constexpr functions
     //SYMBOLS
 
     Uint8 spaceLetter[12] {
@@ -61,7 +61,7 @@ void better::createLetter(SDL_Surface* surface, char letter, int column, int row
         0,1,1,1,1,1,1,15,17,17,15,0
     };
 
-    Uint8 cLetter[12] { //give 2 pixel thickness
+    Uint8 cLetter[12] {
         0,0,0,0,48,12,2,2,2,12,48,0
     };
 
@@ -69,16 +69,16 @@ void better::createLetter(SDL_Surface* surface, char letter, int column, int row
         0,16,16,16,16,16,30,19,17,19,31,0
     };
 
-    Uint8 eLetter[12] {
-        0,0,0,0,0,0,0,0,0,0,0,0
+    Uint8 eLetter[12] { 
+        0,0,0,0,12,34,30,2,4,4,24,0
     };
 
     Uint8 fLetter[12] {
-        0,0,0,0,0,0,0,0,0,0,0,0
+        0,48,8,4,30,4,4,4,4,4,4,0
     };
 
     Uint8 gLetter[12] {
-        0,0,0,0,0,0,0,0,0,0,0,0
+        0,0,0,8,20,20,28,16,16,18,12,0
     };
 
     Uint8 hLetter[12] {
@@ -86,17 +86,85 @@ void better::createLetter(SDL_Surface* surface, char letter, int column, int row
     };
 
     Uint8 iLetter[12] = {
-        0,12,12,0,0,12,12,12,12,12,12,0
+        0,8,8,0,0,8,8,8,8,8,8,0
+    };
+
+    Uint8 jLetter[12] = { //Left off here
+        0,0,0,0,0,0,0,0,0,0,0,0
+    };
+
+    Uint8 kLetter[12] = {
+        0,0,0,0,0,0,0,0,0,0,0,0
+    };
+
+    Uint8 lLetter[12] = {
+        0,0,0,0,0,0,0,0,0,0,0,0
+    };
+
+    Uint8 mLetter[12] = {
+        0,0,0,0,0,0,0,0,0,0,0,0
+    };
+
+    Uint8 nLetter[12] = {
+        0,0,0,0,0,0,0,0,0,0,0,0
+    };
+
+    Uint8 oLetter[12] = {
+        0,0,0,0,0,0,0,0,0,0,0,0
+    };
+
+    Uint8 pLetter[12] = {
+        0,0,0,0,0,0,0,0,0,0,0,0
+    };
+
+    Uint8 qLetter[12] = {
+        0,0,0,0,0,0,0,0,0,0,0,0
+    };
+
+    Uint8 rLetter[12] = {
+        0,0,0,0,0,0,0,0,0,0,0,0
+    };
+
+    Uint8 sLetter[12] = {
+        0,0,0,0,0,0,0,0,0,0,0,0
+    };
+
+    Uint8 tLetter[12] = {
+        0,0,0,0,0,0,0,0,0,0,0,0
+    };
+
+    Uint8 uLetter[12] = {
+        0,0,0,0,0,0,0,0,0,0,0,0
+    };
+
+    Uint8 vLetter[12] = {
+        0,0,0,0,0,0,0,0,0,0,0,0
+    };
+
+    Uint8 wLetter[12] = {
+        0,0,0,0,0,0,0,0,0,0,0,0
+    };
+
+    Uint8 xLetter[12] = {
+        0,0,0,0,0,0,0,0,0,0,0,0
+    };
+
+    Uint8 yLetter[12] = {
+        0,0,0,0,0,0,0,0,0,0,0,0
+    };
+
+    Uint8 zLetter[12] = {
+        0,0,0,0,0,0,0,0,0,0,0,0
     };
 
     //UPPERCASE
 
-    Uint8 CLetter[12] { //give 2 pixel thickness
+    Uint8 CLetter[12] {
         0,0,112,12,6,2,2,6,12,112,0,0
     };
 
     Uint8 Iletter[12] = {
-        0,12,12,12,12,12,12,12,12,12,12,0
+        0,8,8,8,8,8,8,8,8,8,8,0
     };
 
 
@@ -130,6 +198,15 @@ void better::createLetter(SDL_Surface* surface, char letter, int column, int row
             break;
         case 'd':
             better::renderLetter(surface, dLetter, column, row);
+            break;
+        case 'e':
+            better::renderLetter(surface, eLetter, column, row);
+            break;
+        case 'f':
+            better::renderLetter(surface, fLetter, column, row);
+            break;
+        case 'g':
+            better::renderLetter(surface, gLetter, column, row);
             break;
         case 'h':
             better::renderLetter(surface, hLetter, column, row);
