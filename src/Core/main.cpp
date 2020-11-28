@@ -34,10 +34,11 @@ int main(int argc, char* argv[]) {
 
     
     char filename[] = "main.cpp";
-    better::Text firstText {better::readFile(filename), {0,0}, 0, 0};
+    better::Text firstText {better::readFile(filename), {0,1}, 0, 0};
     texts.push_back(firstText);
 
     better::renderText(surface, texts.back().textEdit, texts.back().topLineNumber, texts.back().topColumnNumber);
+    better::renderCursor(surface, texts.back().cursor.column, texts.back().cursor.row, texts.back().topLineNumber, texts.back().topColumnNumber);
     SDL_UpdateWindowSurface(window);
     SDL_FillRect(surface, NULL, SDL_MapRGB(surface->format, 0x00, 0x00, 0x00));
 
@@ -54,35 +55,30 @@ int main(int argc, char* argv[]) {
 
             else if(event.type == SDL_KEYDOWN && (event.key.keysym.scancode == SDL_SCANCODE_DOWN || event.key.keysym.scancode == SDL_SCANCODE_UP)) {
                 texts[texts.size() - 1] = better::verticalNav(texts.back(), event.key.keysym.scancode);
-                better::renderText(surface, texts.back().textEdit, texts.back().topLineNumber, texts.back().topColumnNumber);
-                SDL_UpdateWindowSurface(window);
-                SDL_FillRect(surface, NULL, SDL_MapRGB(surface->format, 0x00, 0x00, 0x00));
             }
 
             else if(event.type == SDL_KEYDOWN && (event.key.keysym.scancode == SDL_SCANCODE_RIGHT || event.key.keysym.scancode == SDL_SCANCODE_LEFT)) {
                 texts[texts.size() - 1] = better::horizontalNav(texts.back(), event.key.keysym.scancode);
-                better::renderText(surface, texts.back().textEdit, texts.back().topLineNumber, texts.back().topColumnNumber);
-                SDL_UpdateWindowSurface(window);
-                SDL_FillRect(surface, NULL, SDL_MapRGB(surface->format, 0x00, 0x00, 0x00));
             }
 
             else if(event.type == SDL_KEYDOWN) {
                 switch(event.key.keysym.sym) {
                     case '\b':
                         texts.push_back(better::backspace(texts.back()));
-                        better::renderText(surface, texts.back().textEdit, texts.back().topLineNumber, texts.back().topColumnNumber);
-                        SDL_UpdateWindowSurface(window);
-                        SDL_FillRect(surface, NULL, SDL_MapRGB(surface->format, 0x00, 0x00, 0x00));
+                        break;
+                    case '\n':
+                        texts.push_back(better::newLine(texts.back()));
                         break;
                     default:
                         texts.push_back(better::updateText(texts.back(),event.key.keysym.sym)); //save the text at its current state (find out why newline weird behaviour/still printing newline)
-                        better::renderText(surface, texts.back().textEdit, texts.back().topLineNumber, texts.back().topColumnNumber);
-                        SDL_UpdateWindowSurface(window);
-                        SDL_FillRect(surface, NULL, SDL_MapRGB(surface->format, 0x00, 0x00, 0x00));
                 }
 
             }
-            better::renderCursor(surface, texts.back().cursor.column, texts.back().cursor.row, 93933, texts.back().topLineNumber, texts.back().topColumnNumber);
+            better::renderText(surface, texts.back().textEdit, texts.back().topLineNumber, texts.back().topColumnNumber);
+            better::renderCursor(surface, texts.back().cursor.column, texts.back().cursor.row, texts.back().topLineNumber, texts.back().topColumnNumber);
+            SDL_UpdateWindowSurface(window);
+            SDL_FillRect(surface, NULL, SDL_MapRGB(surface->format, 0x00, 0x00, 0x00));
+            std::cout << std::endl;
         }
     }
     
@@ -125,7 +121,7 @@ better::Text better::verticalNav(better::Text text, SDL_Keycode key) {
     return text;
 }
 
-better::Text better::horizontalNav(better::Text text, SDL_Keycode key) {
+better::Text better::horizontalNav(better::Text text, SDL_Keycode key) { //BUGS: renders extra character on side when scroll left from first char, lines with no chars dont scroll properly, program exits when scrolling up on top line
     switch(key) {
         case SDL_SCANCODE_RIGHT:
             if((text.cursor.row != text.textEdit.size() - 1) || (text.cursor.row == text.textEdit.size() - 1 && text.cursor.column != text.textEdit[text.cursor.row].size() - 1)) {
@@ -151,13 +147,11 @@ better::Text better::horizontalNav(better::Text text, SDL_Keycode key) {
                 else {
                     text.cursor.column -= 1;
                 }
-                if(text.cursor.column == text.topColumnNumber) {
+                if((text.cursor.column == text.topColumnNumber) && (text.cursor.column)) {
                     text.topColumnNumber -= 1;
                 }
             }
             break;
     }
-
-    //TODO: increase/decrease cursor pixelIndex here
     return text;
 }
