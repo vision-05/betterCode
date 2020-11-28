@@ -1,5 +1,4 @@
 #include "renderchars.hpp"
-#include <iostream>
 
 void better::setPixel(SDL_Surface* surface, int x, int y, Uint32 pixel, int column, int row, int charWidth, int charHeight) {
     SDL_LockSurface(surface); //use pixelIndex here

@@ -2,7 +2,6 @@
 
 #include <SDL2-2.0.12/include/SDL.h>
 #include <immer/flex_vector.hpp>
-#include <iostream>
 #include <vector>
 
 #include "datatypes.hpp"
@@ -78,7 +77,6 @@ int main(int argc, char* argv[]) {
             better::renderCursor(surface, texts.back().cursor.column, texts.back().cursor.row, texts.back().topLineNumber, texts.back().topColumnNumber);
             SDL_UpdateWindowSurface(window);
             SDL_FillRect(surface, NULL, SDL_MapRGB(surface->format, 0x00, 0x00, 0x00));
-            std::cout << std::endl;
         }
     }
     
@@ -121,11 +119,11 @@ better::Text better::verticalNav(better::Text text, SDL_Keycode key) {
     return text;
 }
 
-better::Text better::horizontalNav(better::Text text, SDL_Keycode key) { //BUGS: renders extra character on side when scroll left from first char, lines with no chars dont scroll properly, program exits when scrolling up on top line
+better::Text better::horizontalNav(better::Text text, SDL_Keycode key) {
     switch(key) {
         case SDL_SCANCODE_RIGHT:
-            if((text.cursor.row != text.textEdit.size() - 1) || (text.cursor.row == text.textEdit.size() - 1 && text.cursor.column != text.textEdit[text.cursor.row].size() - 1)) {
-                if(text.cursor.column == text.textEdit[text.cursor.row].size() - 1) {
+            if((text.cursor.row != text.textEdit.size()) || (text.cursor.row == text.textEdit.size() - 1 && text.cursor.column != text.textEdit[text.cursor.row].size())) {
+                if(text.cursor.column == text.textEdit[text.cursor.row].size()) {
                     text.cursor.column = 0;
                     text.cursor.row += 1;
                 }
@@ -142,7 +140,7 @@ better::Text better::horizontalNav(better::Text text, SDL_Keycode key) { //BUGS:
             if((text.cursor.row) || (!text.cursor.row && text.cursor.column)) {
                 if(!text.cursor.column) {
                     text.cursor.row -= 1;
-                    text.cursor.column = text.textEdit[text.cursor.row].size() - 1;
+                    text.cursor.column = text.textEdit[text.cursor.row].size();
                 }
                 else {
                     text.cursor.column -= 1;

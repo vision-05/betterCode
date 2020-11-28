@@ -3,7 +3,7 @@
 
 better::Text better::updateText(better::Text textEdit, char newChar) {
     //change the topline number variable if needs to scroll
-    bool endOfLine {textEdit.cursor.column == textEdit.textEdit[textEdit.cursor.row].size() - 1 ? true : false};
+    bool endOfLine {textEdit.cursor.column == textEdit.textEdit[textEdit.cursor.row].size() ? true : false};
     immer::flex_vector<char> line {endOfLine ? textEdit.textEdit[textEdit.cursor.row].push_back(newChar) : textEdit.textEdit[textEdit.cursor.row].insert(textEdit.cursor.column, newChar)}; //add the character to the line (change to insert unless the cursor is at the end of the line)
     better::Text newText {textEdit.textEdit.set(textEdit.cursor.row,line),{textEdit.cursor.row, textEdit.cursor.column + 1}, textEdit.topLineNumber, textEdit.topColumnNumber};
     return newText; //return the new text
