@@ -12,6 +12,7 @@ namespace better {
 
 better::Text verticalNav(better::Text text, SDL_Keycode key);
 better::Text horizontalNav(better::Text text, SDL_Keycode key);
+better::Text scroll(better::Text text, SDL_Event event);
 
 }
 
@@ -23,7 +24,7 @@ int main(int argc, char* argv[]) {
     SDL_Window* window = SDL_CreateWindow("Better Code",
                                           SDL_WINDOWPOS_UNDEFINED,
                                           SDL_WINDOWPOS_UNDEFINED,
-                                          1200,800,0);
+                                          1200,792,0);
     
 
     SDL_Renderer* renderer = SDL_CreateRenderer(window,-1,SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
@@ -33,18 +34,19 @@ int main(int argc, char* argv[]) {
 
     
     char filename[] = "main.cpp";
-    better::Text firstText {better::readFile(filename), {0,1}, 0, 0};
+    better::Text firstText {better::readFile(filename), {0,0}, 0, 0};
     texts.push_back(firstText);
 
     better::renderText(surface, texts.back().textEdit, texts.back().topLineNumber, texts.back().topColumnNumber);
     better::renderCursor(surface, texts.back().cursor.column, texts.back().cursor.row, texts.back().topLineNumber, texts.back().topColumnNumber);
     SDL_UpdateWindowSurface(window);
-    SDL_FillRect(surface, NULL, SDL_MapRGB(surface->format, 0x00, 0x00, 0x00));
+    SDL_FillRect(surface, NULL, SDL_MapRGB(surface->format, 0x22, 0x22, 0x22));
+
+    bool isScroll {false};
 
     SDL_Event event;
     while(1) {
         while(SDL_PollEvent(&event)) {
-            //TODO: create cases for different key/mouse events and link with relevant functions
             if(event.type == SDL_QUIT) {
                 SDL_DestroyRenderer(renderer);
                 SDL_DestroyWindow(window);
@@ -60,13 +62,32 @@ int main(int argc, char* argv[]) {
                 texts[texts.size() - 1] = better::horizontalNav(texts.back(), event.key.keysym.scancode);
             }
 
+            else if(event.type == SDL_KEYDOWN && event.key.keysym.scancode == SDL_SCANCODE_RETURN) {
+                texts.push_back(better::newLine(texts.back()));
+            }
+
+            else if(event.type == SDL_MOUSEWHEEL) { //set bool scroll to true
+                texts[texts.size() - 1] = better::scroll(texts.back(), event);
+                isScroll = true;
+            }
+
+            else if(event.type == SDL_MOUSEBUTTONDOWN) {
+                better::Cursor tempCursor {better::findCursorPos(texts.back().topLineNumber, texts.back().topColumnNumber, event)};
+                if(tempCursor.column > texts.back().textEdit[tempCursor.row].size()) {
+                    tempCursor.column = texts.back().textEdit[tempCursor.row].size();
+                }
+                texts[texts.size() - 1].cursor = tempCursor;
+                isScroll = false;
+            }
+
             else if(event.type == SDL_KEYDOWN) {
+                if(isScroll) {
+                    texts[texts.size() - 1].topLineNumber = texts.back().cursor.row;
+                    texts[texts.size() - 1].topColumnNumber = 0;
+                }
                 switch(event.key.keysym.sym) {
                     case '\b':
                         texts.push_back(better::backspace(texts.back()));
-                        break;
-                    case '\n':
-                        texts.push_back(better::newLine(texts.back()));
                         break;
                     default:
                         texts.push_back(better::updateText(texts.back(),event.key.keysym.sym)); //save the text at its current state (find out why newline weird behaviour/still printing newline)
@@ -74,20 +95,67 @@ int main(int argc, char* argv[]) {
 
             }
             better::renderText(surface, texts.back().textEdit, texts.back().topLineNumber, texts.back().topColumnNumber);
-            better::renderCursor(surface, texts.back().cursor.column, texts.back().cursor.row, texts.back().topLineNumber, texts.back().topColumnNumber);
+            //dont render cursor if scroll is true
+            if(!isScroll) {
+                better::renderCursor(surface, texts.back().cursor.column, texts.back().cursor.row, texts.back().topLineNumber, texts.back().topColumnNumber);
+            }
             SDL_UpdateWindowSurface(window);
-            SDL_FillRect(surface, NULL, SDL_MapRGB(surface->format, 0x00, 0x00, 0x00));
+            SDL_FillRect(surface, NULL, SDL_MapRGB(surface->format, 0x22, 0x22, 0x22));
         }
     }
     
 }
 
+better::Text better::scroll(better::Text text, SDL_Event event) { //make sure not to move cursor
+    int row {text.topLineNumber + 66};
+    int column {text.topColumnNumber + 150};
+
+    if(event.wheel.y > 0) {
+        for(int times{}; times < event.wheel.y; ++times) {
+            if(text.topLineNumber) {
+                row -= 1;
+                text.topLineNumber -= 1;
+            }
+        }
+    }
+    else {
+        for(int times{}; times > event.wheel.y; --times) {
+            if((row == text.topLineNumber + 66) && (row < text.textEdit.size())) {
+                row += 1;
+                text.topLineNumber += 1;
+            }
+        }
+    }
+
+    if(event.wheel.x > 0) {
+        for(int times{}; times < event.wheel.x; ++times) {
+            if((column == text.topColumnNumber + 150) && (column < text.textEdit[row].size())) {
+                column += 1;
+                text.topColumnNumber += 1;
+            }
+        }
+    }
+    else {
+        for(int times{}; times > event.wheel.x; --times) {
+            if(text.topColumnNumber) {
+                column -= 1;
+                text.topColumnNumber -= 1;
+            }
+        }
+    }
+
+    return text;
+}
+
 better::Text better::verticalNav(better::Text text, SDL_Keycode key) {
     switch(key) {
         case SDL_SCANCODE_DOWN:
-            if(text.cursor.row != text.textEdit.size() - 1) {
-                if(text.textEdit[text.cursor.row + 1].size() - 1 < text.cursor.column) { //check the next row has less elements than current column of cursor position
-                    text.cursor.column = text.textEdit[text.cursor.row + 1].size() - 1;
+            if(text.cursor.row < text.textEdit.size()) {
+                if(text.topLineNumber == text.textEdit.size() - 66) {
+                    return text;
+                }
+                if(text.textEdit[text.cursor.row + 1].size() < text.cursor.column) { //check the next row has less elements than current column of cursor position
+                    text.cursor.column = text.textEdit[text.cursor.row + 1].size();
                     text.cursor.row += 1;
                 }
                 else {
@@ -101,8 +169,8 @@ better::Text better::verticalNav(better::Text text, SDL_Keycode key) {
 
         case SDL_SCANCODE_UP:
             if(text.cursor.row) {
-                if(text.textEdit[text.cursor.row - 1].size() - 1 < text.cursor.column) { //check the next row has less elements than current column of cursor position
-                    text.cursor.column = text.textEdit[text.cursor.row + 1].size() - 1;
+                if(text.textEdit[text.cursor.row - 1].size() < text.cursor.column) { //check the next row has less elements than current column of cursor position
+                    text.cursor.column = text.textEdit[text.cursor.row - 1].size();
                     text.cursor.row -= 1;
                 }
                 else {
@@ -122,10 +190,11 @@ better::Text better::verticalNav(better::Text text, SDL_Keycode key) {
 better::Text better::horizontalNav(better::Text text, SDL_Keycode key) {
     switch(key) {
         case SDL_SCANCODE_RIGHT:
-            if((text.cursor.row != text.textEdit.size()) || (text.cursor.row == text.textEdit.size() - 1 && text.cursor.column != text.textEdit[text.cursor.row].size())) {
+            if((text.cursor.row != text.textEdit.size() - 1) || (text.cursor.row == text.textEdit.size() - 1 && text.cursor.column < text.textEdit[text.cursor.row].size())) {
                 if(text.cursor.column == text.textEdit[text.cursor.row].size()) {
                     text.cursor.column = 0;
                     text.cursor.row += 1;
+                    text.topColumnNumber = 0;
                 }
                 else {
                     text.cursor.column += 1;

@@ -11,7 +11,7 @@ struct Cursor { //store the line number and column number of the cursor
     int column;
 };
 
-better::Cursor findCursorPos(int topLine, SDL_Event& event);
+better::Cursor findCursorPos(int topLine, int topColumn, SDL_Event event);
 
 struct Text {
     immer::flex_vector<immer::flex_vector<char>> textEdit; //keeps the text state

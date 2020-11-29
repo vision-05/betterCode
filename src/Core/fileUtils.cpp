@@ -16,6 +16,10 @@ immer::flex_vector<immer::flex_vector<char>> better::readFile(char filename[]) {
         buffer = "";
     }
 
+    if(textContents[textContents.size() - 1].size() == 1 && textContents[textContents.size() - 1][0] == '\n') {
+        textContents.take(textContents.size() - 2);
+    }
+
     return textContents.persistent();
 }
 

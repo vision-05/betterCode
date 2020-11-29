@@ -16,7 +16,7 @@ void better::setPixel(SDL_Surface* surface, int x, int y, Uint32 pixel, int colu
 void better::renderLetter(SDL_Surface* surface, Uint8 pixelGrid[12], int column, int row) {
     for(int i{}; i < 12; ++i) {
         for(int j{}; j < 8; ++j) {
-            better::setPixel(surface, j, i, better::unpackUint8Bit(j + 1, pixelGrid[i], 0x0044AAFF), column, row, 8, 12); //basically set each pixel for a character
+            better::setPixel(surface, j, i, better::unpackUint8Bit(j + 1, pixelGrid[i], 0x5588AAFF), column, row, 8, 12); //basically set each pixel for a character
         }
     }
 }
@@ -29,7 +29,7 @@ void better::renderCursor(SDL_Surface* surface, int column, int row, int topLine
     column -= topColumn;
     for(int i{}; i < 12; ++i) {
         for(int j{}; j < 2; ++j) {
-            better::setPixel(surface, j, i, better::unpackUint8Bit(j + 1, cursor[i], 0x0044AAFF), column, row, 8, 12);
+            better::setPixel(surface, j, i, better::unpackUint8Bit(j + 1, cursor[i], 0x5588AAFF), column, row, 8, 12);
         }
     }
 }
@@ -80,13 +80,13 @@ better::charMapArr better::charCheck(char letter) {
             {0,0,0,8,20,20,28,16,16,18,12,0}, //g
             {0,1,1,1,1,1,13,27,33,33,33,0}, //h
             {0,8,8,0,0,8,8,8,8,8,8,0}, //i
-            {0,0,0,0,0,0,0,0,0,0,0,0}, //j
-            {0,0,0,0,0,0,0,0,0,0,0,0}, //k
-            {0,0,0,0,0,0,0,0,0,0,0,0}, //l
-            {0,0,0,0,0,0,0,0,0,0,0,0}, //m
-            {0,0,0,0,0,0,0,0,0,0,0,0}, //n
-            {0,0,0,0,0,0,0,0,0,0,0,0}, //o
-            {0,0,0,0,0,0,0,0,0,0,0,0}, //p
+            {0,8,8,0,8,8,8,8,8,10,4,0}, //j
+            {0,0,2,18,10,6,2,6,10,18,18,0}, //k
+            {0,14,8,8,8,8,8,8,8,8,62,0}, //l
+            {0,0,0,0,0,36,90,90,90,90,90,0}, //m
+            {0,0,0,0,0,14,18,18,18,18,18,0}, //n
+            {0,0,0,0,0,24,36,66,66,36,24,0}, //o
+            {0,0,0,0,0,0,0,0,0,0,0,0}, //p - up to here
             {0,0,0,0,0,0,0,0,0,0,0,0}, //q
             {0,0,0,0,0,0,0,0,0,0,0,0}, //r
             {0,0,0,0,0,0,0,0,0,0,0,0}, //s
@@ -213,7 +213,7 @@ Uint32 better::unpackUint8Bit(int index, Uint8 number, Uint32 color) {
         result = color;
     }
     else {
-        result = 0x000000FF;
+        result = 0x222222FF;
     }
     return result;
 }
