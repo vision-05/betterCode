@@ -8,11 +8,14 @@
 #include "fileUtils.hpp"
 #include "renderchars.hpp"
 
-namespace better {
+namespace better { //TODO: highlighting text, shortcuts, text cursor
 
 better::Text verticalNav(better::Text text, SDL_Keycode key);
 better::Text horizontalNav(better::Text text, SDL_Keycode key);
 better::Text scroll(better::Text text, SDL_Event event);
+char shift(char key);
+char shiftLetter(char key);
+char unshiftLetter(char key);
 
 }
 
@@ -43,10 +46,20 @@ int main(int argc, char* argv[]) {
     SDL_FillRect(surface, NULL, SDL_MapRGB(surface->format, 0x22, 0x22, 0x22));
 
     bool isScroll {false};
+    bool isShift {false};
+    bool capsLock {false};
 
     SDL_Event event;
     while(1) {
         while(SDL_PollEvent(&event)) {
+            const Uint8* state {SDL_GetKeyboardState(NULL)};
+            if(state[SDL_SCANCODE_LSHIFT] || state[SDL_SCANCODE_RSHIFT]) { //get the shifts working properly!!!
+                isShift = true;
+            }
+            if(!state[SDL_SCANCODE_LSHIFT] && !state[SDL_SCANCODE_RSHIFT]) {
+                isShift = false;
+            }
+
             if(event.type == SDL_QUIT) {
                 SDL_DestroyRenderer(renderer);
                 SDL_DestroyWindow(window);
@@ -81,16 +94,36 @@ int main(int argc, char* argv[]) {
             }
 
             else if(event.type == SDL_KEYDOWN) {
+                SDL_Keycode keycode {event.key.keysym.scancode};
+                if(keycode == SDL_SCANCODE_CAPSLOCK) {
+                    capsLock ? capsLock = false : capsLock = true;
+                    continue;
+                }
+                if(keycode == SDL_SCANCODE_LSHIFT || keycode == SDL_SCANCODE_RSHIFT) {
+                    continue;
+                }
+                char key = {static_cast<char>(event.key.keysym.sym)};
+                if(isShift) {
+                    key = better::shift(key);
+                    if(capsLock) {
+                        key = better::unshiftLetter(key);
+                    }
+                    isShift = false;
+                }
+                if(capsLock) {
+                    key = better::shiftLetter(key);
+                }
                 if(isScroll) {
                     texts[texts.size() - 1].topLineNumber = texts.back().cursor.row;
                     texts[texts.size() - 1].topColumnNumber = 0;
                 }
-                switch(event.key.keysym.sym) {
+
+                switch(key) {
                     case '\b':
                         texts.push_back(better::backspace(texts.back()));
                         break;
                     default:
-                        texts.push_back(better::updateText(texts.back(),event.key.keysym.sym)); //save the text at its current state (find out why newline weird behaviour/still printing newline)
+                        texts.push_back(better::updateText(texts.back(),key)); //save the text at its current state (find out why newline weird behaviour/still printing newline)
                 }
 
             }
@@ -104,6 +137,63 @@ int main(int argc, char* argv[]) {
         }
     }
     
+}
+
+char better::shiftLetter(char key) {
+    if(key >= 'a' && key <= 'z') {
+        key -= 32;
+    }
+    return key;
+}
+
+char better::unshiftLetter(char key) {
+    if(key >= 'A' && key <= 'Z') {
+        key += 32;
+    }
+    return key;
+}
+
+char better::shift(char key) {
+    if(key >= 'a' && key <= 'z') {
+        key -= 32;
+    }
+    else if(key >= '1' && key <= '5') {
+        key -= 16;
+    }
+    else if(key == '8') {
+        key -= 14;
+    }
+    else if(key == '6') {
+        key += 40;
+    }
+    else if(key == '9') {
+        key -= 17;
+    }
+    else if(key == '0') {
+        key -= 7;
+    }
+    else if(key == '-') {
+        key += 50;
+    }
+    else if(key == '=') {
+        key -= 18;
+    }
+    else if(key == '.' || key == ',' || key == '/') {
+        key  += 16;
+    }
+    else if(key == '[' || key == ']' || key == '\\') {
+        key += 32;
+    }
+    else if(key == ';') {
+        key -= 1;
+    }
+    else if(key == '#') {
+        key += 91;
+    }
+    else if(key == '\'') {
+        key += 25;
+    }
+    return key;
 }
 
 better::Text better::scroll(better::Text text, SDL_Event event) { //make sure not to move cursor
