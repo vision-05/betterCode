@@ -15,6 +15,7 @@ void renderText(SDL_Surface* surface, immer::flex_vector<immer::flex_vector<char
 void renderCursor(SDL_Surface* surface, int column, int row, int topLine, int topColumn);
 better::charMapArr charCheck(char letter);
 Uint32 unpackUint8Bit(int index, Uint8 number, Uint32 color);
+better::Text scroll(better::Text text, SDL_Event event, const int textHeight, const int textWidth);
 
 }
 

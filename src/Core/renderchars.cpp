@@ -219,3 +219,44 @@ Uint32 better::unpackUint8Bit(int index, Uint8 number, Uint32 color) {
     }
     return result;
 }
+
+better::Text better::scroll(better::Text text, SDL_Event event, const int textHeight, const int textWidth) { //make sure not to move cursor
+    int row {text.topLineNumber + textHeight};
+    int column {text.topColumnNumber + textWidth};
+
+    if(event.wheel.y > 0) {
+        for(int times{}; times < event.wheel.y; ++times) {
+            if(text.topLineNumber) {
+                row -= 1;
+                text.topLineNumber -= 1;
+            }
+        }
+    }
+    else {
+        for(int times{}; times > event.wheel.y; --times) {
+            if((row == text.topLineNumber + textHeight) && (row < text.textEdit.size())) {
+                row += 1;
+                text.topLineNumber += 1;
+            }
+        }
+    }
+
+    if(event.wheel.x > 0) {
+        for(int times{}; times < event.wheel.x; ++times) {
+            if((column == text.topColumnNumber + textWidth) && (column < text.textEdit[row].size())) {
+                column += 1;
+                text.topColumnNumber += 1;
+            }
+        }
+    }
+    else {
+        for(int times{}; times > event.wheel.x; --times) {
+            if(text.topColumnNumber) {
+                column -= 1;
+                text.topColumnNumber -= 1;
+            }
+        }
+    }
+
+    return text;
+}

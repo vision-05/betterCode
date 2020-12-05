@@ -10,11 +10,17 @@
 #include "fileUtils.hpp"
 #include "renderchars.hpp"
 
-namespace better { //TODO: highlighting text, shortcuts, text cursor
+//Splitscreen for 2 screens
+//Add menu
+//Add tab system
+//Progress bar for saving, etc
+//2 screens should be separately editable
+
+namespace better { //TODO: highlighting text, shortcuts
 
 better::Text verticalNav(better::Text text, SDL_Keycode key);
 better::Text horizontalNav(better::Text text, SDL_Keycode key);
-better::Text scroll(better::Text text, SDL_Event event);
+
 char shift(char key);
 char shiftLetter(char key);
 char unshiftLetter(char key);
@@ -26,6 +32,8 @@ int main(int argc, char* argv[]) {
     SDL_Init(SDL_INIT_VIDEO);
     std::vector<better::Text> texts {};
 
+    std::string filename {better::fileDialog().string()};
+
     SDL_Window* window = SDL_CreateWindow("Better Code",
                                           SDL_WINDOWPOS_UNDEFINED,
                                           SDL_WINDOWPOS_UNDEFINED,
@@ -34,7 +42,6 @@ int main(int argc, char* argv[]) {
 
     SDL_Surface* surface = SDL_GetWindowSurface(window);
     
-    char filename[] = "1gb.txt";
     better::Text firstText {better::readFile(filename), {0,0}, 0, 0};
     texts.push_back(firstText);
 
@@ -78,7 +85,7 @@ int main(int argc, char* argv[]) {
             }
 
             else if(event.type == SDL_MOUSEWHEEL) { //set bool scroll to true
-                texts[texts.size() - 1] = better::scroll(texts.back(), event);
+                texts[texts.size() - 1] = better::scroll(texts.back(), event, 60, 150);
                 isScroll = true;
             }
 
@@ -191,49 +198,6 @@ char better::shift(char key) {
         key += 25;
     }
     return key;
-}
-
-better::Text better::scroll(better::Text text, SDL_Event event) { //make sure not to move cursor
-    const int textHeight {60};
-    const int textWidth {150};
-    int row {text.topLineNumber + textHeight};
-    int column {text.topColumnNumber + textWidth};
-
-    if(event.wheel.y > 0) {
-        for(int times{}; times < event.wheel.y; ++times) {
-            if(text.topLineNumber) {
-                row -= 1;
-                text.topLineNumber -= 1;
-            }
-        }
-    }
-    else {
-        for(int times{}; times > event.wheel.y; --times) {
-            if((row == text.topLineNumber + textHeight) && (row < text.textEdit.size())) {
-                row += 1;
-                text.topLineNumber += 1;
-            }
-        }
-    }
-
-    if(event.wheel.x > 0) {
-        for(int times{}; times < event.wheel.x; ++times) {
-            if((column == text.topColumnNumber + textWidth) && (column < text.textEdit[row].size())) {
-                column += 1;
-                text.topColumnNumber += 1;
-            }
-        }
-    }
-    else {
-        for(int times{}; times > event.wheel.x; --times) {
-            if(text.topColumnNumber) {
-                column -= 1;
-                text.topColumnNumber -= 1;
-            }
-        }
-    }
-
-    return text;
 }
 
 better::Text better::verticalNav(better::Text text, SDL_Keycode key) {
