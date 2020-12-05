@@ -30,3 +30,10 @@ immer::flex_vector<char> better::stringToVector(std::string string) {
     }
     return vector.persistent();
 }
+
+std::string better::fileDialog() {
+    SDL_Window* window = SDL_CreateWindow("File", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, 0);
+    SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+
+    
+}

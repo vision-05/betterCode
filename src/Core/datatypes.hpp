@@ -21,10 +21,10 @@ struct Text {
 };
 
 struct charMapArr {
-    ::Uint8 arr[12];
+    ::Uint8 arr[16];
 };
 
-better::charMapArr makeCharMapArr(::Uint8 charArray[12]); 
+better::charMapArr makeCharMapArr(::Uint8 charArray[16]); 
 
 better::Text updateText(better::Text textEdit, char newChar);
 better::Text backspace(better::Text textEdit);

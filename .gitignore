@@ -33,3 +33,6 @@
 
 # Folders
 .vscode/
+
+# Text files
+*.txt

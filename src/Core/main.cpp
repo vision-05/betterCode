@@ -3,6 +3,8 @@
 #include <SDL2-2.0.12/include/SDL.h>
 #include <immer/flex_vector.hpp>
 #include <vector>
+#include <chrono>
+#include <iostream>
 
 #include "datatypes.hpp"
 #include "fileUtils.hpp"
@@ -27,23 +29,20 @@ int main(int argc, char* argv[]) {
     SDL_Window* window = SDL_CreateWindow("Better Code",
                                           SDL_WINDOWPOS_UNDEFINED,
                                           SDL_WINDOWPOS_UNDEFINED,
-                                          1200,792,0);
+                                          1200,960,0);
     
 
-    SDL_Renderer* renderer = SDL_CreateRenderer(window,-1,SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     SDL_Surface* surface = SDL_GetWindowSurface(window);
-    SDL_PixelFormat* format;
-    format = surface->format;
-
     
-    char filename[] = "main.cpp";
+    char filename[] = "1gb.txt";
     better::Text firstText {better::readFile(filename), {0,0}, 0, 0};
     texts.push_back(firstText);
 
     better::renderText(surface, texts.back().textEdit, texts.back().topLineNumber, texts.back().topColumnNumber);
     better::renderCursor(surface, texts.back().cursor.column, texts.back().cursor.row, texts.back().topLineNumber, texts.back().topColumnNumber);
+
     SDL_UpdateWindowSurface(window);
-    SDL_FillRect(surface, NULL, SDL_MapRGB(surface->format, 0x22, 0x22, 0x22));
+    SDL_FillRect(surface, NULL, SDL_MapRGBA(surface->format, 0x22, 0x22, 0x22, 0xFF));
 
     bool isScroll {false};
     bool isShift {false};
@@ -61,7 +60,6 @@ int main(int argc, char* argv[]) {
             }
 
             if(event.type == SDL_QUIT) {
-                SDL_DestroyRenderer(renderer);
                 SDL_DestroyWindow(window);
                 SDL_Quit();
                 return 0;
@@ -133,10 +131,9 @@ int main(int argc, char* argv[]) {
                 better::renderCursor(surface, texts.back().cursor.column, texts.back().cursor.row, texts.back().topLineNumber, texts.back().topColumnNumber);
             }
             SDL_UpdateWindowSurface(window);
-            SDL_FillRect(surface, NULL, SDL_MapRGB(surface->format, 0x22, 0x22, 0x22));
+            SDL_FillRect(surface, NULL, SDL_MapRGBA(surface->format, 0x22, 0x22, 0x22, 0xFF));
         }
     }
-    
 }
 
 char better::shiftLetter(char key) {
@@ -197,8 +194,10 @@ char better::shift(char key) {
 }
 
 better::Text better::scroll(better::Text text, SDL_Event event) { //make sure not to move cursor
-    int row {text.topLineNumber + 66};
-    int column {text.topColumnNumber + 150};
+    const int textHeight {60};
+    const int textWidth {150};
+    int row {text.topLineNumber + textHeight};
+    int column {text.topColumnNumber + textWidth};
 
     if(event.wheel.y > 0) {
         for(int times{}; times < event.wheel.y; ++times) {
@@ -210,7 +209,7 @@ better::Text better::scroll(better::Text text, SDL_Event event) { //make sure no
     }
     else {
         for(int times{}; times > event.wheel.y; --times) {
-            if((row == text.topLineNumber + 66) && (row < text.textEdit.size())) {
+            if((row == text.topLineNumber + textHeight) && (row < text.textEdit.size())) {
                 row += 1;
                 text.topLineNumber += 1;
             }
@@ -219,7 +218,7 @@ better::Text better::scroll(better::Text text, SDL_Event event) { //make sure no
 
     if(event.wheel.x > 0) {
         for(int times{}; times < event.wheel.x; ++times) {
-            if((column == text.topColumnNumber + 150) && (column < text.textEdit[row].size())) {
+            if((column == text.topColumnNumber + textWidth) && (column < text.textEdit[row].size())) {
                 column += 1;
                 text.topColumnNumber += 1;
             }
@@ -238,10 +237,12 @@ better::Text better::scroll(better::Text text, SDL_Event event) { //make sure no
 }
 
 better::Text better::verticalNav(better::Text text, SDL_Keycode key) {
+    const int textHeight {60};
+    const int textWidth {150};
     switch(key) {
         case SDL_SCANCODE_DOWN:
             if(text.cursor.row < text.textEdit.size()) {
-                if(text.topLineNumber == text.textEdit.size() - 66) {
+                if((text.cursor.row == text.textEdit.size() - 1) || (text.cursor.row == text.topLineNumber + textHeight && text.topLineNumber + textHeight >= text.textEdit.size() - 1)) {
                     return text;
                 }
                 if(text.textEdit[text.cursor.row + 1].size() < text.cursor.column) { //check the next row has less elements than current column of cursor position
@@ -251,7 +252,7 @@ better::Text better::verticalNav(better::Text text, SDL_Keycode key) {
                 else {
                     text.cursor.row += 1;
                 }
-                if(text.cursor.row == text.topLineNumber + 66) {
+                if(text.cursor.row == text.topLineNumber + textHeight && text.topLineNumber + textHeight < text.textEdit.size()) {
                     text.topLineNumber += 1; //scroll down
                 }
             }
@@ -266,18 +267,18 @@ better::Text better::verticalNav(better::Text text, SDL_Keycode key) {
                 else {
                     text.cursor.row -= 1;
                 }
-                if(text.cursor.row == text.topLineNumber) {
+                if((text.cursor.row == text.topLineNumber) && text.cursor.row) {
                     text.topLineNumber -= 1;
                 }
             }
             break;
     }
-
-    //TODO: recalculate the cursor pixelIndex here
     return text;
 }
 
 better::Text better::horizontalNav(better::Text text, SDL_Keycode key) {
+    const int textHeight {60};
+    const int textWidth {150};
     switch(key) {
         case SDL_SCANCODE_RIGHT:
             if((text.cursor.row != text.textEdit.size() - 1) || (text.cursor.row == text.textEdit.size() - 1 && text.cursor.column < text.textEdit[text.cursor.row].size())) {
@@ -289,7 +290,7 @@ better::Text better::horizontalNav(better::Text text, SDL_Keycode key) {
                 else {
                     text.cursor.column += 1;
                 }
-                if(text.cursor.column == text.topColumnNumber + 150) {
+                if(text.cursor.column == text.topColumnNumber + textWidth) {
                     text.topColumnNumber += 1;
                 }
             }
