@@ -3,8 +3,7 @@
 #include <SDL2-2.0.12/include/SDL.h>
 #include <immer/flex_vector.hpp>
 #include <vector>
-#include <chrono>
-#include <iostream>
+#include <thread>
 
 #include "datatypes.hpp"
 #include "fileUtils.hpp"
@@ -24,13 +23,13 @@ better::Text horizontalNav(better::Text text, SDL_Keycode key);
 char shift(char key);
 char shiftLetter(char key);
 char unshiftLetter(char key);
+void edit1(SDL_Window* window, std::string filename);
 
 }
 
 int main(int argc, char* argv[]) {
     SDL_SetMainReady();
     SDL_Init(SDL_INIT_VIDEO);
-    std::vector<better::Text> texts {};
 
     std::string filename {better::fileDialog().string()};
 
@@ -39,25 +38,32 @@ int main(int argc, char* argv[]) {
                                           SDL_WINDOWPOS_UNDEFINED,
                                           1200,960,0);
     
+    better::edit1(window, filename);
+    return 0;
+}
+
+void better::edit1(SDL_Window* window, std::string filename) {
+    std::vector<better::Text> texts {};
 
     SDL_Surface* surface = SDL_GetWindowSurface(window);
     
     better::Text firstText {better::readFile(filename), {0,0}, 0, 0};
     texts.push_back(firstText);
 
+    SDL_FillRect(surface, NULL, SDL_MapRGBA(surface->format, 0x22, 0x22, 0x22, 0xFF));
     better::renderText(surface, texts.back().textEdit, texts.back().topLineNumber, texts.back().topColumnNumber);
     better::renderCursor(surface, texts.back().cursor.column, texts.back().cursor.row, texts.back().topLineNumber, texts.back().topColumnNumber);
 
     SDL_UpdateWindowSurface(window);
-    SDL_FillRect(surface, NULL, SDL_MapRGBA(surface->format, 0x22, 0x22, 0x22, 0xFF));
 
     bool isScroll {false};
     bool isShift {false};
     bool capsLock {false};
 
     SDL_Event event;
+
     while(1) {
-        while(SDL_PollEvent(&event)) {
+        if(SDL_WaitEvent(&event)) {
             const Uint8* state {SDL_GetKeyboardState(NULL)};
             if(state[SDL_SCANCODE_LSHIFT] || state[SDL_SCANCODE_RSHIFT]) { //get the shifts working properly!!!
                 isShift = true;
@@ -67,9 +73,10 @@ int main(int argc, char* argv[]) {
             }
 
             if(event.type == SDL_QUIT) {
+                SDL_FreeSurface(surface);
                 SDL_DestroyWindow(window);
                 SDL_Quit();
-                return 0;
+                return;
             }
 
             else if(event.type == SDL_KEYDOWN && (event.key.keysym.scancode == SDL_SCANCODE_DOWN || event.key.keysym.scancode == SDL_SCANCODE_UP)) {
@@ -91,6 +98,10 @@ int main(int argc, char* argv[]) {
 
             else if(event.type == SDL_MOUSEBUTTONDOWN) {
                 better::Cursor tempCursor {better::findCursorPos(texts.back().topLineNumber, texts.back().topColumnNumber, event)};
+                if(tempCursor.row > texts.back().textEdit.size() - 1) {
+                    tempCursor.row = texts.back().textEdit.size() - 1;
+                    tempCursor.column = 0;
+                }
                 if(tempCursor.column > texts.back().textEdit[tempCursor.row].size()) {
                     tempCursor.column = texts.back().textEdit[tempCursor.row].size();
                 }
@@ -130,15 +141,13 @@ int main(int argc, char* argv[]) {
                     default:
                         texts.push_back(better::updateText(texts.back(),key)); //save the text at its current state (find out why newline weird behaviour/still printing newline)
                 }
-
             }
+            SDL_FillRect(surface, NULL, SDL_MapRGBA(surface->format, 0x22, 0x22, 0x22, 0xFF));
             better::renderText(surface, texts.back().textEdit, texts.back().topLineNumber, texts.back().topColumnNumber);
-            //dont render cursor if scroll is true
             if(!isScroll) {
                 better::renderCursor(surface, texts.back().cursor.column, texts.back().cursor.row, texts.back().topLineNumber, texts.back().topColumnNumber);
             }
             SDL_UpdateWindowSurface(window);
-            SDL_FillRect(surface, NULL, SDL_MapRGBA(surface->format, 0x22, 0x22, 0x22, 0xFF));
         }
     }
 }

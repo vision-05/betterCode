@@ -37,22 +37,22 @@ std::filesystem::path better::fileDialog() {
     std::vector<std::filesystem::directory_entry> files {};
     std::vector<std::filesystem::directory_entry> folders {};
 
-    std::filesystem::path path {std::filesystem::current_path()};
+    std::filesystem::path path {std::filesystem::current_path()}; //start with current working directory
     for(const std::filesystem::directory_entry& entry : std::filesystem::directory_iterator(path)) {
         if(std::filesystem::is_regular_file(entry.status())) {
-            files.push_back(entry);
+            files.push_back(entry); //push back all the files to list of files
         }
         else if(std::filesystem::is_directory(entry.status())) {
-            folders.push_back(entry);
+            folders.push_back(entry); //push back all the folders to list of folders
         }
     }
 
     const std::string folderString {"Folder: "};
     const std::string fileString {"File: "};
-    std::filesystem::path filePath {};
+    std::filesystem::path filePath {}; //store the filepath to return
     bool isFound {false};
 
-    better::Text text;
+    better::Text text; //this just displays the paths
     text.cursor = {0,0};
     for(const std::filesystem::directory_entry& entry : folders) {
         text.textEdit = text.textEdit.push_back(better::stringToVector(folderString + entry.path().filename().string()));
@@ -71,7 +71,7 @@ std::filesystem::path better::fileDialog() {
     SDL_Event event;
 
     while(!isFound) {
-        while(SDL_PollEvent(&event)) {
+        if(SDL_WaitEvent(&event)) {
             if(event.type == SDL_MOUSEWHEEL) {
                 text = better::scroll(text, event, 35, 100);
                 better::renderText(surface, text.textEdit, text.topLineNumber, text.topColumnNumber);
@@ -80,6 +80,9 @@ std::filesystem::path better::fileDialog() {
             }
             else if(event.type == SDL_MOUSEBUTTONDOWN) {
                 text.cursor = better::findCursorPos(text.topLineNumber, text.topColumnNumber, event);
+                if(text.cursor.row > text.textEdit.size() - 1) {
+                    continue;
+                }
                 if(text.cursor.row < folders.size()) {
                     path.append(folders[text.cursor.row].path().string());
                     text = {};
