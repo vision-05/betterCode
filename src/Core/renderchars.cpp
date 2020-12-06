@@ -15,10 +15,10 @@ void better::setPixel(SDL_Surface* surface, int x, int y, Uint32 pixel, int colu
     SDL_UnlockSurface(surface);
 }
 
-void better::renderLetter(SDL_Surface* surface, Uint8 pixelGrid[12], int column, int row) {
+void better::renderLetter(SDL_Surface* surface, Uint8 pixelGrid[12], int column, int row, Uint32 colorfg, Uint32 colorbg) {
     for(int i{}; i < 16; ++i) {
         for(int j{}; j < 8; ++j) {
-            better::setPixel(surface, j, i, better::unpackUint8Bit(j + 1, pixelGrid[i], 0x5588AAFF), column, row, 8, 16); //basically set each pixel for a character
+            better::setPixel(surface, j, i, better::unpackUint8Bit(j + 1, pixelGrid[i], colorfg, colorbg), column, row, 8, 16); //basically set each pixel for a character
         }
     }
 }
@@ -28,10 +28,11 @@ void better::renderCursor(SDL_Surface* surface, int column, int row, int topLine
         3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3
     };
     row -= topLine;
+    row += 1;
     column -= topColumn;
     for(int i{}; i < 16; ++i) {
         for(int j{}; j < 2; ++j) {
-            better::setPixel(surface, j, i, better::unpackUint8Bit(j + 1, cursor[i], 0xAA7069FF), column, row, 8, 16);
+            better::setPixel(surface, j, i, better::unpackUint8Bit(j + 1, cursor[i], 0xAA7069FF, 0x222222FF), column, row, 8, 16);
         }
     }
 }
@@ -51,7 +52,7 @@ better::charMapArr better::charCheck(char letter) {
             {0,0,34,34,34,34,62,34,34,34,34,0,0,0,0,0}, //H
             {0,0,28,8,8,8,8,8,8,8,28,0,0,0,0,0}, //I
             {0,0,62,32,32,32,32,32,34,20,8,0,0,0,0,0}, //J
-            {0,0,18,18,10,10,2,10,10,18,18,0,0,0,0,0}, //K
+            {0,0,34,18,10,6,6,10,18,18,34,0,0,0,0,0}, //K
             {0,0,2,2,2,2,2,2,2,2,62,0,0,0,0,0}, //L
             {0,0,66,66,102,102,90,66,66,66,66,0,0,0,0,0}, //M
             {0,0,34,34,38,38,42,42,50,50,34,0,0,0,0,0}, //N
@@ -73,29 +74,29 @@ better::charMapArr better::charCheck(char letter) {
     }
     else if(ascii > 96 && ascii < 123) { //letters (lowercase): done
         Uint8 letters[26][16] {
-            {0,0,0,0,0,12,10,9,25,21,22,0,0,0,0,0}, //a change
-            {0,2,2,2,2,2,2,30,18,18,30,0,0,0,0,0}, //b change
-            {0,0,0,0,48,12,4,2,4,12,48,0,0,0,0,0}, //c make rounder
-            {0,16,16,16,16,16,30,19,17,19,30,0,0,0,0,0}, //d change
-            {0,0,0,0,0,24,36,126,2,2,60,0,0,0,0,0}, //e
+            {0,0,0,0,0,28,34,60,34,50,44,0,0,0,0,0}, //a
+            {0,2,2,2,2,30,34,34,34,34,30,0,0,0,0,0}, //b
+            {0,0,0,0,0,56,4,4,4,4,56,0,0,0,0,0}, //c
+            {0,32,32,32,32,60,34,34,34,50,44,0,0,0,0,0}, //d
+            {0,0,0,0,0,28,34,62,2,2,60,0,0,0,0,0}, //e
             {0,48,8,4,30,4,4,4,4,4,4,0,0,0,0,0}, //f
-            {0,0,0,0,0,8,20,20,28,16,16,18,12,0,0,0}, //g change completely
-            {0,2,2,2,2,2,14,30,34,34,34,0,0,0,0,0}, //h change
+            {0,0,0,0,0,60,18,18,18,12,2,28,34,34,28,0}, //g
+            {0,2,2,2,2,26,38,34,34,34,34,0,0,0,0,0}, //h
             {0,16,16,0,0,24,16,16,16,16,56,0,0,0,0,0}, //i
-            {0,16,16,0,30,16,16,16,16,16,16,16,16,16,12,0}, //j
-            {0,0,2,18,10,6,2,6,10,18,18,0,0,0,0,0}, //k change
+            {0,16,16,0,0,30,16,16,16,16,16,16,16,16,12,0}, //j
+            {0,2,2,2,2,50,10,6,10,18,34,0,0,0,0,0}, //k
             {0,14,8,8,8,8,8,8,8,8,62,0,0,0,0,0}, //l
             {0,0,0,0,0,36,90,90,90,90,90,0,0,0,0,0}, //m
-            {0,0,0,0,0,14,18,18,18,18,18,0,0,0,0,0}, //n
-            {0,0,0,0,0,24,36,66,66,36,24,0,0,0,0}, //o change
-            {0,0,0,0,0,12,18,18,6,2,2,2,2,2,2,0}, //p
-            {0,0,0,0,0,12,18,18,10,16,16,16,16,16,16,0}, //q
-            {0,0,0,0,0,26,38,2,2,2,2,0,0,0,0,0}, //r change
+            {0,0,0,0,0,26,38,34,34,34,34,0,0,0,0,0}, //n
+            {0,0,0,0,0,28,34,34,34,34,28,0,0,0,0,0}, //o
+            {0,0,0,0,0,30,34,34,34,34,30,2,2,2,2,0}, //p
+            {0,0,0,0,0,60,34,34,34,34,60,32,32,32,32,0}, //q
+            {0,0,0,0,0,26,38,2,2,2,2,0,0,0,0,0}, //r
             {0,0,0,0,0,60,2,28,32,32,30,0,0,0,0,0}, //s
-            {0,0,0,4,4,62,4,4,36,36,24,0,0,0,0,0}, //t
-            {0,0,0,0,0,34,34,34,50,52,48,0,0,0,0,0}, //u change
-            {0,0,0,0,0,66,66,36,36,24,24,0,0,0,0,0}, //v
-            {0,0,0,0,0,130,130,68,84,40,40,0,0,0,0,0}, //w
+            {0,0,0,4,4,62,4,4,4,4,56,0,0,0,0,0}, //t
+            {0,0,0,0,0,34,34,34,34,50,44,0,0,0,0,0}, //u
+            {0,0,0,0,0,34,34,20,20,20,8,0,0,0,0,0}, //v
+            {0,0,0,0,0,34,34,42,42,20,20,0,0,0,0,0}, //w
             {0,0,0,0,0,66,36,24,24,36,66,0,0,0,0,0}, //x
             {0,0,0,0,0,66,66,68,36,40,16,16,8,8,6,0}, //y
             {0,0,0,0,0,62,16,8,4,2,62,0,0,0,0,0} //z
@@ -113,12 +114,12 @@ better::charMapArr better::charCheck(char letter) {
             {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //% not done
             {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //& not done
             {0,8,8,8,0,0,0,0,0,0,0,0,0,0,0,0}, //'
-            {16,16,8,8,4,4,4,4,8,8,16,16,0,0,0,0}, //( make go down
-            {4,4,8,8,16,16,16,16,8,8,4,4,0,0,0,0}, //) make go down
+            {32,32,16,16,8,8,8,8,8,8,8,8,16,16,32,32}, //(
+            {4,4,8,8,16,16,16,16,16,16,16,16,8,8,4,4}, //)
             {0,42,20,62,20,42,0,0,0,0,0,0,0,0,0,0}, //*
             {0,0,0,0,0,8,8,62,8,8,0,0,0,0,0,0}, //+
             {0,0,0,0,0,0,0,0,0,8,8,4,0,0,0,0}, //,
-            {0,0,0,0,0,0,62,0,0,0,0,0,0,0,0,0}, //-
+            {0,0,0,0,0,0,0,62,0,0,0,0,0,0,0,0}, //-
             {0,0,0,0,0,0,0,0,0,8,8,0,0,0,0,0}, //.
             {0,64,32,32,16,16,8,8,4,4,2,0,0,0,0,0} ///
         };
@@ -184,27 +185,27 @@ better::charMapArr better::charCheck(char letter) {
     }
 }
 
-void better::createLetter(SDL_Surface* surface, char letter, int column, int row) {
-    better::renderLetter(surface, better::charCheck(letter).arr, column, row);
+void better::createLetter(SDL_Surface* surface, char letter, int column, int row, Uint32 colorfg, Uint32 colorbg) {
+    better::renderLetter(surface, better::charCheck(letter).arr, column, row, colorfg, colorbg);
 }
 
-void better::renderText(SDL_Surface* surface, immer::flex_vector<immer::flex_vector<char>> vector, int topLine, int topColumn) {
+void better::renderText(SDL_Surface* surface, immer::flex_vector<immer::flex_vector<char>> vector, int topLine, int topColumn, const int textHeight, const int textWidth) {
     int size = vector.size();
-    if(vector.size() - 1 >= topLine + 60) {
-        size = topLine + 60;
+    if(vector.size() - 1 >= topLine + textHeight - 1) {
+        size = topLine + textHeight - 1;
     }
-    for(int i{topLine}, otheri{}; i < size; ++i, ++otheri) { //TODO: create cases for space, newline and tabs
+    for(int i{topLine}, otheri{1}; i < size; ++i, ++otheri) { //TODO: create cases for space, newline and tabs
         int colSize = vector[i].size();
-        if(vector[i].size() >= topColumn + 150) {
-            colSize = topColumn + 150;
+        if(vector[i].size() >= topColumn + textWidth) {
+            colSize = topColumn + textWidth;
         }
         for(int j{topColumn}, otherj{}; j < colSize; ++j, ++otherj) {
-            better::createLetter(surface, vector[i][j], otherj, otheri); //render text line by line
+            better::createLetter(surface, vector[i][j], otherj, otheri, 0x5588AAFF, 0x222222FF); //render text line by line
         }
     }
 }
 
-Uint32 better::unpackUint8Bit(int index, Uint8 number, Uint32 color) {
+Uint32 better::unpackUint8Bit(int index, Uint8 number, Uint32 color, Uint32 colorbg) {
     Uint8 power {1};
     for(int i{1}; i < index; ++i) {
         power *= 2; //find the integer mask to isolate the bit at the correct index, i.e. the first bit (0xb00000001 masked on the number 0xb11010001 will 0 all of the other bits except the last)
@@ -215,7 +216,7 @@ Uint32 better::unpackUint8Bit(int index, Uint8 number, Uint32 color) {
         result = color;
     }
     else {
-        result = 0x222222FF;
+        result = colorbg;
     }
     return result;
 }
@@ -234,7 +235,7 @@ better::Text better::scroll(better::Text text, SDL_Event event, const int textHe
     }
     else {
         for(int times{}; times > event.wheel.y; --times) {
-            if((row == text.topLineNumber + textHeight) && (row < text.textEdit.size())) {
+            if((row == text.topLineNumber + textHeight) && (row - 1 < text.textEdit.size())) {
                 row += 1;
                 text.topLineNumber += 1;
             }

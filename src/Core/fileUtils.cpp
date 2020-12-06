@@ -1,4 +1,5 @@
 #include "fileUtils.hpp"
+#include <iostream>
 
 int better::saveFile(immer::flex_vector<immer::flex_vector<char>> contents, std::string filename) {
     return 0;
@@ -33,6 +34,13 @@ immer::flex_vector<char> better::stringToVector(std::string string) {
 
 std::filesystem::path better::fileDialog() {
     SDL_Window* window = SDL_CreateWindow("File", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 560, 0);
+    std::string menu {"Back"};
+    SDL_Rect screen;
+    screen.h = 560 - 16;
+    screen.w = 800;
+    screen.x = 0;
+    screen.y = 16;
+
     SDL_Surface* surface = SDL_GetWindowSurface(window);
     std::vector<std::filesystem::directory_entry> files {};
     std::vector<std::filesystem::directory_entry> folders {};
@@ -64,9 +72,10 @@ std::filesystem::path better::fileDialog() {
     text.topLineNumber = 0;
 
     SDL_FillRect(surface, NULL, SDL_MapRGBA(surface->format, 0x22, 0x22, 0x22, 0xFF));
-    better::renderText(surface, text.textEdit, text.topLineNumber, text.topColumnNumber);
+    better::renderText(surface, text.textEdit, text.topLineNumber, text.topColumnNumber, 35, 100);
+    better::drawMenuBar(surface, menu, 0xDDDDDDFF, 0x666666FF, 800);
     SDL_UpdateWindowSurface(window);
-    SDL_FillRect(surface, NULL, SDL_MapRGBA(surface->format, 0x22, 0x22, 0x22, 0xFF));
+    SDL_FillRect(surface, &screen, SDL_MapRGBA(surface->format, 0x22, 0x22, 0x22, 0xFF));
 
     SDL_Event event;
 
@@ -74,14 +83,49 @@ std::filesystem::path better::fileDialog() {
         if(SDL_WaitEvent(&event)) {
             if(event.type == SDL_MOUSEWHEEL) {
                 text = better::scroll(text, event, 35, 100);
-                better::renderText(surface, text.textEdit, text.topLineNumber, text.topColumnNumber);
+                better::renderText(surface, text.textEdit, text.topLineNumber, text.topColumnNumber, 35, 100);
                 SDL_UpdateWindowSurface(window);
-                SDL_FillRect(surface, NULL, SDL_MapRGBA(surface->format, 0x22, 0x22, 0x22, 0xFF));
+                SDL_FillRect(surface, &screen, SDL_MapRGBA(surface->format, 0x22, 0x22, 0x22, 0xFF));
             }
             else if(event.type == SDL_MOUSEBUTTONDOWN) {
                 text.cursor = better::findCursorPos(text.topLineNumber, text.topColumnNumber, event);
-                if(text.cursor.row > text.textEdit.size() - 1) {
+                if((text.cursor.row > text.textEdit.size() - 1) && text.cursor.row > -1) {
                     continue;
+                }
+                if(text.cursor.row < 0) {
+                    if(text.cursor.column > 4) {
+                        continue;
+                    }
+                    else {
+                        path = path.parent_path();
+                        text = {};
+                        files = {};
+                        folders = {};
+
+                        for(const std::filesystem::directory_entry& entry : std::filesystem::directory_iterator(path)) {
+                            if(std::filesystem::is_regular_file(entry.status())) {
+                                files.push_back(entry);
+                            }
+                        else if(std::filesystem::is_directory(entry.status())) {
+                                folders.push_back(entry);
+                            }
+                        }
+
+                        text.cursor = {0,0};
+                        for(const std::filesystem::directory_entry& entry : folders) {
+                            text.textEdit = text.textEdit.push_back(better::stringToVector(folderString + entry.path().string()));
+                        }
+                        for(const std::filesystem::directory_entry& entry : files) {
+                            text.textEdit = text.textEdit.push_back(better::stringToVector(fileString + entry.path().filename().string()));
+                        }
+                        text.topColumnNumber = 0;
+                        text.topLineNumber = 0;
+
+                        better::renderText(surface, text.textEdit, text.topLineNumber, text.topColumnNumber, 35, 100);
+                        SDL_UpdateWindowSurface(window);
+                        SDL_FillRect(surface, &screen, SDL_MapRGBA(surface->format, 0x22, 0x22, 0x22, 0xFF));
+                        continue;
+                    }
                 }
                 if(text.cursor.row < folders.size()) {
                     path.append(folders[text.cursor.row].path().string());
@@ -108,9 +152,9 @@ std::filesystem::path better::fileDialog() {
                     text.topColumnNumber = 0;
                     text.topLineNumber = 0;
 
-                    better::renderText(surface, text.textEdit, text.topLineNumber, text.topColumnNumber);
+                    better::renderText(surface, text.textEdit, text.topLineNumber, text.topColumnNumber, 35, 100);
                     SDL_UpdateWindowSurface(window);
-                    SDL_FillRect(surface, NULL, SDL_MapRGBA(surface->format, 0x22, 0x22, 0x22, 0xFF));
+                    SDL_FillRect(surface, &screen, SDL_MapRGBA(surface->format, 0x22, 0x22, 0x22, 0xFF));
                 }
                 else {
                     isFound = true;

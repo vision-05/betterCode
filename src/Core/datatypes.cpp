@@ -60,6 +60,6 @@ better::charMapArr better::makeCharMapArr(::Uint8 charArray[16]) {
 
 better::Cursor better::findCursorPos(int topLine, int topColumn, SDL_Event event) { //make sure to fix for screen bigger than size of lines
     int relativeColumn {static_cast<int>(event.button.x / 8)};
-    int relativeRow {static_cast<int>(event.button.y / 16)};
+    int relativeRow {static_cast<int>(event.button.y / 16) - 1};
     return better::Cursor {relativeRow + topLine, relativeColumn + topColumn};
 }
