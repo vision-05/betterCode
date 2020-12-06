@@ -1,6 +1,5 @@
 #include "renderchars.hpp"
 //TODO: symbols have different colours to text
-//8 more characters total to render
 
 void better::setPixel(SDL_Surface* surface, int x, int y, Uint32 pixel, int column, int row, int charWidth, int charHeight) {
     SDL_LockSurface(surface); //use pixelIndex here
@@ -104,15 +103,15 @@ better::charMapArr better::charCheck(char letter) {
         ascii -= 97;
         return better::makeCharMapArr(letters[ascii]);
     }
-    else if(ascii > 31 && ascii < 48) { //first symbols: 3 more
+    else if(ascii > 31 && ascii < 48) { //first symbols: done
         Uint8 symbols1[16][16] {
             {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //Space
             {0,8,8,8,8,8,8,0,0,8,8,0,0,0,0,0}, //!
             {0,20,20,20,0,0,0,0,0,0,0,0,0,0,0,0}, //"
             {0,54,54,127,127,54,54,127,127,54,54,0,0,0,0,0}, //# make thinner
             {16,124,20,18,20,20,24,112,80,80,62,16,0,0,0,0}, //$ make go down
-            {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //% not done
-            {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //& not done
+            {0,78,42,46,16,16,8,8,116,84,114,0,0,0,0,0}, //%
+            {0,28,34,34,18,20,8,84,52,50,42,68,0,0,0,0}, //&
             {0,8,8,8,0,0,0,0,0,0,0,0,0,0,0,0}, //'
             {32,32,16,16,8,8,8,8,8,8,8,8,16,16,32,32}, //(
             {4,4,8,8,16,16,16,16,16,16,16,16,8,8,4,4}, //)
@@ -142,15 +141,15 @@ better::charMapArr better::charCheck(char letter) {
         ascii -= 48;
         return better::makeCharMapArr(numbers[ascii]);
     }
-    else if(ascii > 57 && ascii < 64) { //second symbols: 2 more
+    else if(ascii > 57 && ascii < 65) { //second symbols: done
         Uint8 symbols2[7][16] {
             {0,0,0,8,8,0,0,0,8,8,0,0,0,0,0,0}, //:
             {0,0,0,8,8,0,0,0,0,8,8,4,0,0,0,0}, //;
             {0,0,96,24,6,1,1,6,24,96,0,0,0,0,0,0}, //<
-            {0,0,0,0,0,126,0,126,0,0,0,0,0,0,0,0}, //=
+            {0,0,0,0,0,0,126,0,126,0,0,0,0,0,0,0}, //=
             {0,0,1,6,24,96,96,24,6,1,0,0,0,0,0,0}, //>
-            {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //? not done
-            {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0} //@ not done
+            {0,12,16,32,32,16,8,8,0,8,8,0,0,0,0,0}, //?
+            {0,0,24,36,90,165,165,165,57,66,36,24,0,0,0,0} //@
         };
         ascii -= 58;
         return better::makeCharMapArr(symbols2[ascii]);
@@ -167,12 +166,12 @@ better::charMapArr better::charCheck(char letter) {
         ascii -= 91;
         return better::makeCharMapArr(symbols3[ascii]);
     }
-    else if(ascii > 122 && ascii < 127) { //fourth symbols: 3 more
+    else if(ascii > 122 && ascii < 127) { //fourth symbols: done
         Uint8 symbols4[4][16] {
-            {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //{
+            {24,4,4,4,4,4,4,4,2,4,4,4,4,4,4,24}, //{
             {0,8,8,8,8,8,8,8,8,8,8,8,8,8,8,0}, //|
-            {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //}
-            {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0} //~
+            {24,32,32,32,32,32,32,32,64,32,32,32,32,32,32,24}, //}
+            {0,0,0,0,0,0,68,76,50,34,0,0,0,0,0,0} //~
         };
         ascii -= 123;
         return better::makeCharMapArr(symbols4[ascii]);

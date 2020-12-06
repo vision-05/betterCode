@@ -193,7 +193,7 @@ char better::shift(char key) {
     else if(key == '6') {
         key += 40;
     }
-    else if(key == '9') {
+    else if(key == '9' || key == '7') {
         key -= 17;
     }
     else if(key == '0') {
@@ -217,7 +217,7 @@ char better::shift(char key) {
     else if(key == '#') {
         key += 91;
     }
-    else if(key == '\'') {
+    else if(key == 39) {
         key += 25;
     }
     return key;
