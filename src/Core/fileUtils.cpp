@@ -1,3 +1,6 @@
+//! @file
+//! This file handles all of the file stream functionality of the program
+
 #include "fileUtils.hpp"
 #include <iostream>
 

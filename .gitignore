@@ -33,6 +33,11 @@
 
 # Folders
 .vscode/
+html/
+latex/
 
 # Text files
 *.txt
+
+# Doxygen file
+Doxyfile

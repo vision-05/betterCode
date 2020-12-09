@@ -1,3 +1,5 @@
+//! @file
+
 #ifndef MENUBAR_HPP
 #define MENUBAR_HPP
 

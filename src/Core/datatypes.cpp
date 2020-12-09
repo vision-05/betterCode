@@ -1,3 +1,6 @@
+//! @file
+//! This file contains all of the user defined structs used throughout the project
+
 #include "datatypes.hpp"
 #include <iostream>
 

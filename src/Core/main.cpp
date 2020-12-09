@@ -1,3 +1,6 @@
+//! @file
+//! This is the main file of the project, containing the main event loop and renderer
+
 #define SDL_MAIN_HANDLED
 
 #include <SDL2-2.0.12/include/SDL.h>
@@ -18,12 +21,34 @@
 
 namespace better { //TODO: highlighting text, shortcuts
 
+//! better::verticalNav scrolls the text vertically based on arrow keys. This is done incrementing or decrementing the variable topLine.
+//! The topLine variable tells teh render function to start rendering at that line in the text buffer.
+
 better::Text verticalNav(better::Text text, SDL_Keycode key, const int textHeight, const int textWidth);
+
+//! better::horizontalNav essentially scrolls the text horizontally based on arrow keys. This is done incrementing or decrementing the variable topColumn.
+//! The topColumn variable tells the render function to start rendering at that position in each line of the text buffer.
+
 better::Text horizontalNav(better::Text text, SDL_Keycode key);
 
+//! better::shift "shifts" every key on the keyboard that has an alternate key.
+//! This function is currently configured for ascii Us Windows keyboards in ISO configuration.
+
 char shift(char key);
+
+//! better::shiftLetter "shifts" characters for when caps lock is pressed.
+//! Non letters are unaffected as caps lock only capitalises letters.
+
 char shiftLetter(char key);
+
+//! better::unshiftLetter "unshifts" characters while both the shift key and caps lock are pressed.
+//! This function only unshifts letters.
+
 char unshiftLetter(char key);
+
+//! better::edit1 initialises a text editor the size of the window passed by its pointer.
+//! It also reads in the file into its own text buffer, and contains the event loop for that text edit.
+
 void edit1(SDL_Window* window, std::string filename);
 
 }

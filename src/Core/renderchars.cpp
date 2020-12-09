@@ -1,3 +1,6 @@
+//! @file
+//! This file handles all of the text rendering functions
+
 #include "renderchars.hpp"
 //TODO: symbols have different colours to text
 

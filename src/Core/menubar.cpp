@@ -1,3 +1,6 @@
+//! @file
+//! This file deals with all the functions for drawing menubars and menus
+
 #include "menubar.hpp"
 
 void better::drawMenuBar(SDL_Surface* surface, std::string menus, Uint32 colorfg, Uint32 colorbg, int windowWidth) {

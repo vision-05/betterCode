@@ -1,3 +1,5 @@
+//! @file
+
 #ifndef DATATYPES_HPP
 #define DATATYPES_HPP
 

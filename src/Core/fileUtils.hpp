@@ -1,3 +1,5 @@
+//! @file
+
 #ifndef FILE_UTILS_HPP
 #define FILE_UTILS_HPP
 
