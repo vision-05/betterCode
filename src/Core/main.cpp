@@ -2,11 +2,13 @@
 //! This is the main file of the project, containing the main event loop and renderer
 
 #define SDL_MAIN_HANDLED
-
+//i added the comment to test saving
 #include <SDL2-2.0.12/include/SDL.h>
 #include <immer/flex_vector.hpp>
 #include <vector>
 #include <thread>
+#include <string>
+#include <iostream>
 
 #include "datatypes.hpp"
 #include "fileUtils.hpp"
@@ -51,6 +53,10 @@ char unshiftLetter(char key);
 
 void edit1(SDL_Window* window, std::string filename);
 
+void resetMenus(bool* menus);
+
+int selectMenu(bool menus[]);
+
 }
 
 int main(int argc, char* argv[]) {
@@ -79,7 +85,8 @@ void better::edit1(SDL_Window* window, std::string filename) {
 
     SDL_Surface* surface = SDL_GetWindowSurface(window);
 
-    std::string menus {"File  Edit  View  Settings"};
+    std::string menus {" File  Edit  View  Settings "};
+    std::vector<std::vector<std::string>> menuText {{"Open","Save","Save As","Exit"},{"Cut","Copy","Paste"},{},{"Edit Settings"}};
     
     better::Text firstText {better::readFile(filename), {0,0}, 0, 0};
     texts.push_back(firstText);
@@ -95,10 +102,17 @@ void better::edit1(SDL_Window* window, std::string filename) {
     bool isShift {false};
     bool capsLock {false};
 
+    bool menusToDraw[4] {false,false,false,false};
+    std::vector<std::string> menu {};
+    int index {};
+
     SDL_Event event;
 
     while(1) {
         if(SDL_WaitEvent(&event)) {
+            if(texts.back().cursor.row == -1) {
+                isScroll = true;
+            }
             const Uint8* state {SDL_GetKeyboardState(NULL)};
             if(state[SDL_SCANCODE_LSHIFT] || state[SDL_SCANCODE_RSHIFT]) {
                 isShift = true;
@@ -140,12 +154,44 @@ void better::edit1(SDL_Window* window, std::string filename) {
                 if(tempCursor.column > texts.back().textEdit[tempCursor.row].size()) {
                     tempCursor.column = texts.back().textEdit[tempCursor.row].size();
                 }
-                if(tempCursor.row == -1) {
-                    //add menu functionality here
+                if((event.button.y / 16) - 1 == -1) {
+                    tempCursor.column = event.button.x / 8;
+                    tempCursor.row = -1;
+                    isScroll = true;
+                    better::resetMenus(menusToDraw);
+                    if(tempCursor.column < 6) {
+                        menusToDraw[0] = true;
+                    }
+                    else if(tempCursor.column > 5 && tempCursor.column < 12) {
+                        menusToDraw[1] = true;
+                    }
+                    else if(tempCursor.column > 11 && tempCursor.column < 18) {
+                        menusToDraw[2] = true;
+                    }
+                    else if(tempCursor.column > 17 && tempCursor.column < 28) {
+                        menusToDraw[3] = true;
+                    }
+                    tempCursor.column = 0;
                     continue;
                 }
+                else if((better::selectMenu(menusToDraw) > -1) && (((event.button.x / 8) > 20) || ((event.button.y / 16) > menu.size()))){
+                    better::resetMenus(menusToDraw);
+                }
+                if(better::selectMenu(menusToDraw) > -1) {
+                    if((event.button.x / 8) < 21) {
+                        if((event.button.y / 16) < menu.size() && event.button.y > 16) {
+                            if(better::selectMenu(menusToDraw) == 0) {
+                                if((event.button.y / 16) == 2) {
+                                    better::saveFile(texts.back().textEdit, filename);
+                                }
+                            }
+                        }
+                    }
+                }
                 texts[texts.size() - 1].cursor = tempCursor;
-                isScroll = false;
+                if(tempCursor.row != -1) {
+                    isScroll = false;
+                };
             }
 
             else if(event.type == SDL_KEYDOWN) {
@@ -172,6 +218,10 @@ void better::edit1(SDL_Window* window, std::string filename) {
                     texts[texts.size() - 1].topLineNumber = texts.back().cursor.row;
                     texts[texts.size() - 1].topColumnNumber = 0;
                 }
+                if(texts.back().cursor.row == -1) {
+                    texts.back().cursor.row = 0;
+                    better::resetMenus(menusToDraw);
+                }
 
                 switch(key) {
                     case '\b':
@@ -186,8 +236,33 @@ void better::edit1(SDL_Window* window, std::string filename) {
             if(!isScroll) {
                 better::renderCursor(surface, texts.back().cursor.column, texts.back().cursor.row, texts.back().topLineNumber, texts.back().topColumnNumber);
             }
+            index = better::selectMenu(menusToDraw);
+            if(index < 0 || index > 3) {
+                menu.clear();
+            }
+            else {
+                menu = menuText[index];
+            }
+
+            better::drawMenus(surface, menu, 0xDDDDDDFF, 0x444444FF);
+
             SDL_UpdateWindowSurface(window);
         }
+    }
+}
+
+int better::selectMenu(bool menus[]) {
+    for(int i{}; i < 4; ++i) {
+        if(menus[i]) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+void better::resetMenus(bool* menus) {
+    for(int i{}; i < 4; ++i) {
+        menus[i] = false;
     }
 }
 
@@ -270,6 +345,9 @@ better::Text better::verticalNav(better::Text text, SDL_Keycode key, const int t
 
         case SDL_SCANCODE_UP:
             if(text.cursor.row) {
+                if((text.cursor.row == text.topLineNumber) && text.cursor.row) {
+                    text.topLineNumber -= 1;
+                }
                 if(text.textEdit[text.cursor.row - 1].size() < text.cursor.column) { //check the next row has less elements than current column of cursor position
                     text.cursor.column = text.textEdit[text.cursor.row - 1].size();
                     text.cursor.row -= 1;
@@ -277,16 +355,13 @@ better::Text better::verticalNav(better::Text text, SDL_Keycode key, const int t
                 else {
                     text.cursor.row -= 1;
                 }
-                if((text.cursor.row == text.topLineNumber) && text.cursor.row) {
-                    text.topLineNumber -= 1;
-                }
             }
             break;
     }
     return text;
 }
 
-better::Text better::horizontalNav(better::Text text, SDL_Keycode key) {
+better::Text better::horizontalNav(better::Text text, SDL_Keycode key) { //cases for if cursor is at top right/bottom left of screen
     const int textHeight {60};
     const int textWidth {150};
     switch(key) {
@@ -311,6 +386,9 @@ better::Text better::horizontalNav(better::Text text, SDL_Keycode key) {
                 if(!text.cursor.column) {
                     text.cursor.row -= 1;
                     text.cursor.column = text.textEdit[text.cursor.row].size();
+                    if(text.cursor.column > textWidth - 2) {
+                        text.topColumnNumber = (text.cursor.column - textWidth) + 1;
+                    }
                 }
                 else {
                     text.cursor.column -= 1;

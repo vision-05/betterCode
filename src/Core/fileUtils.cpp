@@ -5,6 +5,19 @@
 #include <iostream>
 
 int better::saveFile(immer::flex_vector<immer::flex_vector<char>> contents, std::string filename) {
+    std::string buffer {""};
+    std::ofstream file;
+    file.open(filename, std::ios::out);
+
+    for(int i{}; i < contents.size(); ++i) {
+        for(int j{}; j < contents[i].size(); ++j) {
+            buffer.push_back(contents[i][j]);
+        }
+        buffer.push_back('\n');
+        file << buffer;
+        buffer = "";
+    }
+
     return 0;
 }
 
