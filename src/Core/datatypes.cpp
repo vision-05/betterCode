@@ -66,3 +66,19 @@ better::Cursor better::findCursorPos(int topLine, int topColumn, SDL_Event event
     int relativeRow {static_cast<int>(event.button.y / 16) - 1};
     return better::Cursor {relativeRow + topLine, relativeColumn + topColumn};
 }
+
+Uint8 better::getRed(Uint32 color) {
+    return static_cast<Uint8>((color & 0xFF000000) >> 24);
+}
+
+Uint8 better::getGreen(Uint32 color) {
+    return static_cast<Uint8>((color & 0x00FF0000) >> 16);
+}
+
+Uint8 better::getBlue(Uint32 color) {
+    return static_cast<Uint8>((color & 0x0000FF00) >> 8);
+}
+
+Uint8 better::getAlpha(Uint32 color) {
+    return static_cast<Uint8>(color & 0x000000FF);
+}

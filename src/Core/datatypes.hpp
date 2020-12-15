@@ -32,6 +32,11 @@ better::Text updateText(better::Text textEdit, char newChar);
 better::Text backspace(better::Text textEdit);
 better::Text newLine(better::Text textEdit);
 
+Uint8 getRed(Uint32 color);
+Uint8 getGreen(Uint32 color);
+Uint8 getBlue(Uint32 color);
+Uint8 getAlpha(Uint32 color);
+
 }
 
 #endif

@@ -9,7 +9,6 @@
 #include <thread>
 #include <string>
 #include <iostream>
-
 #include "datatypes.hpp"
 #include "fileUtils.hpp"
 #include "renderchars.hpp"
@@ -77,16 +76,15 @@ int main(int argc, char* argv[]) {
 void better::edit1(SDL_Window* window, std::string filename) {
     std::vector<better::Text> texts {};
 
-    SDL_Rect screen;
-    screen.h = 960 - 16;
-    screen.w = 1200;
-    screen.x = 0;
-    screen.y = 16;
+    SDL_Cursor* guiCursor {SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_IBEAM)};
+    SDL_SetCursor(guiCursor);
+
+    SDL_Rect screen {.x = 0, .y = 16, .w = 1200, .h = 960 - 16};
 
     SDL_Surface* surface = SDL_GetWindowSurface(window);
 
     std::string menus {" File  Edit  View  Settings "};
-    std::vector<std::vector<std::string>> menuText {{"Open","Save","Save As","Exit"},{"Cut","Copy","Paste"},{},{"Edit Settings"}};
+    std::vector<std::vector<std::string>> menuText {{"Open","Save","Exit"},{"Cut","Copy","Paste"},{},{"Edit Settings"}};
     
     better::Text firstText {better::readFile(filename), {0,0}, 0, 0};
     texts.push_back(firstText);
@@ -122,26 +120,47 @@ void better::edit1(SDL_Window* window, std::string filename) {
             }
 
             if(event.type == SDL_QUIT) {
+                SDL_FreeCursor(guiCursor);
                 SDL_FreeSurface(surface);
                 SDL_DestroyWindow(window);
                 SDL_Quit();
                 return;
             }
 
+            else if(event.type == SDL_MOUSEMOTION) {
+                if((event.motion.y / 16) == 0) {
+                    SDL_FreeCursor(guiCursor);
+                    guiCursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
+                    SDL_SetCursor(guiCursor);
+                }
+                else {
+                    guiCursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_IBEAM);
+                    SDL_SetCursor(guiCursor);
+                }
+            }
+
             else if(event.type == SDL_KEYDOWN && (event.key.keysym.scancode == SDL_SCANCODE_DOWN || event.key.keysym.scancode == SDL_SCANCODE_UP)) {
-                texts[texts.size() - 1] = better::verticalNav(texts.back(), event.key.keysym.scancode, 60, 150);
+                texts.back() = better::verticalNav(texts.back(), event.key.keysym.scancode, 60, 150);
             }
 
             else if(event.type == SDL_KEYDOWN && (event.key.keysym.scancode == SDL_SCANCODE_RIGHT || event.key.keysym.scancode == SDL_SCANCODE_LEFT)) {
-                texts[texts.size() - 1] = better::horizontalNav(texts.back(), event.key.keysym.scancode);
+                texts.back() = better::horizontalNav(texts.back(), event.key.keysym.scancode);
             }
 
             else if(event.type == SDL_KEYDOWN && event.key.keysym.scancode == SDL_SCANCODE_RETURN) {
                 texts.push_back(better::newLine(texts.back()));
             }
 
+            else if(event.type == SDL_KEYDOWN && event.key.keysym.scancode == SDL_SCANCODE_TAB) {
+                better::Text tempText {texts.back()};
+                for(int i{}; i < 4; ++i) {
+                    tempText = better::updateText(tempText, ' ');
+                }
+                texts.push_back(tempText);
+            }
+
             else if(event.type == SDL_MOUSEWHEEL) { //set bool scroll to true
-                texts[texts.size() - 1] = better::scroll(texts.back(), event, 60, 150);
+                texts.back() = better::scroll(texts.back(), event, 60, 150);
                 isScroll = true;
             }
 
@@ -154,6 +173,7 @@ void better::edit1(SDL_Window* window, std::string filename) {
                 if(tempCursor.column > texts.back().textEdit[tempCursor.row].size()) {
                     tempCursor.column = texts.back().textEdit[tempCursor.row].size();
                 }
+
                 if((event.button.y / 16) - 1 == -1) {
                     tempCursor.column = event.button.x / 8;
                     tempCursor.row = -1;
@@ -174,24 +194,55 @@ void better::edit1(SDL_Window* window, std::string filename) {
                     tempCursor.column = 0;
                     continue;
                 }
+
                 else if((better::selectMenu(menusToDraw) > -1) && (((event.button.x / 8) > 20) || ((event.button.y / 16) > menu.size()))){
                     better::resetMenus(menusToDraw);
                 }
-                if(better::selectMenu(menusToDraw) > -1) {
-                    if((event.button.x / 8) < 21) {
-                        if((event.button.y / 16) < menu.size() && event.button.y > 16) {
-                            if(better::selectMenu(menusToDraw) == 0) {
-                                if((event.button.y / 16) == 2) {
+
+                int selectedMenu {better::selectMenu(menusToDraw)};
+                int clickRow {event.button.y / 16};
+                int clickColumn {event.button.x / 8};
+                if(selectedMenu > -1) {
+                    if(clickColumn < 21) {
+                        if(clickRow < menu.size() && event.button.y > 16) {
+                            if(selectedMenu == 0) {
+                                if(clickRow == 2) {
                                     better::saveFile(texts.back().textEdit, filename);
+                                    better::resetMenus(menusToDraw);
+                                }
+                                else if(clickRow == 1) {
+                                    better::saveFile(texts.back().textEdit, filename);
+                                    filename = better::fileDialog().string();
+                                    texts.clear();
+                                    texts.push_back({better::readFile(filename), {0,0}, 0, 0});
+                                    better::resetMenus(menusToDraw);
+                                }
+                                else if(clickRow == 3) {
+                                    SDL_FreeCursor(guiCursor);
+                                    SDL_FreeSurface(surface);
+                                    SDL_DestroyWindow(window);
+                                    SDL_Quit();
+                                    return;
+                                }
+                            }
+                            else if(selectedMenu == 1) {
+                                if(clickRow == 1) {
+                                    
+                                }
+                                else if(clickRow == 2) {
+                                    
+                                }
+                                else if(clickRow == 3) {
+                                    
                                 }
                             }
                         }
                     }
                 }
-                texts[texts.size() - 1].cursor = tempCursor;
+                texts.back().cursor = tempCursor;
                 if(tempCursor.row != -1) {
                     isScroll = false;
-                };
+                }
             }
 
             else if(event.type == SDL_KEYDOWN) {
@@ -226,6 +277,31 @@ void better::edit1(SDL_Window* window, std::string filename) {
                 switch(key) {
                     case '\b':
                         texts.push_back(better::backspace(texts.back()));
+                        break;
+                    case '(':
+                        texts.push_back(better::updateText(better::updateText(texts.back(),key),')'));
+                        texts.back() = better::horizontalNav(texts.back(),SDL_SCANCODE_LEFT);
+                        break;
+                    case '{':
+                        texts.push_back(better::updateText(better::newLine(better::newLine(better::updateText(texts.back(),key))),'}'));
+                        texts.back() = better::horizontalNav(texts.back(),SDL_SCANCODE_LEFT);
+                        texts.back() = better::verticalNav(texts.back(), SDL_SCANCODE_UP, 60, 150);
+                        break;
+                    case '[':
+                        texts.push_back(better::updateText(better::updateText(texts.back(),key),']'));
+                        texts.back() = better::horizontalNav(texts.back(),SDL_SCANCODE_LEFT);
+                        break;
+                    case '<':
+                        texts.push_back(better::updateText(better::updateText(texts.back(),key),'>'));
+                        texts.back() = better::horizontalNav(texts.back(),SDL_SCANCODE_LEFT);
+                        break;
+                    case '\'':
+                        texts.push_back(better::updateText(better::updateText(texts.back(),'\''),'\''));
+                        texts.back() = better::horizontalNav(texts.back(),SDL_SCANCODE_LEFT);
+                        break;
+                    case '\"':
+                        texts.push_back(better::updateText(better::updateText(texts.back(),key),'\"'));
+                        texts.back() = better::horizontalNav(texts.back(),SDL_SCANCODE_LEFT);
                         break;
                     default:
                         texts.push_back(better::updateText(texts.back(),key));

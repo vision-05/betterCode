@@ -51,11 +51,7 @@ immer::flex_vector<char> better::stringToVector(std::string string) {
 std::filesystem::path better::fileDialog() {
     SDL_Window* window = SDL_CreateWindow("File", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 560, 0);
     std::string menu {"Back"};
-    SDL_Rect screen;
-    screen.h = 560 - 16;
-    screen.w = 800;
-    screen.x = 0;
-    screen.y = 16;
+    SDL_Rect screen {.x = 0, .y = 16, .w = 800, .h = 560 - 16};
 
     SDL_Surface* surface = SDL_GetWindowSurface(window);
     std::vector<std::filesystem::directory_entry> files {};
