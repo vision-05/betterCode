@@ -94,7 +94,12 @@ std::filesystem::path better::fileDialog() {
     while(!isFound) {
         if(SDL_WaitEvent(&event)) {
             if(event.type == SDL_MOUSEWHEEL) {
-                text = better::scroll(text, event, 35, 100);
+                better::Text newText = better::scroll(text, event, 35, 100);
+                text.textEdit = newText.textEdit;
+                text.cursor = newText.cursor;
+                text.topLineNumber = newText.topLineNumber;
+                text.topColumnNumber = newText.topColumnNumber;
+                text.data.isScroll = true;
                 better::renderText(surface, text.textEdit, text.topLineNumber, text.topColumnNumber, 35, 100);
                 SDL_UpdateWindowSurface(window);
                 SDL_FillRect(surface, &screen, SDL_MapRGBA(surface->format, 0x22, 0x22, 0x22, 0xFF));
@@ -110,7 +115,10 @@ std::filesystem::path better::fileDialog() {
                     }
                     else {
                         path = path.parent_path();
-                        text = {};
+                        text.textEdit = {};
+                        text.cursor = {0,0};
+                        text.topLineNumber = 0;
+                        text.topColumnNumber = 0;
                         files = {};
                         folders = {};
 
@@ -141,7 +149,10 @@ std::filesystem::path better::fileDialog() {
                 }
                 if(text.cursor.row < folders.size()) {
                     path.append(folders[text.cursor.row].path().string());
-                    text = {};
+                    text.textEdit = {};
+                    text.cursor = {0,0};
+                    text.topColumnNumber = 0;
+                    text.topLineNumber = 0;
                     files = {};
                     folders = {};
 

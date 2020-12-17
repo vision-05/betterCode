@@ -5,6 +5,8 @@
 
 #include <SDL2-2.0.12/include/SDL.h>
 #include <immer/flex_vector.hpp>
+#include <unordered_map>
+#include <array>
 
 #include "datatypes.hpp"
 
@@ -24,7 +26,7 @@ void createLetter(SDL_Surface* surface, char letter, int column, int row, Uint32
 //! better::renderLetter maps the pixels of a letters character map and its position in the text buffer onto the screen.
 //! Each letter has a size of 8 pixels wide by 16 pixels long.
 
-void renderLetter(SDL_Surface* surface, Uint8 pixelGrid[12], int column, int row, Uint32 colorfg, Uint32 colorbg);
+void renderLetter(SDL_Surface* surface, Uint8 pixelGrid[16], int column, int row, Uint32 colorfg, Uint32 colorbg);
 
 //! better::renderText iterates through the whole text buffer to output the letters to the screen one by one onto the pixel surface
 //! This function makes sure that there are only 59 lines rendered and 150 columns rendered on a screen max
@@ -41,7 +43,7 @@ void renderCursor(SDL_Surface* surface, int column, int row, int topLine, int to
 //! this is passed as a better::charMapArr struct
 //! if the character is not an ascii character a filled square will be returned instead.
 
-better::charMapArr charCheck(char letter);
+better::charMapArr charCheck(char letter, std::array<better::charMapArr,95> letters);
 
 //! better::unpackUint8Bit is used to turn a bit of a Uint8 into a 32 bit value, usable as a pixel.
 //! This allows the character maps to be stored in arrays of 16 Uint8s instead of 16x8 Uint32s saving memory space
