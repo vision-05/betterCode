@@ -21,7 +21,7 @@
 namespace better { //TODO: highlighting text, shortcuts
 
 //! better::verticalNav scrolls the text vertically based on arrow keys. This is done incrementing or decrementing the variable topLine.
-//! The topLine variable tells teh render function to start rendering at that line in the text buffer.
+//! The topLine variable tells the render function to start rendering at that line in the text buffer.
 
 better::Text verticalNav(better::Text text, SDL_Keycode key, const int textHeight, const int textWidth);
 
@@ -56,7 +56,11 @@ better::Text keyDown(better::Text text, SDL_Event event, SDL_Surface* surface, S
 
 better::Text mouseButton(better::Text text, SDL_Event event, SDL_Surface* surface, SDL_Cursor* guiCursor);
 
+better::Text mouseButtonUp(better::Text text, SDL_Event event, SDL_Surface* surface, SDL_Cursor* guiCursor);
+
 better::Text mouseWheel(better::Text text, SDL_Event event, SDL_Surface* surface, SDL_Cursor* guiCursor);
+
+better::Text autoBracket(better::Text text, char bracket);
 
 void edit1(SDL_Window* window, std::string filename, const int textHeight, const int textWidth);
 
@@ -101,9 +105,9 @@ void better::edit1(SDL_Window* window, std::string filename, const int textHeigh
     
     better::Text firstText {better::readFile(filename), {0,0}, {{false,false,false,false}, false, false, false, false, -1, {}, filename}, 0, 0};
     texts.push_back(firstText);
-
+    
     SDL_FillRect(surface, NULL, SDL_MapRGBA(surface->format, 0x22, 0x22, 0x22, 0xFF));
-    better::renderText(surface, texts.back().textEdit, texts.back().topLineNumber, texts.back().topColumnNumber, textHeight, textWidth);
+    better::renderText(surface, texts.back().textEdit, texts.back().topLineNumber, texts.back().topColumnNumber, textHeight, textWidth, {0,0}, {0,0});
     better::renderCursor(surface, texts.back().cursor.column, texts.back().cursor.row, texts.back().topLineNumber, texts.back().topColumnNumber);
     better::drawMenuBar(surface, menus, 0xDDDDDDFF, 0x666666FF, 1200);
 
@@ -115,7 +119,8 @@ void better::edit1(SDL_Window* window, std::string filename, const int textHeigh
         {SDL_MOUSEMOTION, better::mouseMotion},
         {SDL_KEYDOWN, better::keyDown},
         {SDL_MOUSEBUTTONDOWN, better::mouseButton},
-        {SDL_MOUSEWHEEL, better::mouseWheel}
+        {SDL_MOUSEWHEEL, better::mouseWheel},
+        {SDL_MOUSEBUTTONUP, better::mouseButtonUp}
     };
 
     while(1) {
@@ -136,16 +141,19 @@ void better::edit1(SDL_Window* window, std::string filename, const int textHeigh
                 return;
             }
 
-            if(event.type == SDL_KEYDOWN || event.type == SDL_MOUSEBUTTONDOWN || event.type == SDL_MOUSEMOTION || event.type == SDL_MOUSEWHEEL) {
+            if(event.type == SDL_KEYDOWN || event.type == SDL_MOUSEBUTTONDOWN || event.type == SDL_MOUSEMOTION || event.type == SDL_MOUSEWHEEL || event.type == SDL_MOUSEBUTTONUP) {
                 better::Text tempText {(handlers[event.type])(texts.back(), event, surface, guiCursor)};
                 if(tempText.data.clearHistory) {
                     texts.clear();
                 }
                 texts.push_back(tempText);
             }
+            else {
+                continue;
+            }
 
             SDL_FillRect(surface, &screen, SDL_MapRGBA(surface->format, 0x22, 0x22, 0x22, 0xFF));
-            better::renderText(surface, texts.back().textEdit, texts.back().topLineNumber, texts.back().topColumnNumber, textHeight, textWidth);
+            better::renderText(surface, texts.back().textEdit, texts.back().topLineNumber, texts.back().topColumnNumber, textHeight, textWidth, texts.back().highlightStart, texts.back().highlightEnd);
             if(!texts.back().data.isScroll) {
                 better::renderCursor(surface, texts.back().cursor.column, texts.back().cursor.row, texts.back().topLineNumber, texts.back().topColumnNumber);
             }
@@ -162,6 +170,19 @@ void better::edit1(SDL_Window* window, std::string filename, const int textHeigh
             SDL_UpdateWindowSurface(window);
         }
     }
+}
+
+better::Text better::mouseButtonUp(better::Text text, SDL_Event event, SDL_Surface* surface, SDL_Cursor* guiCursor) {
+    text.highlightEnd = better::findCursorPos(text.topLineNumber, text.topColumnNumber, event);
+    if(text.highlightEnd.row == -1) {
+        text.highlightEnd = text.highlightStart;
+    }
+    return text;
+}
+
+better::Text better::autoBracket(better::Text text, char letter) {
+    int num {letter == '(' ? 1 : 2};
+    return better::horizontalNav(better::updateText(better::updateText(text,letter),letter + num),SDL_SCANCODE_LEFT, text.data.textHeight, text.data.textWidth);
 }
 
 better::Text better::mouseWheel(better::Text text, SDL_Event event, SDL_Surface* surface, SDL_Cursor* guiCursor) {
@@ -219,17 +240,8 @@ better::Text better::keyDown(better::Text text, SDL_Event event, SDL_Surface* su
             case '\b':
                 return better::backspace(text);
                 break;
-            case '(':
-                return better::horizontalNav(better::updateText(better::updateText(text,key),')'),SDL_SCANCODE_LEFT, text.data.textHeight, text.data.textWidth);
-                break;
             case '{':
                 return better::verticalNav(better::horizontalNav(better::updateText(better::newLine(better::newLine(better::updateText(text,key))),'}'), SDL_SCANCODE_LEFT, text.data.textHeight, text.data.textWidth), SDL_SCANCODE_UP, text.data.textHeight, text.data.textWidth);
-                break;
-            case '[':
-                return better::horizontalNav(better::updateText(better::updateText(text,key),']'),SDL_SCANCODE_LEFT, text.data.textHeight, text.data.textWidth);
-                break;
-            case '<':
-                return better::horizontalNav(better::updateText(better::updateText(text,key),'>'),SDL_SCANCODE_LEFT, text.data.textHeight, text.data.textWidth);
                 break;
             case '\'':
                 return better::horizontalNav(better::updateText(better::updateText(text,'\''),'\''),SDL_SCANCODE_LEFT, text.data.textHeight, text.data.textWidth);
@@ -240,7 +252,12 @@ better::Text better::keyDown(better::Text text, SDL_Event event, SDL_Surface* su
             case '\t':
                 break;
             default:
-                return better::updateText(text,key);
+                if(key == '(' || key == '<' || key == '[') {
+                    return better::autoBracket(text,key);
+                }
+                else {
+                    return better::updateText(text,key);
+                }
         }
     }
     return text;
@@ -250,7 +267,7 @@ better::Text better::mouseButton(better::Text text, SDL_Event event, SDL_Surface
     better::Cursor tempCursor {better::findCursorPos(text.topLineNumber, text.topColumnNumber, event)};
     if(tempCursor.row > text.textEdit.size() - 1) {
         tempCursor.row = text.textEdit.size() - 1;
-        tempCursor.column = 0;
+        tempCursor.column = text.textEdit[text.textEdit.size() - 1].size();
     }
     if(tempCursor.column > text.textEdit[tempCursor.row].size()) {
         tempCursor.column = text.textEdit[tempCursor.row].size();
@@ -283,49 +300,47 @@ better::Text better::mouseButton(better::Text text, SDL_Event event, SDL_Surface
     int selectedMenu {better::selectMenu(text.data.menusToDraw)};
     int clickRow {event.button.y / 16};
     int clickColumn {event.button.x / 8};
-    if(selectedMenu > -1) {
-        if(clickColumn < 21) {
-            if(clickRow < text.data.menu.size() && event.button.y > 16) {
-                if(selectedMenu == 0) {
-                    if(clickRow == 2) {
-                        better::saveFile(text.textEdit, text.data.filename);
-                        better::resetMenus(text.data.menusToDraw);
-                    }
-                    else if(clickRow == 1) {
-                        better::saveFile(text.textEdit, text.data.filename);
-                        std::string tempFilename = better::fileDialog().string();
-                        text.data.clearHistory = true;
-                        text.textEdit = better::readFile(tempFilename);
-                        text.cursor = {0,0};
-                        text.topLineNumber = 0;
-                        text.topColumnNumber = 0;
-                        text.data.index = -1;
-                        text.data.isScroll = false;
-                        text.data.isCaps = false;
-                        text.data.isShift = false;
-                        text.data.menu.clear();
-                        text.data.filename = tempFilename;
-                        better::resetMenus(text.data.menusToDraw);
-                    }
-                    else if(clickRow == 3) {
-                        return text;
-                    }
-                }
-                else if(selectedMenu == 1) {
-                    if(clickRow == 1) {
-                                    
-                    }
-                    else if(clickRow == 2) {
-                                    
-                    }
-                    else if(clickRow == 3) {
-                                    
-                    }
-                }
-            }
+    if(selectedMenu == 0) {
+        if(clickRow == 2) {
+            better::saveFile(text.textEdit, text.data.filename);
+            better::resetMenus(text.data.menusToDraw);
+        }
+        else if(clickRow == 1) {
+            better::saveFile(text.textEdit, text.data.filename);
+            std::string tempFilename = better::fileDialog().string();
+            text.data.clearHistory = true;
+            text.textEdit = better::readFile(tempFilename);
+            text.cursor = {0,0};
+            text.topLineNumber = 0;
+            text.topColumnNumber = 0;
+            text.highlightStart = {0,0};
+            text.highlightEnd = {0,0};
+            text.data.index = -1;
+            text.data.isScroll = false;
+            text.data.isCaps = false;
+            text.data.isShift = false;
+            text.data.menu.clear();
+            text.data.filename = tempFilename;
+            better::resetMenus(text.data.menusToDraw);
+        }
+        else if(clickRow == 3) {
+            return text;
+        }
+    }
+    else if(selectedMenu == 1) {
+        if(clickRow == 1) {
+            
+        }
+        else if(clickRow == 2) {
+            
+        }
+        else if(clickRow == 3) {
+            
         }
     }
     text.cursor = tempCursor;
+    text.highlightStart = tempCursor;
+    text.highlightEnd = tempCursor;
     if(tempCursor.row != -1) {
         text.data.isScroll = false;
     }

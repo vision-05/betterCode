@@ -82,9 +82,11 @@ std::filesystem::path better::fileDialog() {
     }
     text.topColumnNumber = 0;
     text.topLineNumber = 0;
+    text.highlightStart = {0,0};
+    text.highlightEnd = {0,0};
 
     SDL_FillRect(surface, NULL, SDL_MapRGBA(surface->format, 0x22, 0x22, 0x22, 0xFF));
-    better::renderText(surface, text.textEdit, text.topLineNumber, text.topColumnNumber, 35, 100);
+    better::renderText(surface, text.textEdit, text.topLineNumber, text.topColumnNumber, 35, 100, text.highlightStart, text.highlightEnd);
     better::drawMenuBar(surface, menu, 0xDDDDDDFF, 0x666666FF, 800);
     SDL_UpdateWindowSurface(window);
     SDL_FillRect(surface, &screen, SDL_MapRGBA(surface->format, 0x22, 0x22, 0x22, 0xFF));
@@ -100,7 +102,7 @@ std::filesystem::path better::fileDialog() {
                 text.topLineNumber = newText.topLineNumber;
                 text.topColumnNumber = newText.topColumnNumber;
                 text.data.isScroll = true;
-                better::renderText(surface, text.textEdit, text.topLineNumber, text.topColumnNumber, 35, 100);
+                better::renderText(surface, text.textEdit, text.topLineNumber, text.topColumnNumber, 35, 100, text.highlightStart, text.highlightEnd);
                 SDL_UpdateWindowSurface(window);
                 SDL_FillRect(surface, &screen, SDL_MapRGBA(surface->format, 0x22, 0x22, 0x22, 0xFF));
             }
@@ -141,7 +143,7 @@ std::filesystem::path better::fileDialog() {
                         text.topColumnNumber = 0;
                         text.topLineNumber = 0;
 
-                        better::renderText(surface, text.textEdit, text.topLineNumber, text.topColumnNumber, 35, 100);
+                        better::renderText(surface, text.textEdit, text.topLineNumber, text.topColumnNumber, 35, 100, text.highlightStart, text.highlightEnd);
                         SDL_UpdateWindowSurface(window);
                         SDL_FillRect(surface, &screen, SDL_MapRGBA(surface->format, 0x22, 0x22, 0x22, 0xFF));
                         continue;
@@ -153,6 +155,8 @@ std::filesystem::path better::fileDialog() {
                     text.cursor = {0,0};
                     text.topColumnNumber = 0;
                     text.topLineNumber = 0;
+                    text.highlightStart = {0,0};
+                    text.highlightEnd = {0,0};
                     files = {};
                     folders = {};
 
@@ -175,7 +179,7 @@ std::filesystem::path better::fileDialog() {
                     text.topColumnNumber = 0;
                     text.topLineNumber = 0;
 
-                    better::renderText(surface, text.textEdit, text.topLineNumber, text.topColumnNumber, 35, 100);
+                    better::renderText(surface, text.textEdit, text.topLineNumber, text.topColumnNumber, 35, 100, text.highlightStart, text.highlightEnd);
                     SDL_UpdateWindowSurface(window);
                     SDL_FillRect(surface, &screen, SDL_MapRGBA(surface->format, 0x22, 0x22, 0x22, 0xFF));
                 }

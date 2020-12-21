@@ -147,7 +147,14 @@ void better::createLetter(SDL_Surface* surface, char letter, int column, int row
     better::renderLetter(surface, better::charCheck(letter, better::letters).arr, column, row, colorfg, colorbg);
 }
 
-void better::renderText(SDL_Surface* surface, immer::flex_vector<immer::flex_vector<char>> vector, int topLine, int topColumn, const int textHeight, const int textWidth) {
+void better::renderText(SDL_Surface* surface, immer::flex_vector<immer::flex_vector<char>> vector, int topLine, int topColumn, const int textHeight, const int textWidth, better::Cursor highlightStart, better::Cursor highlightEnd) {
+    bool highlight {false};
+    Uint32 colorfg {0x5588AAFF};
+    Uint32 colorbg {0x222222FF};
+    if(highlightEnd.row != highlightStart.row || highlightEnd.column != highlightStart.column) {
+        highlight = true;
+    }
+    
     int size = vector.size();
     if(vector.size() - 1 >= topLine + textHeight - 1) {
         size = topLine + textHeight - 1;
@@ -158,7 +165,13 @@ void better::renderText(SDL_Surface* surface, immer::flex_vector<immer::flex_vec
             colSize = topColumn + textWidth;
         }
         for(int j{topColumn}, otherj{}; j < colSize; ++j, ++otherj) {
-            better::createLetter(surface, vector[i][j], otherj, otheri, 0x5588AAFF, 0x222222FF); //render text line by line
+            if(highlight && ((i >= highlightStart.row && i <= highlightEnd.row) && (j >= highlightStart.column && j <= highlightEnd.column)) || (((highlightEnd.row != highlightStart.row && highlightEnd.column != highlightStart.column)) && ((i == highlightStart.row && j >= highlightStart.column) || (i == highlightEnd.row && j <= highlightEnd.column) || (i < highlightEnd.row && i > highlightStart.row)))) {
+                colorbg = 0x444444FF;
+            }
+            else {
+                colorbg = 0x222222FF;
+            }
+            better::createLetter(surface, vector[i][j], otherj, otheri, colorfg, colorbg); //render text line by line
         }
     }
 }

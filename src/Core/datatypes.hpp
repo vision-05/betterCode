@@ -37,6 +37,8 @@ struct Text {
     better::editorData data;
     int topLineNumber; //keeps top line number so can calculate new line being clicked on
     int topColumnNumber;
+    better::Cursor highlightStart {0,0};
+    better::Cursor highlightEnd {0,0};
 };
 
 struct charMapArr {
