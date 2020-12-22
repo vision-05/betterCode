@@ -62,7 +62,13 @@ better::Text mouseWheel(better::Text text, SDL_Event event, SDL_Surface* surface
 
 better::Text autoBracket(better::Text text, char bracket);
 
+better::Text pasteClipboard(better::Text text);
+
 void edit1(SDL_Window* window, std::string filename, const int textHeight, const int textWidth);
+
+void copyClipboard(better::Text text);
+
+better::Text cutClipboard(better::Text text);
 
 void resetMenus(bool* menus);
 
@@ -89,6 +95,43 @@ int main(int argc, char* argv[]) {
     better::edit1(window, filename, textHeight, textWidth);
     return 0;
 }
+
+void better::copyClipboard(better::Text text) {
+    std::string clipboardText {};
+    std::cout << text.highlightStart.row << ' ' << text.highlightStart.column << std::endl;
+    std::cout << text.highlightEnd.row << ' ' << text.highlightEnd.column << std::endl;
+    for(int i{text.highlightStart.row}; i <= text.highlightEnd.row; ++i) {
+        if(text.textEdit[i].size() == 0) {
+            clipboardText.push_back('\n');
+            continue;
+        }
+        for(int j{}; j < text.textEdit[i].size(); ++j) {
+            std::cout << i << ' ' << j << std::endl;
+            if(i == text.highlightStart.row && j >= text.highlightStart.column) {
+                clipboardText.push_back(text.textEdit[i][j]);
+            }
+            else if(i == text.highlightEnd.row && j < text.highlightEnd.column) {
+                clipboardText.push_back(text.textEdit[i][j]);
+            }
+            else if(i > text.highlightStart.row && i < text.highlightEnd.row) {
+                clipboardText.push_back(text.textEdit[i][j]);
+            }
+        }
+        clipboardText.push_back('\n');
+    }
+    std::cout << clipboardText << std::endl;
+    SDL_SetClipboardText(clipboardText.c_str());
+}
+
+better::Text better::cutClipboard(better::Text text) {
+    std::vector<better::Text> tempTexts {text};
+    better::copyClipboard(text);
+    text.cursor = text.highlightEnd;
+    for(int i{text.highlightEnd.column}; i >= text.highlightStart.column; --i) {
+        tempTexts.push_back(better::backspace(tempTexts.back())); //fix this part
+    }
+    return tempTexts.back();
+} 
 
 void better::edit1(SDL_Window* window, std::string filename, const int textHeight, const int textWidth) {
     std::vector<better::Text> texts {};
@@ -173,9 +216,22 @@ void better::edit1(SDL_Window* window, std::string filename, const int textHeigh
 }
 
 better::Text better::mouseButtonUp(better::Text text, SDL_Event event, SDL_Surface* surface, SDL_Cursor* guiCursor) {
-    text.highlightEnd = better::findCursorPos(text.topLineNumber, text.topColumnNumber, event);
-    if(text.highlightEnd.row == -1) {
+    better::Cursor tempCursor = better::findCursorPos(text.topLineNumber, text.topColumnNumber, event);
+    if(tempCursor.row == -1) {
+        return text;
+    }
+    text.highlightEnd = tempCursor;
+    if(text.highlightEnd.row < text.highlightStart.row || (text.highlightEnd.row == text.highlightStart.row && text.highlightEnd.column < text.highlightStart.column)) {
+        better::Cursor tempCursor = text.highlightEnd;
         text.highlightEnd = text.highlightStart;
+        text.highlightStart = tempCursor;
+        if(text.textEdit[text.cursor.row].size() > text.highlightEnd.column) {
+            text.cursor.column += 1;
+        }
+        else {
+            text.cursor.row += 1;
+            text.cursor.column = 0;
+        }
     }
     return text;
 }
@@ -273,7 +329,7 @@ better::Text better::mouseButton(better::Text text, SDL_Event event, SDL_Surface
         tempCursor.column = text.textEdit[tempCursor.row].size();
     }
 
-    if((event.button.y / 16) - 1 == -1) { //so why is this loop taking so much cpu power
+    if((event.button.y / 16) - 1 == -1) {
         tempCursor.column = event.button.x / 8;
         tempCursor.row = -1;
         text.data.isScroll = true;
@@ -304,6 +360,7 @@ better::Text better::mouseButton(better::Text text, SDL_Event event, SDL_Surface
         if(clickRow == 2) {
             better::saveFile(text.textEdit, text.data.filename);
             better::resetMenus(text.data.menusToDraw);
+            return text;
         }
         else if(clickRow == 1) {
             better::saveFile(text.textEdit, text.data.filename);
@@ -322,6 +379,7 @@ better::Text better::mouseButton(better::Text text, SDL_Event event, SDL_Surface
             text.data.menu.clear();
             text.data.filename = tempFilename;
             better::resetMenus(text.data.menusToDraw);
+            return text;
         }
         else if(clickRow == 3) {
             return text;
@@ -329,20 +387,25 @@ better::Text better::mouseButton(better::Text text, SDL_Event event, SDL_Surface
     }
     else if(selectedMenu == 1) {
         if(clickRow == 1) {
-            
+            better::resetMenus(text.data.menusToDraw);
+            return better::cutClipboard(text);
         }
         else if(clickRow == 2) {
-            
+            better::copyClipboard(text);
+            better::resetMenus(text.data.menusToDraw);
+            return text;
         }
         else if(clickRow == 3) {
-            
+            better::resetMenus(text.data.menusToDraw);
+            return text;
         }
     }
-    text.cursor = tempCursor;
-    text.highlightStart = tempCursor;
-    text.highlightEnd = tempCursor;
-    if(tempCursor.row != -1) {
+    
+    if(tempCursor.row != -1 ) {
         text.data.isScroll = false;
+        text.cursor = tempCursor;
+        text.highlightStart = tempCursor;
+        text.highlightEnd = tempCursor;
     }
     return text;
 }
