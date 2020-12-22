@@ -96,17 +96,34 @@ int main(int argc, char* argv[]) {
     return 0;
 }
 
-void better::copyClipboard(better::Text text) {
+better::Text better::pasteClipboard(better::Text text) {
     std::string clipboardText {};
-    std::cout << text.highlightStart.row << ' ' << text.highlightStart.column << std::endl;
-    std::cout << text.highlightEnd.row << ' ' << text.highlightEnd.column << std::endl;
+    std::vector<better::Text> tempTexts {text};
+    if(SDL_HasClipboardText()) {
+        clipboardText = SDL_GetClipboardText();
+        clipboardText.pop_back();
+        clipboardText.pop_back();
+        for(int i{}; i < clipboardText.size(); ++i) {
+            if(clipboardText[i] == '\n') {
+                tempTexts.push_back(better::newLine(tempTexts.back()));
+            }
+            else {
+                tempTexts.push_back(better::updateText(tempTexts.back(), clipboardText[i]));
+            }
+        }
+        return tempTexts.back();
+    }
+    return text;
+}
+
+void better::copyClipboard(better::Text text) { //fix copying if dragging backwards to highlight
+    std::string clipboardText {};
     for(int i{text.highlightStart.row}; i <= text.highlightEnd.row; ++i) {
         if(text.textEdit[i].size() == 0) {
             clipboardText.push_back('\n');
             continue;
         }
         for(int j{}; j < text.textEdit[i].size(); ++j) {
-            std::cout << i << ' ' << j << std::endl;
             if(i == text.highlightStart.row && j >= text.highlightStart.column) {
                 clipboardText.push_back(text.textEdit[i][j]);
             }
@@ -119,7 +136,6 @@ void better::copyClipboard(better::Text text) {
         }
         clipboardText.push_back('\n');
     }
-    std::cout << clipboardText << std::endl;
     SDL_SetClipboardText(clipboardText.c_str());
 }
 
@@ -382,6 +398,7 @@ better::Text better::mouseButton(better::Text text, SDL_Event event, SDL_Surface
             return text;
         }
         else if(clickRow == 3) {
+            better::resetMenus(text.data.menusToDraw);
             return text;
         }
     }
@@ -397,7 +414,7 @@ better::Text better::mouseButton(better::Text text, SDL_Event event, SDL_Surface
         }
         else if(clickRow == 3) {
             better::resetMenus(text.data.menusToDraw);
-            return text;
+            return better::pasteClipboard(text);
         }
     }
     
