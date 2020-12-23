@@ -70,6 +70,8 @@ void copyClipboard(better::Text text);
 
 better::Text cutClipboard(better::Text text);
 
+better::Text ctrlShortcuts(better::Text text);
+
 void resetMenus(bool* menus);
 
 int selectMenu(bool menus[]);
@@ -162,7 +164,7 @@ void better::edit1(SDL_Window* window, std::string filename, const int textHeigh
     std::string menus {" File  Edit  View  Settings "};
     std::vector<std::vector<std::string>> menuText {{"Open","Save","Exit"},{"Cut","Copy","Paste"},{},{"Edit Settings"}};
     
-    better::Text firstText {better::readFile(filename), {0,0}, {{false,false,false,false}, false, false, false, false, -1, {}, filename}, 0, 0};
+    better::Text firstText {better::readFile(filename), {0,0}, {{false,false,false,false}, false, false, false, false, false, -1, {}, filename}, 0, 0};
     texts.push_back(firstText);
     
     SDL_FillRect(surface, NULL, SDL_MapRGBA(surface->format, 0x22, 0x22, 0x22, 0xFF));
@@ -193,6 +195,12 @@ void better::edit1(SDL_Window* window, std::string filename, const int textHeigh
             }
             if(!state[SDL_SCANCODE_LSHIFT] && !state[SDL_SCANCODE_RSHIFT]) {
                 texts.back().data.isShift = false;
+            }
+            if(state[SDL_SCANCODE_RCTRL] || state[SDL_SCANCODE_LCTRL]) {
+                texts.back().data.isCtrl = true;
+            }
+            if(!state[SDL_SCANCODE_RCTRL] && !state[SDL_SCANCODE_LCTRL]) {
+                texts.back().data.isCtrl = false;
             }
 
             if(event.type == SDL_QUIT) {
@@ -288,6 +296,9 @@ better::Text better::keyDown(better::Text text, SDL_Event event, SDL_Surface* su
         else if(keycode == SDL_SCANCODE_LSHIFT || keycode == SDL_SCANCODE_RSHIFT) {
             return text;
         }
+        else if(keycode == SDL_SCANCODE_RCTRL || keycode == SDL_SCANCODE_LCTRL) {
+            return text;
+        }
         char key = {static_cast<char>(event.key.keysym.sym)};
         if(text.data.isShift) {
             key = better::shift(key);
@@ -302,6 +313,39 @@ better::Text better::keyDown(better::Text text, SDL_Event event, SDL_Surface* su
         if(text.data.isScroll) {
             text.topLineNumber = text.cursor.row;
             text.topColumnNumber = 0;
+        }
+        if(text.data.isCtrl) {
+            std::string tempFilename {};
+            switch(key) {
+                case 's':
+                    better::saveFile(text.textEdit, text.data.filename);
+                    return text;
+                case 'o':
+                    better::saveFile(text.textEdit, text.data.filename);
+                    tempFilename = better::fileDialog().string();
+                    text.data.clearHistory = true;
+                    text.textEdit = better::readFile(tempFilename);
+                    text.cursor = {0,0};
+                    text.topLineNumber = 0;
+                    text.topColumnNumber = 0;
+                    text.highlightStart = {0,0};
+                    text.highlightEnd = {0,0};
+                    text.data.index = -1;
+                    text.data.isScroll = false;
+                    text.data.isCaps = false;
+                    text.data.isShift = false;
+                    text.data.isCtrl = false;
+                    text.data.menu.clear();
+                    text.data.filename = tempFilename;
+                    return text;
+                case 'c':
+                    better::copyClipboard(text);
+                    return text;
+                case 'v':
+                    return better::pasteClipboard(text);
+                case 'x':
+                    return better::cutClipboard(text);
+            }
         }
         if(text.cursor.row == -1) {
             text.cursor.row = 0;
@@ -392,6 +436,7 @@ better::Text better::mouseButton(better::Text text, SDL_Event event, SDL_Surface
             text.data.isScroll = false;
             text.data.isCaps = false;
             text.data.isShift = false;
+            text.data.isCtrl = false;
             text.data.menu.clear();
             text.data.filename = tempFilename;
             better::resetMenus(text.data.menusToDraw);

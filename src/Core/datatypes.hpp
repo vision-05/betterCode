@@ -23,6 +23,7 @@ struct editorData {
     bool isShift = false;
     bool isCaps = false;
     bool isScroll = false;
+    bool isCtrl = false;
     bool clearHistory = false;
     int index = -1;
     std::vector<std::string> menu;
