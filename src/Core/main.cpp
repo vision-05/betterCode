@@ -64,6 +64,10 @@ better::Text autoBracket(better::Text text, char bracket);
 
 better::Text pasteClipboard(better::Text text);
 
+better::Text deleteHighlighted(better::Text text);
+
+better::Text handleKey(better::Text text, char key);
+
 void edit1(SDL_Window* window, std::string filename, const int textHeight, const int textWidth);
 
 void copyClipboard(better::Text text);
@@ -144,17 +148,26 @@ void better::copyClipboard(better::Text text) { //fix copying if dragging backwa
     SDL_SetClipboardText(clipboardText.c_str());
 }
 
-better::Text better::cutClipboard(better::Text text) {
+better::Text better::deleteHighlighted(better::Text text) {
     std::vector<better::Text> tempTexts {text};
-    better::copyClipboard(text);
     tempTexts.back().cursor = text.highlightEnd;
     tempTexts.back().cursor.column += 1;
+    int stopColumn {0};
     for(int i{tempTexts.back().cursor.row}; i >= tempTexts.back().highlightStart.row; --i) {
-        for(int j{tempTexts.back().cursor.column}; j >= 0; --j) {
+        if(i == tempTexts.back().highlightStart.row) {
+            stopColumn = tempTexts.back().highlightStart.column + 1;
+        }
+        for(int j{tempTexts.back().cursor.column}; j >= stopColumn; --j) {
             tempTexts.push_back(better::backspace(tempTexts.back()));
         }
     }
+    tempTexts.back().highlightEnd = tempTexts.back().highlightStart;
     return tempTexts.back();
+}
+
+better::Text better::cutClipboard(better::Text text) {
+    better::copyClipboard(text);
+    return better::deleteHighlighted(text);
 } 
 
 void better::edit1(SDL_Window* window, std::string filename, const int textHeight, const int textWidth) {
@@ -284,7 +297,6 @@ better::Text better::keyDown(better::Text text, SDL_Event event, SDL_Surface* su
     else if(event.key.keysym.scancode == SDL_SCANCODE_RIGHT || event.key.keysym.scancode == SDL_SCANCODE_LEFT) {
         return better::horizontalNav(text, event.key.keysym.scancode, text.data.textHeight, text.data.textWidth);
     }
-
     else if(event.key.keysym.scancode == SDL_SCANCODE_RETURN) {
         return better::newLine(text);
     }
@@ -352,37 +364,44 @@ better::Text better::keyDown(better::Text text, SDL_Event event, SDL_Surface* su
                 case 'x':
                     return better::cutClipboard(text);
             }
+            text.highlightEnd = text.highlightStart;
         }
         if(text.cursor.row == -1) {
             text.cursor.row = 0;
             better::resetMenus(text.data.menusToDraw);
         }
 
-        switch(key) {
-            case '\b':
-                return better::backspace(text);
-                break;
-            case '{':
-                return better::verticalNav(better::horizontalNav(better::updateText(better::newLine(better::newLine(better::updateText(text,key))),'}'), SDL_SCANCODE_LEFT, text.data.textHeight, text.data.textWidth), SDL_SCANCODE_UP, text.data.textHeight, text.data.textWidth);
-                break;
-            case '\'':
-                return better::horizontalNav(better::updateText(better::updateText(text,'\''),'\''),SDL_SCANCODE_LEFT, text.data.textHeight, text.data.textWidth);
-                break;
-            case '\"':
-                return better::horizontalNav(better::updateText(better::updateText(text,key),'\"'),SDL_SCANCODE_LEFT, text.data.textHeight, text.data.textWidth);
-                break;
-            case '\t':
-                break;
-            default:
-                if(key == '(' || key == '<' || key == '[') {
-                    return better::autoBracket(text,key);
-                }
-                else {
-                    return better::updateText(text,key);
-                }
+        if((text.highlightStart.row != text.highlightEnd.row) || (text.highlightEnd.column > text.highlightStart.column)) {
+            return better::handleKey(better::deleteHighlighted(text),key);
         }
+
+    return better::handleKey(text, key);
+        
     }
     return text;
+}
+
+better::Text better::handleKey(better::Text text, char key) {
+    text.highlightStart = text.cursor;
+    text.highlightEnd = text.cursor;
+    switch(key) {
+        case '\b':
+            return better::backspace(text);
+        case '{':
+            return better::verticalNav(better::horizontalNav(better::updateText(better::newLine(better::newLine(better::updateText(text,key))),'}'), SDL_SCANCODE_LEFT, text.data.textHeight, text.data.textWidth), SDL_SCANCODE_UP, text.data.textHeight, text.data.textWidth);
+        case '\'':
+            return better::horizontalNav(better::updateText(better::updateText(text,'\''),'\''),SDL_SCANCODE_LEFT, text.data.textHeight, text.data.textWidth);
+        case '\"':
+            return better::horizontalNav(better::updateText(better::updateText(text,key),'\"'),SDL_SCANCODE_LEFT, text.data.textHeight, text.data.textWidth);
+        case '\t':
+        default:
+            if(key == '(' || key == '<' || key == '[') {
+                return better::autoBracket(text,key);
+            }
+            else {
+                return better::updateText(text,key);
+            }
+    }
 }
 
 better::Text better::mouseButton(better::Text text, SDL_Event event, SDL_Surface* surface, SDL_Cursor* guiCursor) {
@@ -394,7 +413,6 @@ better::Text better::mouseButton(better::Text text, SDL_Event event, SDL_Surface
     if(tempCursor.column > text.textEdit[tempCursor.row].size()) {
         tempCursor.column = text.textEdit[tempCursor.row].size();
     }
-
     if((event.button.y / 16) - 1 == -1) {
         tempCursor.column = event.button.x / 8;
         tempCursor.row = -1;
