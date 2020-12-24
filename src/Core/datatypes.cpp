@@ -1,6 +1,6 @@
 //! @file
 //! This file contains all of the user defined structs used throughout the project
-
+//constexpr for textheight and textwidth, edit conditionals, get rid of ternaries
 #include "datatypes.hpp"
 #include <iostream>
 
