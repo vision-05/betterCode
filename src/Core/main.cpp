@@ -109,6 +109,9 @@ better::Text better::pasteClipboard(better::Text text) {
             if(clipboardText[i] == '\n') {
                 tempTexts.push_back(better::newLine(tempTexts.back()));
             }
+            else if(clipboardText[i] == '\r') {
+                continue;
+            }
             else {
                 tempTexts.push_back(better::updateText(tempTexts.back(), clipboardText[i]));
             }
@@ -144,9 +147,12 @@ void better::copyClipboard(better::Text text) { //fix copying if dragging backwa
 better::Text better::cutClipboard(better::Text text) {
     std::vector<better::Text> tempTexts {text};
     better::copyClipboard(text);
-    text.cursor = text.highlightEnd;
-    for(int i{text.highlightEnd.column}; i >= text.highlightStart.column; --i) {
-        tempTexts.push_back(better::backspace(tempTexts.back())); //fix this part
+    tempTexts.back().cursor = text.highlightEnd;
+    tempTexts.back().cursor.column += 1;
+    for(int i{tempTexts.back().cursor.row}; i >= tempTexts.back().highlightStart.row; --i) {
+        for(int j{tempTexts.back().cursor.column}; j >= 0; --j) {
+            tempTexts.push_back(better::backspace(tempTexts.back()));
+        }
     }
     return tempTexts.back();
 } 
