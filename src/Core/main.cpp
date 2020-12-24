@@ -1,7 +1,7 @@
 //! @file
 //! This is the main file of the project, containing the main event loop and renderer
 
-#define SDL_MAIN_HANDLED
+#define SDL_MAIN_HANDLED //done prereleaase
 //create constexpr for columnwidth and columnheight
 #include <SDL2-2.0.12/include/SDL.h>
 #include <immer/flex_vector.hpp>
