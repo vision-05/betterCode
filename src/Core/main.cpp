@@ -82,6 +82,8 @@ int selectMenu(bool menus[]);
 
 void quitApp(SDL_Cursor* cursor, SDL_Surface* surface, SDL_Window* window);
 
+bool operator!=(better::Text lhs, better::Text rhs);
+
 }
 
 int main(int argc, char* argv[]) {
@@ -100,6 +102,10 @@ int main(int argc, char* argv[]) {
     
     better::edit1(window, filename, textHeight, textWidth);
     return 0;
+}
+
+bool better::operator!=(better::Text lhs, better::Text rhs) {
+    return lhs.textEdit != rhs.textEdit;
 }
 
 better::Text better::pasteClipboard(better::Text text) {
@@ -227,12 +233,27 @@ void better::edit1(SDL_Window* window, std::string filename, const int textHeigh
                 return;
             }
 
-            if(event.type == SDL_KEYDOWN || event.type == SDL_MOUSEBUTTONDOWN || event.type == SDL_MOUSEMOTION || event.type == SDL_MOUSEWHEEL || event.type == SDL_MOUSEBUTTONUP) {
+            if(event.type == SDL_KEYDOWN && texts.back().data.isCtrl && event.key.keysym.sym == 'z') {
+                if(texts.size() > 1) {
+                    texts.pop_back();
+                    texts.shrink_to_fit();
+                }
+            }
+
+            else if(event.type == SDL_KEYDOWN || event.type == SDL_MOUSEBUTTONDOWN || event.type == SDL_MOUSEMOTION || event.type == SDL_MOUSEWHEEL || event.type == SDL_MOUSEBUTTONUP) {
                 better::Text tempText {(handlers[event.type])(texts.back(), event, surface, guiCursor)};
                 if(tempText.data.clearHistory) {
                     texts.clear();
+                    texts.push_back(tempText);
+                    texts.back().data.clearHistory = false;
                 }
-                texts.push_back(tempText);
+                if(tempText != texts.back()) {
+                    texts.push_back(tempText);
+                }
+                else {
+                    texts.pop_back();
+                    texts.push_back(tempText);
+                }
             }
             else {
                 continue;
@@ -374,7 +395,8 @@ better::Text better::keyDown(better::Text text, SDL_Event event, SDL_Surface* su
         if((text.highlightStart.row != text.highlightEnd.row) || (text.highlightEnd.column > text.highlightStart.column)) {
             return better::handleKey(better::deleteHighlighted(text),key);
         }
-
+    text.highlightEnd = text.cursor;
+    text.highlightStart = text.cursor;
     return better::handleKey(text, key);
         
     }
