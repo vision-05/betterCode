@@ -7,7 +7,7 @@
 #include <vector>
 
 #include <SDL2-2.0.12/include/SDL.h>
-#include <immer/flex_vector.hpp>
+#include <immer-0.6.2/immer/flex_vector.hpp>
 
 namespace better {
 

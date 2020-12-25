@@ -4,7 +4,7 @@
 #define RENDER_CHAR_HPP
 
 #include <SDL2-2.0.12/include/SDL.h>
-#include <immer/flex_vector.hpp>
+#include <immer-0.6.2/immer/flex_vector.hpp>
 #include <unordered_map>
 #include <array>
 

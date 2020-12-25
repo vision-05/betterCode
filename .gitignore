@@ -6,6 +6,10 @@
 *.lo
 *.o
 *.obj
+*.cmake
+*.vcxproj
+*.filters
+*.sln
 
 # Precompiled Headers
 *.gch

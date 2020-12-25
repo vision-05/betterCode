@@ -7,8 +7,8 @@
 #include <string>
 #include <filesystem>
 #include <vector>
-#include <immer/flex_vector.hpp>
-#include <immer/flex_vector_transient.hpp>
+#include <immer-0.6.2/immer/flex_vector.hpp>
+#include <immer-0.6.2/immer/flex_vector_transient.hpp>
 #include <SDL2-2.0.12/include/SDL.h>
 
 #include "renderChars.hpp"

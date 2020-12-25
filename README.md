@@ -7,4 +7,4 @@ SDL2 found here (latest version) https://www.libsdl.org/
 makefile example
 
 main: main.cpp datatypes.cpp fileUtils.cpp renderchars.cpp menubar.cpp
-	clang++ -O3 -std=c++20 -o BetterCode.exe main.cpp datatypes.cpp fileUtils.cpp renderchars.cpp menubar.cpp -m64 -I"pathToSDLLibInstall/" -I"pathToImmerLibInstall/immer-0.6.2/" -I"pathToImmerLibInstall/immer-0.6.2/immer/" -I"pathToImmerLibInstall/immer-0.6.2/immer/detail/rbts/" -lpathToSourceFolder/betterCode/src/Libs/SDL2main -lpathToSourceFolder/betterCode/src/Libs/SDL2
+	clang++ -O3 -std=c++20 -o BetterCode.exe main.cpp datatypes.cpp fileUtils.cpp renderchars.cpp menubar.cpp -m64 -I"pathToSDLLibInstall/" -I"pathToImmerLibInstall/immer-0.6.2/" -I"pathToImmerLibInstall/immer-0.6.2/immer/" -I"pathToImmerLibInstall/immer-0.6.2/immer/detail/rbts/" -lpathToSDLLibInstall/lib/SDL2main -lpathToSDLLibInstall/lib/SDL2

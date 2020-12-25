@@ -4,11 +4,9 @@
 #define SDL_MAIN_HANDLED //done prereleaase
 //create constexpr for columnwidth and columnheight
 #include <SDL2-2.0.12/include/SDL.h>
-#include <immer/flex_vector.hpp>
+#include <immer-0.6.2/immer/flex_vector.hpp>
 #include <vector>
-#include <thread>
 #include <string>
-#include <iostream>
 #include <unordered_map>
 
 #include "datatypes.hpp"
@@ -134,12 +132,14 @@ better::Text better::pasteClipboard(better::Text text) {
 void better::copyClipboard(better::Text text) { //fix copying if dragging backwards to highlight
     std::string clipboardText {};
     for(int i{text.highlightStart.row}; i <= text.highlightEnd.row; ++i) {
-        if(text.textEdit[i].size() == 0) {
-            clipboardText.push_back('\n');
-            continue;
-        }
         for(int j{}; j < text.textEdit[i].size(); ++j) {
-            if(i == text.highlightStart.row && j >= text.highlightStart.column) {
+            if(text.highlightStart.row == text.highlightEnd.row && j < text.highlightEnd.column && j >= text.highlightStart.column) {
+                clipboardText.push_back(text.textEdit[i][j]);
+            }
+            else if(text.highlightStart.row == text.highlightEnd.row) {
+                continue;
+            }
+            else if(i == text.highlightStart.row && j >= text.highlightStart.column) {
                 clipboardText.push_back(text.textEdit[i][j]);
             }
             else if(i == text.highlightEnd.row && j < text.highlightEnd.column) {
