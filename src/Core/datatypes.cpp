@@ -8,10 +8,11 @@ better::Text better::updateText(better::Text textEdit, char newChar) {
     const int textHeight {60};
     const int textWidth {150};
     //change the topline number variable if needs to scroll
-    bool endOfLine {textEdit.cursor.column == textEdit.textEdit[textEdit.cursor.row].size() ? true : false};
-    bool endOfScreen {textEdit.cursor.column + 1 >= textEdit.topColumnNumber + textWidth ? true : false};
+    bool endOfLine {textEdit.cursor.column == textEdit.textEdit[textEdit.cursor.row].size()};
+    bool endOfScreen {textEdit.cursor.column + 1 >= textEdit.topColumnNumber + textWidth};
     immer::flex_vector<char> line {endOfLine ? textEdit.textEdit[textEdit.cursor.row].push_back(newChar) : textEdit.textEdit[textEdit.cursor.row].insert(textEdit.cursor.column, newChar)}; //add the character to the line (change to insert unless the cursor is at the end of the line)
-    return {textEdit.textEdit.set(textEdit.cursor.row,line),{textEdit.cursor.row, textEdit.cursor.column + 1}, {{false,false,false,false},textEdit.data.isShift,textEdit.data.isCaps,textEdit.data.isScroll,textEdit.data.isCtrl,textEdit.data.clearHistory,-1,textEdit.data.menu,textEdit.data.filename}, textEdit.topLineNumber, endOfScreen ? textEdit.topColumnNumber + 1 : textEdit.topColumnNumber, textEdit.highlightStart, textEdit.highlightEnd};
+    better::Text tempText {textEdit.textEdit.set(textEdit.cursor.row,line),{textEdit.cursor.row, textEdit.cursor.column + 1}, {{false,false,false,false},textEdit.data.isShift,textEdit.data.isCaps,textEdit.data.isScroll,textEdit.data.isCtrl,textEdit.data.clearHistory,-1,textEdit.data.menu,textEdit.data.filename}, textEdit.topLineNumber, endOfScreen ? textEdit.topColumnNumber + 1 : textEdit.topColumnNumber, textEdit.highlightStart, textEdit.highlightEnd};
+    return tempText;
 }
 
 better::Text better::backspace(better::Text text) { //couple of bugs with backspace, figure out once got all chars rendering

@@ -147,10 +147,12 @@ void better::createLetter(SDL_Surface* surface, char letter, int column, int row
     better::renderLetter(surface, better::charCheck(letter, better::letters).arr, column, row, colorfg, colorbg);
 }
 
-void better::renderText(SDL_Surface* surface, immer::flex_vector<immer::flex_vector<char>> vector, int topLine, int topColumn, const int textHeight, const int textWidth, better::Cursor highlightStart, better::Cursor highlightEnd) {
+void better::renderText(SDL_Surface* surface, immer::flex_vector<immer::flex_vector<char>> vector, int topLine, int topColumn, const int textHeight, const int textWidth, better::Cursor highlightStart, better::Cursor highlightEnd, Uint32 colorbg, Uint32 colorfg, Uint32 colorhighlight, Uint32 colorparens, Uint32 colorcomments) {
     bool highlight {false};
-    Uint32 colorfg {0x5588AAFF};
-    Uint32 colorbg {0x222222FF};
+    bool multilineComment {false};
+    bool comment {false};
+    Uint32 foreground {colorfg};
+    Uint32 background {colorbg};
     if(highlightEnd.row != highlightStart.row || highlightEnd.column != highlightStart.column) {
         highlight = true;
     }
@@ -164,14 +166,43 @@ void better::renderText(SDL_Surface* surface, immer::flex_vector<immer::flex_vec
         if(vector[i].size() >= topColumn + textWidth) {
             colSize = topColumn + textWidth;
         }
+        comment = false;
         for(int j{topColumn}, otherj{}; j < colSize; ++j, ++otherj) {
             if(highlight && ((i >= highlightStart.row && i <= highlightEnd.row) && (j >= highlightStart.column && j <= highlightEnd.column)) || (((highlightEnd.row != highlightStart.row && highlightEnd.column != highlightStart.column)) && ((i == highlightStart.row && j >= highlightStart.column) || (i == highlightEnd.row && j <= highlightEnd.column) || (i < highlightEnd.row && i > highlightStart.row)))) {
-                colorbg = 0x444444FF;
+                background = colorhighlight;
             }
             else {
-                colorbg = 0x222222FF;
+                background = colorbg;
             }
-            better::createLetter(surface, vector[i][j], otherj, otheri, colorfg, colorbg); //render text line by line
+            if(multilineComment && vector[i][j] == '/') {
+                if(vector[i][j - 1] == '*') {
+                    multilineComment = false;
+                    foreground = colorcomments;
+                }
+            }
+            else if(comment || multilineComment) {
+                foreground = colorcomments;
+            }
+            else if(vector[i][j] == '/') {
+                foreground = colorparens;
+                if(j < vector[i].size() - 1) {
+                    if(vector[i][j + 1] == '/') {
+                        comment = true;
+                        foreground = colorcomments;
+                    }
+                    else if(vector[i][j + 1] == '*') {
+                        multilineComment = true;
+                        foreground = colorcomments;
+                    }
+                } 
+            }
+            else if(vector[i][j] == '\'' || vector[i][j] == '!' || vector[i][j] == '*' || vector[i][j] == '%' || vector[i][j] == '^' || vector[i][j] == '&' || vector[i][j] == '|' || vector[i][j] == '=' || vector[i][j] == '+' || vector[i][j] == '-' || vector[i][j] == '(' || vector[i][j] == ')' || vector[i][j] == '<' || vector[i][j] == '>'|| vector[i][j] == '[' || vector[i][j] == ']' || vector[i][j] == '{' || vector[i][j] == '}' || vector[i][j] == '\"') {
+                foreground = colorparens;
+            }
+            else {
+                foreground = colorfg;
+            }
+            better::createLetter(surface, vector[i][j], otherj, otheri, foreground, background); //render text line by line
         }
     }
 }
