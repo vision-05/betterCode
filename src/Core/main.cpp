@@ -8,7 +8,6 @@
 #include <vector>
 #include <string>
 #include <unordered_map>
-#include <iostream>
 
 #include "datatypes.hpp"
 #include "fileUtils.hpp"
@@ -328,6 +327,7 @@ better::Text better::keyDown(better::Text text, SDL_Event event, SDL_Surface* su
         return better::horizontalNav(text, event.key.keysym.scancode, text.data.textHeight, text.data.textWidth);
     }
     else if(event.key.keysym.scancode == SDL_SCANCODE_RETURN) {
+        text.highlightStart = text.highlightEnd;
         return better::newLine(text);
     }
 
@@ -417,14 +417,12 @@ better::Text better::handleKey(better::Text text, char key) {
     switch(key) {
         case '\b':
             return better::backspace(text);
-        case '{':
-            return better::verticalNav(better::horizontalNav(better::updateText(better::newLine(better::newLine(better::updateText(text,key))),'}'), SDL_SCANCODE_LEFT, text.data.textHeight, text.data.textWidth), SDL_SCANCODE_UP, text.data.textHeight, text.data.textWidth);
         case '\'':
             return better::horizontalNav(better::updateText(better::updateText(text,'\''),'\''),SDL_SCANCODE_LEFT, text.data.textHeight, text.data.textWidth);
         case '\"':
             return better::horizontalNav(better::updateText(better::updateText(text,key),'\"'),SDL_SCANCODE_LEFT, text.data.textHeight, text.data.textWidth);
         default:
-            if(key == '(' || key == '<' || key == '[') {
+            if(key == '(' || key == '{' || key == '[') {
                 return better::autoBracket(text,key);
             }
             else {

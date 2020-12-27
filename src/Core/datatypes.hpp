@@ -57,6 +57,8 @@ Uint8 getGreen(Uint32 color);
 Uint8 getBlue(Uint32 color);
 Uint8 getAlpha(Uint32 color);
 
+int getPreviousIndentLevel(better::Text text, int row);
+
 }
 
 #endif

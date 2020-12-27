@@ -25,6 +25,9 @@ better::Text better::backspace(better::Text text) { //couple of bugs with backsp
     immer::flex_vector<char> newLine;
 
     if(text.cursor.column > 0) {
+        if(text.topColumnNumber == text.cursor.column) {
+            text.topColumnNumber -= 1; 
+        }
         newLine = text.textEdit[text.cursor.row].erase(text.cursor.column - 1); //make case for deleting newline
     }
     else {
@@ -47,9 +50,19 @@ better::Text better::backspace(better::Text text) { //couple of bugs with backsp
 better::Text better::newLine(better::Text textEdit) { //create cases for the following: newline at start of line, newline at end of line, newline in middle of line, newline at end of text
     const int textWidth {150};
     const int textHeight {60};
+
+    std::vector<better::Text> texts {};
+
     bool endOfText {textEdit.cursor.row == textEdit.textEdit.size() - 1 ? true : false};
     bool textSizeRightSize {textEdit.textEdit.size() > (textHeight - 1) ? true : false}; //if end of text make sure to not just append a new row
-    return {endOfText ? textEdit.textEdit.set(textEdit.cursor.row, textEdit.textEdit[textEdit.cursor.row].take(textEdit.cursor.column)).push_back(textEdit.textEdit[textEdit.cursor.row].drop(textEdit.cursor.column)) : textEdit.textEdit.insert(textEdit.cursor.row + 1, textEdit.textEdit[textEdit.cursor.row].drop(textEdit.cursor.column)).set(textEdit.cursor.row, textEdit.textEdit[textEdit.cursor.row].take(textEdit.cursor.column)), {textEdit.cursor.row + 1, 0}, {{false,false,false,false},textEdit.data.isShift,textEdit.data.isCaps,textEdit.data.isScroll,textEdit.data.isCtrl,textEdit.data.clearHistory,-1,textEdit.data.menu,textEdit.data.filename}, endOfText ? (textSizeRightSize ? textEdit.topLineNumber + 1 : 0) : textEdit.topLineNumber, 0, textEdit.highlightStart, textEdit.highlightEnd}; //insert newline unless at bottom
+    better::Text newText {endOfText ? textEdit.textEdit.set(textEdit.cursor.row, textEdit.textEdit[textEdit.cursor.row].take(textEdit.cursor.column)).push_back(textEdit.textEdit[textEdit.cursor.row].drop(textEdit.cursor.column)) : textEdit.textEdit.insert(textEdit.cursor.row + 1, textEdit.textEdit[textEdit.cursor.row].drop(textEdit.cursor.column)).set(textEdit.cursor.row, textEdit.textEdit[textEdit.cursor.row].take(textEdit.cursor.column)), {textEdit.cursor.row + 1, 0}, {{false,false,false,false},textEdit.data.isShift,textEdit.data.isCaps,textEdit.data.isScroll,textEdit.data.isCtrl,textEdit.data.clearHistory,-1,textEdit.data.menu,textEdit.data.filename}, endOfText ? (textSizeRightSize ? textEdit.topLineNumber + 1 : 0) : textEdit.topLineNumber, 0, textEdit.highlightStart, textEdit.highlightEnd}; //insert newline unless at bottom
+    int prevIndent {better::getPreviousIndentLevel(textEdit, textEdit.cursor.row)};
+    texts.push_back(newText);
+    for(int i{}; i < prevIndent; ++i) {
+        texts.push_back(better::updateText(texts.back(),' '));
+    }
+    //create new case for between {},[] and ()
+    return texts.back();
 }
 
 better::charMapArr better::makeCharMapArr(::Uint8 charArray[16]) {
@@ -81,3 +94,17 @@ Uint8 better::getBlue(Uint32 color) {
 Uint8 better::getAlpha(Uint32 color) {
     return static_cast<Uint8>(color & 0x000000FF);
 }
+
+int better::getPreviousIndentLevel(better::Text text, int row) {
+    int notSpace {0};
+    for(int i{}; i < text.textEdit[row].size(); ++i) {
+        if(text.textEdit[row][i] == ' ') {
+            notSpace++;
+        }
+        else {
+            break;
+        }
+    }
+    return notSpace;
+}
+
