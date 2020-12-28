@@ -11,6 +11,14 @@
 
 namespace better {
 
+constexpr int textWidth() {
+    return 150;
+}
+
+constexpr int textHeight() {
+    return 60;
+}
+
 struct Cursor { //store the line number and column number of the cursor
     int row;
     int column;
@@ -51,6 +59,7 @@ better::charMapArr makeCharMapArr(::Uint8 charArray[16]);
 better::Text updateText(better::Text textEdit, char newChar);
 better::Text backspace(better::Text textEdit);
 better::Text newLine(better::Text textEdit);
+better::Text tab(better::Text text);
 
 Uint8 getRed(Uint32 color);
 Uint8 getGreen(Uint32 color);

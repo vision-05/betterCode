@@ -2,7 +2,6 @@
 //! This file handles all of the file stream functionality of the program
 
 #include "fileUtils.hpp"
-#include <iostream>
 
 int better::saveFile(immer::flex_vector<immer::flex_vector<char>> contents, std::string filename) {
     std::string buffer {""};

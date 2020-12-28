@@ -1,7 +1,7 @@
 //! @file
 //! This is the main file of the project, containing the main event loop and renderer
 
-#define SDL_MAIN_HANDLED //done prereleaase
+#define SDL_MAIN_HANDLED //reformat code and fix highlighting bugs!!!
 //create constexpr for columnwidth and columnheight
 #include <SDL2-2.0.12/include/SDL.h>
 #include <immer-0.6.2/immer/flex_vector.hpp>
@@ -46,8 +46,6 @@ char unshiftLetter(char key);
 //! better::edit1 initialises a text editor the size of the window passed by its pointer.
 //! It also reads in the file into its own text buffer, and contains the event loop for that text edit.
 
-better::Text tab(better::Text text);
-
 better::Text mouseMotion(better::Text text, SDL_Event event, SDL_Surface* surface, SDL_Cursor* guiCursor);
 
 better::Text keyDown(better::Text text, SDL_Event event, SDL_Surface* surface, SDL_Cursor* guiCursor);
@@ -84,7 +82,7 @@ bool operator!=(better::Text lhs, better::Text rhs);
 
 }
 
-int main(int argc, char* argv[]) {
+int WinMain(int argc, char* argv[]) {
     SDL_SetMainReady();
     SDL_Init(SDL_INIT_VIDEO);
 
@@ -328,7 +326,23 @@ better::Text better::keyDown(better::Text text, SDL_Event event, SDL_Surface* su
     }
     else if(event.key.keysym.scancode == SDL_SCANCODE_RETURN) {
         text.highlightStart = text.highlightEnd;
-        return better::newLine(text);
+        std::vector<better::Text> texts {text}; //fix scrolling here for newline near bottom of text
+        
+        if((text.cursor.column - 1 > -1) && ((text.textEdit[text.cursor.row][text.cursor.column - 1] == '{' && text.textEdit[text.cursor.row][text.cursor.column] == '}') || (text.textEdit[text.cursor.row][text.cursor.column - 1] == '(' && text.textEdit[text.cursor.row][text.cursor.column] == ')'))) {
+            if(texts.back().cursor.row != texts.back().textEdit.size() - 1 && texts.back().cursor.row >= texts.back().topLineNumber + better::textHeight() - 2) {
+                texts.back().topLineNumber += 3;
+            }
+            texts.push_back(better::newLine(better::newLine(texts.back())));
+            texts.push_back(better::verticalNav(texts.back(),SDL_SCANCODE_UP, better::textHeight(), better::textWidth()));
+            texts.push_back(better::tab(texts.back()));
+        }
+        else {
+            if(texts.back().cursor.row != texts.back().textEdit.size() - 1 && texts.back().cursor.row >= texts.back().topLineNumber + better::textHeight() - 2) {
+                texts.back().topLineNumber += 1;
+            }
+            texts.push_back(better::newLine(texts.back()));
+        }
+        return texts.back();
     }
 
     else if(event.key.keysym.scancode == SDL_SCANCODE_TAB) {
@@ -358,7 +372,7 @@ better::Text better::keyDown(better::Text text, SDL_Event event, SDL_Surface* su
         if(text.data.isCaps) {
             key = better::shiftLetter(key);
         }
-        if(text.data.isScroll) {
+        if(text.data.isScroll) { //change this
             text.topLineNumber = text.cursor.row;
             text.topColumnNumber = 0;
         }
@@ -533,10 +547,6 @@ better::Text better::mouseMotion(better::Text text, SDL_Event event, SDL_Surface
     }
     SDL_SetCursor(guiCursor);
     return text;
-}
-
-better::Text better::tab(better::Text text) {
-    return better::updateText(better::updateText(better::updateText(better::updateText(text,' '),' '),' '),' ');
 }
 
 void better::quitApp(SDL_Cursor* cursor, SDL_Surface* surface, SDL_Window* window) {

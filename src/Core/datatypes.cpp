@@ -2,7 +2,6 @@
 //! This file contains all of the user defined structs used throughout the project
 //constexpr for textheight and textwidth, edit conditionals, get rid of ternaries
 #include "datatypes.hpp"
-#include <iostream>
 
 better::Text better::updateText(better::Text textEdit, char newChar) {
     const int textHeight {60};
@@ -55,6 +54,7 @@ better::Text better::newLine(better::Text textEdit) { //create cases for the fol
 
     bool endOfText {textEdit.cursor.row == textEdit.textEdit.size() - 1 ? true : false};
     bool textSizeRightSize {textEdit.textEdit.size() > (textHeight - 1) ? true : false}; //if end of text make sure to not just append a new row
+    
     better::Text newText {endOfText ? textEdit.textEdit.set(textEdit.cursor.row, textEdit.textEdit[textEdit.cursor.row].take(textEdit.cursor.column)).push_back(textEdit.textEdit[textEdit.cursor.row].drop(textEdit.cursor.column)) : textEdit.textEdit.insert(textEdit.cursor.row + 1, textEdit.textEdit[textEdit.cursor.row].drop(textEdit.cursor.column)).set(textEdit.cursor.row, textEdit.textEdit[textEdit.cursor.row].take(textEdit.cursor.column)), {textEdit.cursor.row + 1, 0}, {{false,false,false,false},textEdit.data.isShift,textEdit.data.isCaps,textEdit.data.isScroll,textEdit.data.isCtrl,textEdit.data.clearHistory,-1,textEdit.data.menu,textEdit.data.filename}, endOfText ? (textSizeRightSize ? textEdit.topLineNumber + 1 : 0) : textEdit.topLineNumber, 0, textEdit.highlightStart, textEdit.highlightEnd}; //insert newline unless at bottom
     int prevIndent {better::getPreviousIndentLevel(textEdit, textEdit.cursor.row)};
     texts.push_back(newText);
@@ -105,6 +105,9 @@ int better::getPreviousIndentLevel(better::Text text, int row) {
             break;
         }
     }
-    return notSpace;
+    return notSpace;    
 }
 
+better::Text better::tab(better::Text text) {
+    return better::updateText(better::updateText(better::updateText(better::updateText(text,' '),' '),' '),' ');
+}
