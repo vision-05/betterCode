@@ -147,7 +147,7 @@ void better::createLetter(SDL_Surface* surface, char letter, int column, int row
     better::renderLetter(surface, better::charCheck(letter, better::letters).arr, column, row, colorfg, colorbg);
 }
 
-void better::renderText(SDL_Surface* surface, immer::flex_vector<immer::flex_vector<char>> vector, int topLine, int topColumn, const int textHeight, const int textWidth, better::Cursor highlightStart, better::Cursor highlightEnd, Uint32 colorbg, Uint32 colorfg, Uint32 colorhighlight, Uint32 colorparens, Uint32 colorcomments) {
+void better::renderText(SDL_Surface* surface, immer::flex_vector<immer::flex_vector<char>> vector, int topLine, int topColumn, int textHeight, int textWidth, better::Cursor highlightStart, better::Cursor highlightEnd, Uint32 colorbg, Uint32 colorfg, Uint32 colorhighlight, Uint32 colorparens, Uint32 colorcomments) {
     bool highlight {false};
     bool multilineComment {false};
     bool comment {false};
@@ -225,7 +225,10 @@ Uint32 better::unpackUint8Bit(int index, Uint8 number, Uint32 color, Uint32 colo
     return result;
 }
 
-better::Text better::scroll(better::Text text, SDL_Event event, const int textHeight, const int textWidth) { //make sure not to move cursor
+better::Text better::scroll(better::Text text, SDL_Event event) { //make sure not to move cursor
+    int textHeight {text.data.textHeight};
+    int textWidth {text.data.textWidth};
+    
     int row {text.topLineNumber + textHeight};
     int column {text.topColumnNumber + textWidth};
 

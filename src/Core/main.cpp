@@ -1,32 +1,33 @@
 //! @file
 //! This is the main file of the project, containing the main event loop and renderer
 
-#define SDL_MAIN_HANDLED //reformat code and fix highlighting bugs!!!
-//create constexpr for columnwidth and columnheight
+#define SDL_MAIN_HANDLED //reformat code and fix highlighting bugs!!! Also create loading bar for save, and allow multiple editing windows
+//add scroll bars for horizontal and vertical nav
 #include <SDL2-2.0.12/include/SDL.h>
 #include <immer-0.6.2/immer/flex_vector.hpp>
 #include <vector>
 #include <string>
 #include <unordered_map>
+#include <iostream>
 
 #include "datatypes.hpp"
 #include "fileUtils.hpp"
 #include "renderchars.hpp"
 #include "menubar.hpp"
 
-//Progress bar for saving, etc
+//Progress bar for saving, etc (maybe try save sound)
 
 namespace better { //TODO: highlighting
 
 //! better::verticalNav scrolls the text vertically based on arrow keys. This is done incrementing or decrementing the variable topLine.
 //! The topLine variable tells the render function to start rendering at that line in the text buffer.
 
-better::Text verticalNav(better::Text text, SDL_Keycode key, const int textHeight, const int textWidth);
+better::Text verticalNav(better::Text text, SDL_Keycode key);
 
 //! better::horizontalNav essentially scrolls the text horizontally based on arrow keys. This is done incrementing or decrementing the variable topColumn.
 //! The topColumn variable tells the render function to start rendering at that position in each line of the text buffer.
 
-better::Text horizontalNav(better::Text text, SDL_Keycode key, const int textHeight, const int textWidth);
+better::Text horizontalNav(better::Text text, SDL_Keycode key);
 
 //! better::shift "shifts" every key on the keyboard that has an alternate key.
 //! This function is currently configured for ascii Us Windows keyboards in ISO configuration.
@@ -64,7 +65,7 @@ better::Text deleteHighlighted(better::Text text);
 
 better::Text handleKey(better::Text text, char key);
 
-void edit1(SDL_Window* window, std::string filename, const int textHeight, const int textWidth, Uint32 colorbg, Uint32 colorfg, Uint32 colorhighlight, Uint32 colorparens, Uint32 colorcomments);
+void edit1(SDL_Window* window, std::string filename, int textHeight, int textWidth, Uint32 colorbg, Uint32 colorfg, Uint32 colorhighlight, Uint32 colorparens, Uint32 colorcomments);
 
 void copyClipboard(better::Text text);
 
@@ -91,10 +92,10 @@ int WinMain(int argc, char* argv[]) {
     SDL_Window* window = SDL_CreateWindow("Better Code",
                                           SDL_WINDOWPOS_UNDEFINED,
                                           SDL_WINDOWPOS_UNDEFINED,
-                                          1200,960,0);
+                                          1200,960,SDL_WINDOW_RESIZABLE);
 
-    const int textHeight {60};
-    const int textWidth {150};
+    int textHeight {60};
+    int textWidth {150};
     Uint32 colorbg {0x222222FF};
     Uint32 colorfg {0x5588AAFF};
     Uint32 colorhighlight {0x444444FF};
@@ -179,7 +180,7 @@ better::Text better::cutClipboard(better::Text text) {
     return better::deleteHighlighted(text);
 } 
 
-void better::edit1(SDL_Window* window, std::string filename, const int textHeight, const int textWidth, Uint32 colorbg, Uint32 colorfg, Uint32 colorhighlight, Uint32 colorparens, Uint32 colorcomments) {
+void better::edit1(SDL_Window* window, std::string filename, int textHeight, int textWidth, Uint32 colorbg, Uint32 colorfg, Uint32 colorhighlight, Uint32 colorparens, Uint32 colorcomments) {
     std::vector<better::Text> texts {};
 
     SDL_Cursor* guiCursor {SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_IBEAM)};
@@ -192,7 +193,7 @@ void better::edit1(SDL_Window* window, std::string filename, const int textHeigh
     std::string menus {" File  Edit  View  Settings "};
     std::vector<std::vector<std::string>> menuText {{"Open","Save","Exit"},{"Cut","Copy","Paste"},{},{"Edit Settings"}};
     
-    better::Text firstText {better::readFile(filename), {0,0}, {{false,false,false,false}, false, false, false, false, false, -1, {}, filename}, 0, 0, {0,0}, {0,0}};
+    better::Text firstText {better::readFile(filename), {0,0}, {{false,false,false,false}, false, false, false, false, false, -1, {}, filename, 60, 150}, 0, 0, {0,0}, {0,0}};
     texts.push_back(firstText);
     
     SDL_FillRect(surface, NULL, SDL_MapRGBA(surface->format, 0x22, 0x22, 0x22, 0xFF));
@@ -235,6 +236,23 @@ void better::edit1(SDL_Window* window, std::string filename, const int textHeigh
                 better::quitApp(guiCursor, surface, window);
                 return;
             }
+            else if(event.type == SDL_WINDOWEVENT) {
+                if(event.window.event == SDL_WINDOWEVENT_RESIZED) {
+                    screen.h = event.window.data2 - 16;
+                    screen.w = event.window.data1;
+                    for(int i{}; i < texts.size(); ++i) {
+                        texts[i].data.textHeight = event.window.data2 / 16;
+                        texts[i].data.textWidth = event.window.data1 / 8;
+                    }
+                    SDL_FreeSurface(surface);
+                    surface = SDL_GetWindowSurface(window);
+                    SDL_FillRect(surface, NULL, SDL_MapRGBA(surface->format, 0x22, 0x22, 0x22, 0xFF));
+                    better::drawMenuBar(surface, menus, 0xDDDDDDFF, 0x666666FF, event.window.data1);
+                    better::renderText(surface, texts.back().textEdit, texts.back().topLineNumber, texts.back().topColumnNumber, texts.back().data.textHeight, texts.back().data.textWidth, texts.back().highlightStart, texts.back().highlightEnd, colorbg, colorfg, colorhighlight, colorparens, colorcomments);
+                    SDL_UpdateWindowSurface(window);
+                    continue;
+                }
+            }
 
             if(event.type == SDL_KEYDOWN && texts.back().data.isCtrl && event.key.keysym.sym == 'z') {
                 if(texts.size() > 1) {
@@ -244,7 +262,7 @@ void better::edit1(SDL_Window* window, std::string filename, const int textHeigh
             }
 
             else if(event.type == SDL_KEYDOWN || event.type == SDL_MOUSEBUTTONDOWN || event.type == SDL_MOUSEMOTION || event.type == SDL_MOUSEWHEEL || event.type == SDL_MOUSEBUTTONUP) {
-                better::Text textTemp {texts.back().textEdit, {texts.back().cursor.row,texts.back().cursor.column}, {{texts.back().data.menusToDraw[0],texts.back().data.menusToDraw[1],texts.back().data.menusToDraw[2],texts.back().data.menusToDraw[3]}, texts.back().data.isShift, texts.back().data.isCaps, texts.back().data.isScroll, texts.back().data.isCtrl, texts.back().data.clearHistory, texts.back().data.index, texts.back().data.menu, texts.back().data.filename}, texts.back().topLineNumber, texts.back().topColumnNumber, texts.back().highlightStart, texts.back().highlightEnd};
+                better::Text textTemp {texts.back().textEdit, {texts.back().cursor.row,texts.back().cursor.column}, {{texts.back().data.menusToDraw[0],texts.back().data.menusToDraw[1],texts.back().data.menusToDraw[2],texts.back().data.menusToDraw[3]}, texts.back().data.isShift, texts.back().data.isCaps, texts.back().data.isScroll, texts.back().data.isCtrl, texts.back().data.clearHistory, texts.back().data.index, texts.back().data.menu, texts.back().data.filename, texts.back().data.textHeight, texts.back().data.textWidth}, texts.back().topLineNumber, texts.back().topColumnNumber, texts.back().highlightStart, texts.back().highlightEnd};
                 better::Text tempText {(handlers[event.type])(textTemp, event, surface, guiCursor)};
                 if(tempText.data.clearHistory) {
                     texts.clear();
@@ -264,7 +282,7 @@ void better::edit1(SDL_Window* window, std::string filename, const int textHeigh
             }
 
             SDL_FillRect(surface, &screen, SDL_MapRGBA(surface->format, 0x22, 0x22, 0x22, 0xFF));
-            better::renderText(surface, texts.back().textEdit, texts.back().topLineNumber, texts.back().topColumnNumber, textHeight, textWidth, texts.back().highlightStart, texts.back().highlightEnd, colorbg, colorfg, colorhighlight, colorparens, colorcomments);
+            better::renderText(surface, texts.back().textEdit, texts.back().topLineNumber, texts.back().topColumnNumber, texts.back().data.textHeight, texts.back().data.textWidth, texts.back().highlightStart, texts.back().highlightEnd, colorbg, colorfg, colorhighlight, colorparens, colorcomments);
             if(!texts.back().data.isScroll) {
                 better::renderCursor(surface, texts.back().cursor.column, texts.back().cursor.row, texts.back().topLineNumber, texts.back().topColumnNumber);
             }
@@ -306,38 +324,38 @@ better::Text better::mouseButtonUp(better::Text text, SDL_Event event, SDL_Surfa
 
 better::Text better::autoBracket(better::Text text, char letter) {
     int num {letter == '(' ? 1 : 2};
-    return better::horizontalNav(better::updateText(better::updateText(text,letter),letter + num),SDL_SCANCODE_LEFT, text.data.textHeight, text.data.textWidth);
+    return better::horizontalNav(better::updateText(better::updateText(text,letter),letter + num),SDL_SCANCODE_LEFT);
 }
 
 better::Text better::mouseWheel(better::Text text, SDL_Event event, SDL_Surface* surface, SDL_Cursor* guiCursor) {
     text.data.isScroll = true;
-    return better::scroll(text, event, text.data.textHeight, text.data.textWidth);
+    return better::scroll(text, event);
 }
 
 better::Text better::keyDown(better::Text text, SDL_Event event, SDL_Surface* surface, SDL_Cursor* guiCursor) {
     if(event.key.keysym.scancode == SDL_SCANCODE_DOWN || event.key.keysym.scancode == SDL_SCANCODE_UP) {
         text.highlightStart = text.highlightEnd;
-        return better::verticalNav(text, event.key.keysym.scancode, text.data.textHeight, text.data.textWidth);
+        return better::verticalNav(text, event.key.keysym.scancode);
     }
 
     else if(event.key.keysym.scancode == SDL_SCANCODE_RIGHT || event.key.keysym.scancode == SDL_SCANCODE_LEFT) {
         text.highlightStart = text.highlightEnd;
-        return better::horizontalNav(text, event.key.keysym.scancode, text.data.textHeight, text.data.textWidth);
+        return better::horizontalNav(text, event.key.keysym.scancode);
     }
     else if(event.key.keysym.scancode == SDL_SCANCODE_RETURN) {
         text.highlightStart = text.highlightEnd;
         std::vector<better::Text> texts {text}; //fix scrolling here for newline near bottom of text
         
         if((text.cursor.column - 1 > -1) && ((text.textEdit[text.cursor.row][text.cursor.column - 1] == '{' && text.textEdit[text.cursor.row][text.cursor.column] == '}') || (text.textEdit[text.cursor.row][text.cursor.column - 1] == '(' && text.textEdit[text.cursor.row][text.cursor.column] == ')'))) {
-            if(texts.back().cursor.row != texts.back().textEdit.size() - 1 && texts.back().cursor.row >= texts.back().topLineNumber + better::textHeight() - 2) {
+            if(texts.back().cursor.row != texts.back().textEdit.size() - 1 && texts.back().cursor.row >= texts.back().topLineNumber + texts.back().data.textHeight - 2) {
                 texts.back().topLineNumber += 3;
             }
             texts.push_back(better::newLine(better::newLine(texts.back())));
-            texts.push_back(better::verticalNav(texts.back(),SDL_SCANCODE_UP, better::textHeight(), better::textWidth()));
+            texts.push_back(better::verticalNav(texts.back(),SDL_SCANCODE_UP));
             texts.push_back(better::tab(texts.back()));
         }
         else {
-            if(texts.back().cursor.row != texts.back().textEdit.size() - 1 && texts.back().cursor.row >= texts.back().topLineNumber + better::textHeight() - 2) {
+            if(texts.back().cursor.row != texts.back().textEdit.size() - 1 && texts.back().cursor.row >= texts.back().topLineNumber + texts.back().data.textHeight - 2) {
                 texts.back().topLineNumber += 1;
             }
             texts.push_back(better::newLine(texts.back()));
@@ -432,9 +450,9 @@ better::Text better::handleKey(better::Text text, char key) {
         case '\b':
             return better::backspace(text);
         case '\'':
-            return better::horizontalNav(better::updateText(better::updateText(text,'\''),'\''),SDL_SCANCODE_LEFT, text.data.textHeight, text.data.textWidth);
+            return better::horizontalNav(better::updateText(better::updateText(text,'\''),'\''),SDL_SCANCODE_LEFT);
         case '\"':
-            return better::horizontalNav(better::updateText(better::updateText(text,key),'\"'),SDL_SCANCODE_LEFT, text.data.textHeight, text.data.textWidth);
+            return better::horizontalNav(better::updateText(better::updateText(text,key),'\"'),SDL_SCANCODE_LEFT);
         default:
             if(key == '(' || key == '{' || key == '[') {
                 return better::autoBracket(text,key);
@@ -445,6 +463,7 @@ better::Text better::handleKey(better::Text text, char key) {
     }
 }
 
+//cases separate for left and right click, break up this function
 better::Text better::mouseButton(better::Text text, SDL_Event event, SDL_Surface* surface, SDL_Cursor* guiCursor) {
     better::Cursor tempCursor {better::findCursorPos(text.topLineNumber, text.topColumnNumber, event)};
     if(tempCursor.row > text.textEdit.size() - 1) {
@@ -537,6 +556,7 @@ better::Text better::mouseButton(better::Text text, SDL_Event event, SDL_Surface
     return text;
 }
 
+//cases for mouse over context menu or dropdown menu
 better::Text better::mouseMotion(better::Text text, SDL_Event event, SDL_Surface* surface, SDL_Cursor* guiCursor) {
     if((event.motion.y / 16) == 0) {
         SDL_FreeCursor(guiCursor);
@@ -603,7 +623,9 @@ char better::shift(char key) {
     return shifted[key];
 }
 
-better::Text better::verticalNav(better::Text text, SDL_Keycode key, const int textHeight, const int textWidth) {
+better::Text better::verticalNav(better::Text text, SDL_Keycode key) {
+    int textHeight {text.data.textHeight};
+    int textWidth {text.data.textWidth};
     better::Cursor cursor {text.cursor};
     switch(key) {
         case SDL_SCANCODE_DOWN:
@@ -644,7 +666,9 @@ better::Text better::verticalNav(better::Text text, SDL_Keycode key, const int t
     return text;
 }
 
-better::Text better::horizontalNav(better::Text text, SDL_Keycode key, const int textHeight, const int textWidth) { //cases for if cursor is at top right/bottom left of screen
+better::Text better::horizontalNav(better::Text text, SDL_Keycode key) { //cases for if cursor is at top right/bottom left of screen
+    int textWidth {text.data.textWidth};
+    int textHeight {text.data.textHeight};
     better::Cursor cursor{text.cursor};
     switch(key) {
         case SDL_SCANCODE_RIGHT:

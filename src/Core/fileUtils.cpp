@@ -83,6 +83,8 @@ std::filesystem::path better::fileDialog() {
     text.topLineNumber = 0;
     text.highlightStart = {0,0};
     text.highlightEnd = {0,0};
+    text.data.textHeight = 35;
+    text.data.textWidth = 100;
 
     SDL_FillRect(surface, NULL, SDL_MapRGBA(surface->format, 0x22, 0x22, 0x22, 0xFF));
     better::renderText(surface, text.textEdit, text.topLineNumber, text.topColumnNumber, 35, 100, text.highlightStart, text.highlightEnd, 0x222222FF, 0x5588AAFF, 0x222222FF, 0x5588AAFF, 0x5588AAFF);
@@ -95,7 +97,7 @@ std::filesystem::path better::fileDialog() {
     while(!isFound) {
         if(SDL_WaitEvent(&event)) {
             if(event.type == SDL_MOUSEWHEEL) {
-                better::Text newText = better::scroll(text, event, 35, 100);
+                better::Text newText = better::scroll(text, event);
                 text.textEdit = newText.textEdit;
                 text.cursor = newText.cursor;
                 text.topLineNumber = newText.topLineNumber;

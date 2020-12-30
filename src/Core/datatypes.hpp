@@ -11,14 +11,6 @@
 
 namespace better {
 
-constexpr int textWidth() {
-    return 150;
-}
-
-constexpr int textHeight() {
-    return 60;
-}
-
 struct Cursor { //store the line number and column number of the cursor
     int row;
     int column;
@@ -36,8 +28,8 @@ struct editorData {
     int index {-1};
     std::vector<std::string> menu;
     std::string filename;
-    const int textHeight {60};
-    const int textWidth {150};
+    int textHeight;
+    int textWidth;
 };
 
 struct Text {
