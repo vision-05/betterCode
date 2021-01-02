@@ -283,6 +283,37 @@ void better::edit1(SDL_Window* window, std::string filename, int textHeight, int
                         }
                     }
                 }
+                else if(event.key.keysym.sym == 's') {
+                    better::saveFile(texts[editorIndex].back().textEdit, texts[editorIndex].back().data.filename);
+                }
+                else if(event.key.keysym.sym == 'o') {
+                    better::saveFile(texts[editorIndex].back().textEdit, texts[editorIndex].back().data.filename);
+                    std::string tempFilename {};
+                    tempFilename = better::fileDialog().string();
+                    texts[editorIndex].back().data.clearHistory = true;
+                    texts[editorIndex].back().textEdit = better::readFile(tempFilename);
+                    texts[editorIndex].back().cursor = {0,0};
+                    texts[editorIndex].back().topLineNumber = 0;
+                    texts[editorIndex].back().topColumnNumber = 0;
+                    texts[editorIndex].back().highlightStart = {0,0};
+                    texts[editorIndex].back().highlightEnd = {0,0};
+                    texts[editorIndex].back().data.index = -1;
+                    texts[editorIndex].back().data.isScroll = false;
+                    texts[editorIndex].back().data.isCaps = false;
+                    texts[editorIndex].back().data.isShift = false;
+                    texts[editorIndex].back().data.isCtrl = false;
+                    texts[editorIndex].back().data.menu.clear();
+                    texts[editorIndex].back().data.filename = tempFilename;
+                }
+                else if(event.key.keysym.sym == 'c') {
+                    better::copyClipboard(texts[editorIndex].back());
+                }
+                else if(event.key.keysym.sym == 'v') {
+                    texts[editorIndex].push_back(better::pasteClipboard(texts[editorIndex].back()));
+                }
+                else if(event.key.keysym.sym == 'x') {
+                    texts[editorIndex].push_back(better::cutClipboard(texts[editorIndex].back()));
+                }
             }
 
             else if(event.type == SDL_KEYDOWN || event.type == SDL_MOUSEBUTTONDOWN || event.type == SDL_MOUSEMOTION || event.type == SDL_MOUSEWHEEL || event.type == SDL_MOUSEBUTTONUP) {
@@ -426,38 +457,8 @@ better::Text better::keyDown(better::Text text, SDL_Event event, SDL_Surface* su
             text.topColumnNumber = 0;
         }
         if(text.data.isCtrl) {
-            std::string tempFilename {};
-            switch(key) {
-                case 's':
-                    better::saveFile(text.textEdit, text.data.filename);
-                    return text;
-                case 'o':
-                    better::saveFile(text.textEdit, text.data.filename);
-                    tempFilename = better::fileDialog().string();
-                    text.data.clearHistory = true;
-                    text.textEdit = better::readFile(tempFilename);
-                    text.cursor = {0,0};
-                    text.topLineNumber = 0;
-                    text.topColumnNumber = 0;
-                    text.highlightStart = {0,0};
-                    text.highlightEnd = {0,0};
-                    text.data.index = -1;
-                    text.data.isScroll = false;
-                    text.data.isCaps = false;
-                    text.data.isShift = false;
-                    text.data.isCtrl = false;
-                    text.data.menu.clear();
-                    text.data.filename = tempFilename;
-                    return text;
-                case 'c':
-                    better::copyClipboard(text);
-                    return text;
-                case 'v':
-                    return better::pasteClipboard(text);
-                case 'x':
-                    return better::cutClipboard(text);
-            }
             text.highlightEnd = text.highlightStart;
+            return text;
         }
         if(text.cursor.row == -1) {
             text.cursor.row = 0;
