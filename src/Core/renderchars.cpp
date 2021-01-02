@@ -125,7 +125,7 @@ void better::renderLetter(SDL_Surface* surface, Uint8 pixelGrid[12], int column,
     }
 }
 
-void better::renderCursor(SDL_Surface* surface, int column, int row, int topLine, int topColumn) {
+void better::renderCursor(SDL_Surface* surface, int column, int row, int topLine, int topColumn, int columnOffset) {
     Uint8 cursor[16] {
         3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3
     };
@@ -134,7 +134,7 @@ void better::renderCursor(SDL_Surface* surface, int column, int row, int topLine
     column -= topColumn;
     for(int i{}; i < 16; ++i) {
         for(int j{}; j < 2; ++j) {
-            better::setPixel(surface, j, i, better::unpackUint8Bit(j + 1, cursor[i], 0xAA7069FF, 0x222222FF), column, row, 8, 16);
+            better::setPixel(surface, j, i, better::unpackUint8Bit(j + 1, cursor[i], 0xAA7069FF, 0x222222FF), column + static_cast<int>(columnOffset / 8), row, 8, 16);
         }
     }
 }
@@ -147,7 +147,7 @@ void better::createLetter(SDL_Surface* surface, char letter, int column, int row
     better::renderLetter(surface, better::charCheck(letter, better::letters).arr, column, row, colorfg, colorbg);
 }
 
-void better::renderText(SDL_Surface* surface, immer::flex_vector<immer::flex_vector<char>> vector, int topLine, int topColumn, int textHeight, int textWidth, better::Cursor highlightStart, better::Cursor highlightEnd, Uint32 colorbg, Uint32 colorfg, Uint32 colorhighlight, Uint32 colorparens, Uint32 colorcomments) {
+void better::renderText(SDL_Surface* surface, immer::flex_vector<immer::flex_vector<char>> vector, int topLine, int topColumn, int textHeight, int textWidth, better::Cursor highlightStart, better::Cursor highlightEnd, Uint32 colorbg, Uint32 colorfg, Uint32 colorhighlight, Uint32 colorparens, Uint32 colorcomments, int columnOffset) {
     bool highlight {false};
     bool multilineComment {false};
     bool comment {false};
@@ -203,7 +203,7 @@ void better::renderText(SDL_Surface* surface, immer::flex_vector<immer::flex_vec
                 foreground = colorfg;
             }
             if(j >= topColumn && j < topColumn + textWidth) {
-                better::createLetter(surface, vector[i][j], otherj - topColumn, otheri, foreground, background); //render text line by line
+                better::createLetter(surface, vector[i][j], otherj - topColumn + static_cast<int>(columnOffset / 8), otheri, foreground, background); //render text line by line
             }
         }
     }

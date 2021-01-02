@@ -16,7 +16,7 @@ struct Cursor { //store the line number and column number of the cursor
     int column;
 };
 
-better::Cursor findCursorPos(int topLine, int topColumn, SDL_Event event);
+better::Cursor findCursorPos(int topLine, int topColumn, SDL_Event event, int columnOffset);
 
 struct editorData {
     bool menusToDraw[4] = {false, false, false, false};
@@ -25,6 +25,7 @@ struct editorData {
     bool isScroll {false};
     bool isCtrl {false};
     bool clearHistory {false};
+    int switchEditor {0};
     int index {-1};
     std::vector<std::string> menu;
     std::string filename;

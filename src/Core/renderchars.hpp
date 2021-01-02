@@ -31,13 +31,13 @@ void renderLetter(SDL_Surface* surface, Uint8 pixelGrid[16], int column, int row
 //! better::renderText iterates through the whole text buffer to output the letters to the screen one by one onto the pixel surface
 //! This function makes sure that there are only 59 lines rendered and 150 columns rendered on a screen max
 
-void renderText(SDL_Surface* surface, immer::flex_vector<immer::flex_vector<char>> vector, int topLine, int topColumn, const int textHeight, const int textWidth, better::Cursor higlightStart, better::Cursor highlightEnd, Uint32 colorbg, Uint32 colorfg, Uint32 colorhighglight, Uint32 colorparens, Uint32 colorcomments);
+void renderText(SDL_Surface* surface, immer::flex_vector<immer::flex_vector<char>> vector, int topLine, int topColumn, const int textHeight, const int textWidth, better::Cursor higlightStart, better::Cursor highlightEnd, Uint32 colorbg, Uint32 colorfg, Uint32 colorhighglight, Uint32 colorparens, Uint32 colorcomments, int columnOffset);
 
 //! better::renderCursor renders the text cursor onto the screen, using an offset in the text buffer dictated by the top line being rendered and the first column being rendered on the left of the screen
 //! the physical location on the screen of the cursor.
 //! The cursor is rendered on the first 2 pixels of the "character" 8x16 grid.
 
-void renderCursor(SDL_Surface* surface, int column, int row, int topLine, int topColumn);
+void renderCursor(SDL_Surface* surface, int column, int row, int topLine, int topColumn, int columnOffset);
 
 //! better::charCheck takes a character and returns its corresponding bitmap.
 //! this is passed as a better::charMapArr struct
