@@ -104,9 +104,7 @@ namespace better {
 }
 
 void better::drawMenuBar(SDL_Surface* surface, std::string menus, Uint32 colorfg, Uint32 colorbg, int windowWidth, int columnOffset) {
-    SDL_Rect topline {.x = 0, .y = 0, .w = windowWidth, .h = 16};
     int column {};
-    SDL_FillRect(surface, &topline, SDL_MapRGBA(surface->format, better::getRed(colorbg), better::getGreen(colorbg), better::getBlue(colorbg), better::getAlpha(colorbg)));
     for(const char& letter : menus) {
         better::renderLetter(surface, better::charCheck(letter, better::letters2).arr, column + static_cast<int>(columnOffset / 8), 0, colorfg, colorbg);
         ++column;

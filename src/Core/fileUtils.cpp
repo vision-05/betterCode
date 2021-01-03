@@ -42,7 +42,14 @@ immer::flex_vector<immer::flex_vector<char>> better::readFile(std::string filena
 immer::flex_vector<char> better::stringToVector(std::string string) {
     immer::flex_vector_transient<char> vector {};
     for (const char character : string) {
-        vector.push_back(character);
+        if(character == '\t') {
+            for(int i{}; i < 4; ++i) {
+                vector.push_back(' ');
+            }
+        }
+        else {
+            vector.push_back(character);
+        }
     }
     return vector.persistent();
 }

@@ -1,7 +1,7 @@
 //! @file
 //! This is the main file of the project, containing the main event loop and renderer
-//fix splitscreen bugs: switching editors, menu clicking, rendering the right amount of text, etc, etc.
-#define SDL_MAIN_HANDLED //reformat code and fix highlighting bugs!!! Also create loading bar for save, and allow multiple editing windows
+//fix splitscreen bugs: menu clicking
+#define SDL_MAIN_HANDLED //reformat code and fix highlighting bugs!!! Also create loading bar for save
 //add scroll bars for horizontal and vertical nav
 #include <SDL2-2.0.12/include/SDL.h>
 #include <immer-0.6.2/immer/flex_vector.hpp>
@@ -83,7 +83,7 @@ bool operator!=(better::Text lhs, better::Text rhs);
 
 }
 
-int main(int argc, char* argv[]) {
+int WinMain(int argc, char* argv[]) {
     SDL_SetMainReady();
     SDL_Init(SDL_INIT_VIDEO);
 
@@ -202,6 +202,8 @@ void better::edit1(SDL_Window* window, std::string filename, int textHeight, int
     
     SDL_FillRect(surface, NULL, SDL_MapRGBA(surface->format, 0x22, 0x22, 0x22, 0xFF));
     better::renderText(surface, texts[editorIndex].back().textEdit, texts[editorIndex].back().topLineNumber, texts[editorIndex].back().topColumnNumber, textHeight, textWidth, {0,0}, {0,0}, colorbg, colorfg, colorhighlight, colorparens, colorcomments, columnOffset);
+    SDL_Rect topline {.x = 0, .y = 0, .w = 1200, .h = 16};
+    SDL_FillRect(surface, &topline, SDL_MapRGBA(surface->format, 0x66, 0x66, 0x66, 0xFF));
     better::drawMenuBar(surface, menus, 0xDDDDDDFF, 0x666666FF, editorWidth, columnOffset);
 
     SDL_UpdateWindowSurface(window);
@@ -256,6 +258,8 @@ void better::edit1(SDL_Window* window, std::string filename, int textHeight, int
                     SDL_FillRect(surface, NULL, SDL_MapRGBA(surface->format, 0x22, 0x22, 0x22, 0xFF));
                     for(int i{}; i < texts.size(); ++i) {
                         columnOffset = i * (editorWidth / editorCount);
+                        topline.w = editorWidth;
+                        SDL_FillRect(surface, &topline, SDL_MapRGBA(surface->format, 0x66, 0x66, 0x66, 0xFF));
                         better::drawMenuBar(surface, menus, 0xDDDDDDFF, 0x666666FF, event.window.data1, columnOffset);
                         better::renderText(surface, texts[i].back().textEdit, texts[i].back().topLineNumber, texts[i].back().topColumnNumber, texts[i].back().data.textHeight, texts[i].back().data.textWidth, texts[i].back().highlightStart, texts[i].back().highlightEnd, colorbg, colorfg, colorhighlight, colorparens, colorcomments, columnOffset);
                     }
@@ -554,7 +558,7 @@ better::Text better::mouseButton(better::Text text, SDL_Event event, SDL_Surface
         tempCursor.column = text.textEdit[tempCursor.row].size();
     }
     if((event.button.y / 16) - 1 == -1) {
-        tempCursor.column = event.button.x / 8;
+        tempCursor.column = static_cast<int>((event.button.x - columnOffset) / 8);
         tempCursor.row = -1;
         text.data.isScroll = true;
         better::resetMenus(text.data.menusToDraw);
@@ -573,7 +577,7 @@ better::Text better::mouseButton(better::Text text, SDL_Event event, SDL_Surface
         tempCursor.column = 0;
     }
 
-    else if((better::selectMenu(text.data.menusToDraw) > -1) && (((event.button.x / 8) > 20) || ((event.button.y / 16) > text.data.menu.size()))){
+    else if((better::selectMenu(text.data.menusToDraw) > -1) && ((((event.button.x - columnOffset) / 8) > 20) || ((event.button.y / 16) > text.data.menu.size()))){
         better::resetMenus(text.data.menusToDraw);
     }
 
