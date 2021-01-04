@@ -168,7 +168,7 @@ void better::renderText(SDL_Surface* surface, immer::flex_vector<immer::flex_vec
         }
         comment = false;
         for(int j{}, otherj{}; j < colSize; ++j, ++otherj) {
-            if(highlight && ((i >= highlightStart.row && i <= highlightEnd.row) && (j >= highlightStart.column && j <= highlightEnd.column)) || (((highlightEnd.row != highlightStart.row && highlightEnd.column != highlightStart.column)) && ((i == highlightStart.row && j >= highlightStart.column) || (i == highlightEnd.row && j <= highlightEnd.column) || (i < highlightEnd.row && i > highlightStart.row)))) {
+            if((highlight) && (((i >= highlightStart.row && i <= highlightEnd.row) && (j >= highlightStart.column && j <= highlightEnd.column)) || (((highlightEnd.row != highlightStart.row && highlightEnd.column != highlightStart.column)) && ((i == highlightStart.row && j >= highlightStart.column) || (i == highlightEnd.row && j <= highlightEnd.column) || (i < highlightEnd.row && i > highlightStart.row))))) {
                 background = colorhighlight;
             }
             else {

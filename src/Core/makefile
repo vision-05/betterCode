@@ -1,2 +1,2 @@
 main: main.cpp datatypes.cpp fileUtils.cpp renderchars.cpp menubar.cpp
-	clang++ -O3 -mwindows -std=c++20 -o BetterCode.exe main.cpp datatypes.cpp fileUtils.cpp renderchars.cpp menubar.cpp -m64 -I"C:/Program Files/LLVM/lib/clang/11.0.0/include/immer-0.6.2/" -I"C:/Program Files/LLVM/lib/clang/11.0.0/include/immer-0.6.2/immer/" -I"C:/Program Files/LLVM/lib/clang/11.0.0/include/immer-0.6.2/immer/detail/rbts/" -lC:/Users/TFran/VisionCode/src/Libs/SDL2main -lC:/Users/TFran/VisionCode/src/Libs/SDL2
+	clang++ -O3 -mwindows -std=c++2a -o BetterCode main.cpp datatypes.cpp fileUtils.cpp renderchars.cpp menubar.cpp -m64 -I"/usr/include/c++/7.5.0/immer-0.6.2/" -lstdc++fs -lSDL2main -lSDL2
