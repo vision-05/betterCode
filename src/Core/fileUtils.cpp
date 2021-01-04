@@ -158,7 +158,7 @@ std::experimental::filesystem::path better::fileDialog() {
                     }
                 }
                 if(text.cursor.row < folders.size()) {
-                    path.append(folders[text.cursor.row].path().string());
+                    path = std::experimental::filesystem::path(folders[text.cursor.row].path().string());
                     text.textEdit = {};
                     text.cursor = {0,0};
                     text.topColumnNumber = 0;
