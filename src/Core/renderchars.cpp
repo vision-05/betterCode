@@ -206,7 +206,7 @@ void better::renderText(SDL_Surface* surface, immer::flex_vector<immer::flex_vec
                 better::createLetter(surface, vector[i][j], otherj - topColumn + static_cast<int>(columnOffset / 8), otheri, foreground, background); //render text line by line
             }
         }
-    }
+    }  
 }
 
 Uint32 better::unpackUint8Bit(int index, Uint8 number, Uint32 color, Uint32 colorbg) {
@@ -267,4 +267,20 @@ better::Text better::scroll(better::Text text, SDL_Event event) { //make sure no
     }
 
     return text;
+}
+
+void better::renderLineNumbers(SDL_Surface* surface, int topLine, int columnOffset, int textLength, int editorHeight, Uint32 colorfg, Uint32 colorbg) {
+    std::string number {std::to_string(textLength)};
+    SDL_Rect side {.x = columnOffset, .y = 16, .w = static_cast<int>(number.size()) * 8, .h = editorHeight * 16};
+    SDL_FillRect(surface, &side, SDL_MapRGBA(surface->format, better::getRed(colorbg), better::getGreen(colorbg), better::getBlue(colorbg), better::getAlpha(colorbg)));
+    if(editorHeight > textLength) {
+        editorHeight = textLength + 1;
+    }
+    for(int i{topLine}; i < topLine + editorHeight - 1; ++i) {
+        number = std::to_string(i);
+        number.push_back(' ');
+        for(int j{}; j < number.size(); ++ j) {
+            better::createLetter(surface, number[j], j + static_cast<int>(columnOffset / 8), i - topLine + 1, colorfg, colorbg);
+        }
+    }
 }

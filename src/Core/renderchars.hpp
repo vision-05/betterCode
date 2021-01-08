@@ -7,6 +7,7 @@
 #include <immer-0.6.2/immer/flex_vector.hpp>
 #include <unordered_map>
 #include <array>
+#include <string>
 
 #include "datatypes.hpp"
 
@@ -38,6 +39,8 @@ void renderText(SDL_Surface* surface, immer::flex_vector<immer::flex_vector<char
 //! The cursor is rendered on the first 2 pixels of the "character" 8x16 grid.
 
 void renderCursor(SDL_Surface* surface, int column, int row, int topLine, int topColumn, int columnOffset);
+
+void renderLineNumbers(SDL_Surface* surface, int topLine, int columnOffset, int textLength, int editorHeight, Uint32 colorfg, Uint32 colorbg);
 
 //! better::charCheck takes a character and returns its corresponding bitmap.
 //! this is passed as a better::charMapArr struct

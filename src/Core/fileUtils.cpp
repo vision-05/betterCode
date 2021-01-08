@@ -54,36 +54,36 @@ immer::flex_vector<char> better::stringToVector(std::string string) {
     return vector.persistent();
 }
 
-std::experimental::filesystem::path better::fileDialog() {
+std::filesystem::path better::fileDialog() {
     SDL_Window* window = SDL_CreateWindow("File", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 560, 0);
     std::string menu {"Back"};
     SDL_Rect screen {.x = 0, .y = 16, .w = 800, .h = 560 - 16};
 
     SDL_Surface* surface = SDL_GetWindowSurface(window);
-    std::vector<std::experimental::filesystem::directory_entry> files {};
-    std::vector<std::experimental::filesystem::directory_entry> folders {};
+    std::vector<std::filesystem::directory_entry> files {};
+    std::vector<std::filesystem::directory_entry> folders {};
 
-    std::experimental::filesystem::path path {std::experimental::filesystem::current_path()}; //start with current working directory
-    for(const std::experimental::filesystem::directory_entry& entry : std::experimental::filesystem::directory_iterator(path)) {
-        if(std::experimental::filesystem::is_regular_file(entry.status())) {
+    std::filesystem::path path {std::filesystem::current_path()}; //start with current working directory
+    for(const std::filesystem::directory_entry& entry : std::filesystem::directory_iterator(path)) {
+        if(std::filesystem::is_regular_file(entry.status())) {
             files.push_back(entry); //push back all the files to list of files
         }
-        else if(std::experimental::filesystem::is_directory(entry.status())) {
+        else if(std::filesystem::is_directory(entry.status())) {
             folders.push_back(entry); //push back all the folders to list of folders
         }
     }
 
     const std::string folderString {"Folder: "};
     const std::string fileString {"File: "};
-    std::experimental::filesystem::path filePath {}; //store the filepath to return
+    std::filesystem::path filePath {}; //store the filepath to return
     bool isFound {false};
 
     better::Text text; //this just displays the paths
     text.cursor = {0,0};
-    for(const std::experimental::filesystem::directory_entry& entry : folders) {
+    for(const std::filesystem::directory_entry& entry : folders) {
         text.textEdit = text.textEdit.push_back(better::stringToVector(folderString + entry.path().filename().string()));
     }
-    for(const std::experimental::filesystem::directory_entry& entry : files) {
+    for(const std::filesystem::directory_entry& entry : files) {
         text.textEdit = text.textEdit.push_back(better::stringToVector(fileString + entry.path().filename().string()));
     }
     text.topColumnNumber = 0;
@@ -132,20 +132,20 @@ std::experimental::filesystem::path better::fileDialog() {
                         files = {};
                         folders = {};
 
-                        for(const std::experimental::filesystem::directory_entry& entry : std::experimental::filesystem::directory_iterator(path)) {
-                            if(std::experimental::filesystem::is_regular_file(entry.status())) {
+                        for(const std::filesystem::directory_entry& entry : std::filesystem::directory_iterator(path)) {
+                            if(std::filesystem::is_regular_file(entry.status())) {
                                 files.push_back(entry);
                             }
-                        else if(std::experimental::filesystem::is_directory(entry.status())) {
+                        else if(std::filesystem::is_directory(entry.status())) {
                                 folders.push_back(entry);
                             }
                         }
 
                         text.cursor = {0,0};
-                        for(const std::experimental::filesystem::directory_entry& entry : folders) {
+                        for(const std::filesystem::directory_entry& entry : folders) {
                             text.textEdit = text.textEdit.push_back(better::stringToVector(folderString + entry.path().string()));
                         }
-                        for(const std::experimental::filesystem::directory_entry& entry : files) {
+                        for(const std::filesystem::directory_entry& entry : files) {
                             text.textEdit = text.textEdit.push_back(better::stringToVector(fileString + entry.path().filename().string()));
                         }
                         text.topColumnNumber = 0;
@@ -158,7 +158,7 @@ std::experimental::filesystem::path better::fileDialog() {
                     }
                 }
                 if(text.cursor.row < folders.size()) {
-                    path = std::experimental::filesystem::path(folders[text.cursor.row].path().string());
+                    path = std::filesystem::path(folders[text.cursor.row].path().string()); //change line to append on windows
                     text.textEdit = {};
                     text.cursor = {0,0};
                     text.topColumnNumber = 0;
@@ -168,20 +168,20 @@ std::experimental::filesystem::path better::fileDialog() {
                     files = {};
                     folders = {};
 
-                    for(const std::experimental::filesystem::directory_entry& entry : std::experimental::filesystem::directory_iterator(path)) {
-                        if(std::experimental::filesystem::is_regular_file(entry.status())) {
+                    for(const std::filesystem::directory_entry& entry : std::filesystem::directory_iterator(path)) {
+                        if(std::filesystem::is_regular_file(entry.status())) {
                             files.push_back(entry);
                         }
-                    else if(std::experimental::filesystem::is_directory(entry.status())) {
+                    else if(std::filesystem::is_directory(entry.status())) {
                             folders.push_back(entry);
                         }
                     }
 
                     text.cursor = {0,0};
-                    for(const std::experimental::filesystem::directory_entry& entry : folders) {
+                    for(const std::filesystem::directory_entry& entry : folders) {
                         text.textEdit = text.textEdit.push_back(better::stringToVector(folderString + entry.path().filename().string()));
                     }
-                    for(const std::experimental::filesystem::directory_entry& entry : files) {
+                    for(const std::filesystem::directory_entry& entry : files) {
                         text.textEdit = text.textEdit.push_back(better::stringToVector(fileString + entry.path().filename().string()));
                     }
                     text.topColumnNumber = 0;
