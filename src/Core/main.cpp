@@ -116,7 +116,6 @@ better::Text better::pasteClipboard(better::Text text) {
     if(SDL_HasClipboardText()) {
         clipboardText = SDL_GetClipboardText();
         clipboardText.pop_back();
-        clipboardText.pop_back();
         for(int i{}; i < clipboardText.size(); ++i) {
             if(clipboardText[i] == '\n') {
                 tempTexts.push_back(better::newLine(tempTexts.back()));
@@ -135,22 +134,22 @@ better::Text better::pasteClipboard(better::Text text) {
 
 void better::copyClipboard(better::Text text) { //fix copying if dragging backwards to highlight
     std::string clipboardText {};
-    for(int i{text.highlightStart.row}; i <= text.highlightEnd.row; ++i) {
-        for(int j{}; j < text.textEdit[i].size(); ++j) {
-            if(text.highlightStart.row == text.highlightEnd.row && j < text.highlightEnd.column && j >= text.highlightStart.column) {
-                clipboardText.push_back(text.textEdit[i][j]);
+    for(int row{text.highlightStart.row}; row <= text.highlightEnd.row; ++row) {
+        for(int column{}; column < text.textEdit[row].size(); ++column) {
+            if(text.highlightStart.row == text.highlightEnd.row && column <= text.highlightEnd.column && column >= text.highlightStart.column) {
+                clipboardText.push_back(text.textEdit[row][column]);
             }
             else if(text.highlightStart.row == text.highlightEnd.row) {
                 continue;
             }
-            else if(i == text.highlightStart.row && j >= text.highlightStart.column) {
-                clipboardText.push_back(text.textEdit[i][j]);
+            else if(row == text.highlightStart.row && column >= text.highlightStart.column) {
+                clipboardText.push_back(text.textEdit[row][column]);
             }
-            else if(i == text.highlightEnd.row && j < text.highlightEnd.column) {
-                clipboardText.push_back(text.textEdit[i][j]);
+            else if(row == text.highlightEnd.row && column <= text.highlightEnd.column) {
+                clipboardText.push_back(text.textEdit[row][column]);
             }
-            else if(i > text.highlightStart.row && i < text.highlightEnd.row) {
-                clipboardText.push_back(text.textEdit[i][j]);
+            else if(row > text.highlightStart.row && row < text.highlightEnd.row) {
+                clipboardText.push_back(text.textEdit[row][column]);
             }
         }
         clipboardText.push_back('\n');
@@ -274,7 +273,7 @@ void better::edit1(SDL_Window* window, std::string filename, int textHeight, int
 
             if(event.type == SDL_KEYDOWN && texts[editorIndex].back().data.isCtrl) {
                 if(event.key.keysym.sym == 'z') {
-                    if(texts.size() > 1) {
+                    if(texts[editorIndex].size() > 1) {
                         texts[editorIndex].pop_back();
                     }
                 }
@@ -322,6 +321,11 @@ void better::edit1(SDL_Window* window, std::string filename, int textHeight, int
                 else if(event.key.keysym.sym == 'x') {
                     texts[editorIndex].push_back(better::cutClipboard(texts[editorIndex].back()));
                 }
+                else if(event.key.keysym.scancode == SDL_SCANCODE_LCTRL || event.key.keysym.scancode == SDL_SCANCODE_RCTRL) {
+                    continue;
+                }
+                texts[editorIndex].back().highlightStart = texts[editorIndex].back().cursor;
+                texts[editorIndex].back().highlightEnd = texts[editorIndex].back().cursor;
             }
 
             else if(event.type == SDL_KEYDOWN || event.type == SDL_MOUSEBUTTONDOWN || event.type == SDL_MOUSEMOTION || event.type == SDL_MOUSEWHEEL || event.type == SDL_MOUSEBUTTONUP) {
@@ -479,6 +483,9 @@ better::Text better::keyDown(better::Text text, SDL_Event event, SDL_Surface* su
             better::resetMenus(text.data.menusToDraw);
         }
         if((text.highlightStart.row != text.highlightEnd.row) || (text.highlightEnd.column > text.highlightStart.column)) {
+            if(key == '\b') {
+                text.highlightStart.column += 1;
+            }
             return better::handleKey(better::deleteHighlighted(text),key);
         }
     text.highlightEnd = text.cursor;
@@ -512,13 +519,14 @@ better::Text better::handleKey(better::Text text, char key) {
 //cases separate for left and right click, break up this function
 better::Text better::mouseButton(better::Text text, SDL_Event event, SDL_Surface* surface, SDL_Cursor* guiCursor, int columnOffset, int editorCount) {
     better::Cursor tempCursor {better::findCursorPos(text.topLineNumber, text.topColumnNumber, event, columnOffset)};
+    int lineNoOffset {static_cast<int>(std::to_string(text.textEdit.size()).size()) + 1};
     if(editorCount > 1) {
         if(editorCount == 2) {
             if(tempCursor.column < 0) {
                 text.data.switchEditor = 0;
                 return text;
             }
-            else if(!columnOffset) {
+            else if(!(columnOffset - (lineNoOffset * 8))) {
                 if(tempCursor.column > text.data.textWidth) {
                     text.data.switchEditor = 1;
                     return text;
@@ -548,7 +556,7 @@ better::Text better::mouseButton(better::Text text, SDL_Event event, SDL_Surface
                     }
                 }
             }
-            else if(!columnOffset) {
+            else if(!(columnOffset - (lineNoOffset * 8))) {
                 if(tempCursor.column > text.data.textWidth && tempCursor.column < 2 * text.data.textWidth) {
                     text.data.switchEditor = 1;
                     return text;

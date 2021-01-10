@@ -161,21 +161,21 @@ void better::renderText(SDL_Surface* surface, immer::flex_vector<immer::flex_vec
     if(vector.size() - 1 >= topLine + textHeight - 1) {
         size = topLine + textHeight - 1;
     }
-    for(int i{topLine}, otheri{1}; i < size; ++i, ++otheri) { //TODO: create cases for space, newline and tabs
-        int colSize = vector[i].size();
-        if(vector[i].size() >= topColumn + textWidth) {
+    for(int lineIndex{topLine}, rowIndex{1}; lineIndex < size; ++lineIndex, ++rowIndex) { //TODO: create cases for space, newline and tabs
+        int colSize = vector[lineIndex].size();
+        if(vector[lineIndex].size() >= topColumn + textWidth) {
             colSize = topColumn + textWidth;
         }
         comment = false;
-        for(int j{}, otherj{}; j < colSize; ++j, ++otherj) {
-            if((highlight) && (((i >= highlightStart.row && i <= highlightEnd.row) && (j >= highlightStart.column && j <= highlightEnd.column)) || (((highlightEnd.row != highlightStart.row && highlightEnd.column != highlightStart.column)) && ((i == highlightStart.row && j >= highlightStart.column) || (i == highlightEnd.row && j <= highlightEnd.column) || (i < highlightEnd.row && i > highlightStart.row))))) {
+        for(int letterIndex{}, columnIndex{}; letterIndex < colSize; ++letterIndex, ++columnIndex) {
+            if((highlight) && (((lineIndex >= highlightStart.row && lineIndex <= highlightEnd.row) && (letterIndex >= highlightStart.column && letterIndex <= highlightEnd.column)) || (((highlightEnd.row != highlightStart.row && highlightEnd.column != highlightStart.column)) && ((lineIndex == highlightStart.row && letterIndex >= highlightStart.column) || (lineIndex == highlightEnd.row && letterIndex <= highlightEnd.column) || (lineIndex < highlightEnd.row && lineIndex > highlightStart.row))))) {
                 background = colorhighlight;
             }
             else {
                 background = colorbg;
             }
-            if(multilineComment && vector[i][j] == '/') {
-                if(vector[i][j - 1] == '*') {
+            if(multilineComment && vector[lineIndex][letterIndex] == '/') {
+                if(vector[lineIndex][letterIndex - 1] == '*') {
                     multilineComment = false;
                     foreground = colorcomments;
                 }
@@ -183,27 +183,27 @@ void better::renderText(SDL_Surface* surface, immer::flex_vector<immer::flex_vec
             else if(comment || multilineComment) {
                 foreground = colorcomments;
             }
-            else if(vector[i][j] == '/') {
+            else if(vector[lineIndex][letterIndex] == '/') {
                 foreground = colorparens;
-                if(j < vector[i].size() - 1) {
-                    if(vector[i][j + 1] == '/') {
+                if(letterIndex < vector[lineIndex].size() - 1) {
+                    if(vector[lineIndex][letterIndex + 1] == '/') {
                         comment = true;
                         foreground = colorcomments;
                     }
-                    else if(vector[i][j + 1] == '*') {
+                    else if(vector[lineIndex][letterIndex + 1] == '*') {
                         multilineComment = true;
                         foreground = colorcomments;
                     }
                 } 
             }
-            else if(vector[i][j] == '\'' || vector[i][j] == '!' || vector[i][j] == '*' || vector[i][j] == '%' || vector[i][j] == '^' || vector[i][j] == '&' || vector[i][j] == '|' || vector[i][j] == '=' || vector[i][j] == '+' || vector[i][j] == '-' || vector[i][j] == '(' || vector[i][j] == ')' || vector[i][j] == '<' || vector[i][j] == '>'|| vector[i][j] == '[' || vector[i][j] == ']' || vector[i][j] == '{' || vector[i][j] == '}' || vector[i][j] == '\"') {
+            else if((vector[lineIndex][letterIndex] > 32 && vector[lineIndex][letterIndex] < 48) || (vector[lineIndex][letterIndex] > 59 && vector[lineIndex][letterIndex] < 63) || (vector[lineIndex][letterIndex] > 90 && vector[lineIndex][letterIndex] < 95) || (vector[lineIndex][letterIndex] > 122 && vector[lineIndex][letterIndex] < 126)) {
                 foreground = colorparens;
             }
             else {
                 foreground = colorfg;
             }
-            if(j >= topColumn && j < topColumn + textWidth) {
-                better::createLetter(surface, vector[i][j], otherj - topColumn + static_cast<int>(columnOffset / 8), otheri, foreground, background); //render text line by line
+            if(letterIndex >= topColumn && letterIndex < topColumn + textWidth) {
+                better::createLetter(surface, vector[lineIndex][letterIndex], columnIndex - topColumn + static_cast<int>(columnOffset / 8), rowIndex, foreground, background); //render text line by line
             }
         }
     }  
@@ -225,7 +225,7 @@ Uint32 better::unpackUint8Bit(int index, Uint8 number, Uint32 color, Uint32 colo
     return result;
 }
 
-better::Text better::scroll(better::Text text, SDL_Event event) { //make sure not to move cursor
+better::Text better::scroll(better::Text text, SDL_Event event) {
     int textHeight {text.data.textHeight};
     int textWidth {text.data.textWidth};
     
