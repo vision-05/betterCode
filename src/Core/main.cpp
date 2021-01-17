@@ -116,9 +116,10 @@ better::Text better::pasteClipboard(better::Text text) {
     if(SDL_HasClipboardText()) {
         clipboardText = SDL_GetClipboardText();
         clipboardText.pop_back();
+        std::cout << clipboardText << '\n';
         for(int i{}; i < clipboardText.size(); ++i) {
             if(clipboardText[i] == '\n') {
-                tempTexts.push_back(better::newLine(tempTexts.back()));
+                tempTexts.push_back(better::newLine(tempTexts.back(), false));
             }
             else if(clipboardText[i] == '\r') {
                 continue;
@@ -198,13 +199,16 @@ void better::edit1(SDL_Window* window, std::string filename, int textHeight, int
     std::string menus {" File  Edit  View  Settings + X "};
     std::vector<std::vector<std::string>> menuText {{"Open","Save","Exit"},{"Cut","Copy","Paste"},{},{"Edit Settings"}};
     better::Text firstText {better::readFile(filename), {0,0}, {{false,false,false,false}, false, false, false, false, false, 0, -1, {}, filename, 60, 149}, 0, 0, {0,0}, {0,0}};
+    firstText.data.textWidth = (((editorWidth / editorCount) / 8) - 1) - (std::to_string(firstText.textEdit.size()).size() + 1);
     texts[editorIndex].push_back(firstText);
+    lineNoOffset = 8 * (static_cast<int>(std::to_string(firstText.textEdit.size()).size()) + 1);
     
     SDL_FillRect(surface, NULL, SDL_MapRGBA(surface->format, 0x22, 0x22, 0x22, 0xFF));
-    better::renderText(surface, texts[editorIndex].back().textEdit, texts[editorIndex].back().topLineNumber, texts[editorIndex].back().topColumnNumber, textHeight, textWidth, {0,0}, {0,0}, colorbg, colorfg, colorhighlight, colorparens, colorcomments, columnOffset);
+    better::renderText(surface, texts[editorIndex].back().textEdit, texts[editorIndex].back().topLineNumber, texts[editorIndex].back().topColumnNumber, textHeight, textWidth, {0,0}, {0,0}, colorbg, colorfg, colorhighlight, colorparens, colorcomments, columnOffset + lineNoOffset);
     SDL_Rect topline {.x = 0, .y = 0, .w = 1200, .h = 16};
     SDL_FillRect(surface, &topline, SDL_MapRGBA(surface->format, 0x66, 0x66, 0x66, 0xFF));
     better::drawMenuBar(surface, menus, 0xDDDDDDFF, 0x666666FF, editorWidth, columnOffset);
+    better::renderLineNumbers(surface, texts[0].back().topLineNumber, columnOffset, texts[0].back().textEdit.size(), texts[0].back().data.textHeight, colorfg, colorbg);
 
     SDL_UpdateWindowSurface(window);
 
@@ -285,7 +289,7 @@ void better::edit1(SDL_Window* window, std::string filename, int textHeight, int
                         texts.push_back({{better::readFile(filename), {0,0}, {{false,false,false,false}, false, false, false, false, false, editorIndex, -1, {}, filename, static_cast<int>(editorHeight / 16), static_cast<int>((editorWidth / (texts.size() + 1)) / 8)}, 0, 0, {0,0}, {0,0}}});
                         for(int i{}; i < texts.size(); ++i) {
                             for(int j{}; j < texts[i].size(); ++j) {
-                                texts[i][j].data.textWidth = static_cast<int>((editorWidth / editorCount) / 8) - 1;
+                                texts[i][j].data.textWidth = (((editorWidth / editorCount) / 8) - 1) - (std::to_string(texts[editorIndex].back().textEdit.size()).size() + 1);
                             }
                         }
                     }
@@ -351,7 +355,7 @@ void better::edit1(SDL_Window* window, std::string filename, int textHeight, int
             else {
                 continue;
             }
-            
+            lineNoOffset = (8 * (std::to_string(texts[editorIndex].back().textEdit.size()).size() + 1));
             texts[editorIndex].back().data.textWidth = (((editorWidth / editorCount) / 8) - 1) - (std::to_string(texts[editorIndex].back().textEdit.size()).size() + 1);
 
             SDL_FillRect(surface, &screen, SDL_MapRGBA(surface->format, 0x22, 0x22, 0x22, 0xFF));
@@ -430,7 +434,7 @@ better::Text better::keyDown(better::Text text, SDL_Event event, SDL_Surface* su
             if(texts.back().cursor.row != texts.back().textEdit.size() - 1 && texts.back().cursor.row >= texts.back().topLineNumber + texts.back().data.textHeight - 2) {
                 texts.back().topLineNumber += 3;
             }
-            texts.push_back(better::newLine(better::newLine(texts.back())));
+            texts.push_back(better::newLine(better::newLine(texts.back(), true), true));
             texts.push_back(better::verticalNav(texts.back(),SDL_SCANCODE_UP));
             texts.push_back(better::tab(texts.back()));
         }
@@ -438,7 +442,7 @@ better::Text better::keyDown(better::Text text, SDL_Event event, SDL_Surface* su
             if(texts.back().cursor.row != texts.back().textEdit.size() - 1 && texts.back().cursor.row >= texts.back().topLineNumber + texts.back().data.textHeight - 2) {
                 texts.back().topLineNumber += 1;
             }
-            texts.push_back(better::newLine(texts.back()));
+            texts.push_back(better::newLine(texts.back(), true));
         }
         return texts.back();
     }
@@ -518,16 +522,16 @@ better::Text better::handleKey(better::Text text, char key) {
 
 //cases separate for left and right click, break up this function
 better::Text better::mouseButton(better::Text text, SDL_Event event, SDL_Surface* surface, SDL_Cursor* guiCursor, int columnOffset, int editorCount) {
-    better::Cursor tempCursor {better::findCursorPos(text.topLineNumber, text.topColumnNumber, event, columnOffset)};
     int lineNoOffset {static_cast<int>(std::to_string(text.textEdit.size()).size()) + 1};
+    better::Cursor tempCursor {better::findCursorPos(text.topLineNumber, text.topColumnNumber, event, columnOffset)};
     if(editorCount > 1) {
         if(editorCount == 2) {
             if(tempCursor.column < 0) {
                 text.data.switchEditor = 0;
                 return text;
             }
-            else if(!(columnOffset - (lineNoOffset * 8))) {
-                if(tempCursor.column > text.data.textWidth) {
+            else if(text.data.switchEditor == 0) {
+                if(tempCursor.column > (lineNoOffset + text.data.textWidth)) {
                     text.data.switchEditor = 1;
                     return text;
                 }
@@ -539,7 +543,7 @@ better::Text better::mouseButton(better::Text text, SDL_Event event, SDL_Surface
                     text.data.switchEditor = 0;
                     return text;
                 }
-                else if(tempCursor.column > text.data.textWidth) {
+                else if(tempCursor.column > (text.data.textWidth + lineNoOffset)) {
                     text.data.switchEditor = 2;
                     return text;
                 }
@@ -556,12 +560,12 @@ better::Text better::mouseButton(better::Text text, SDL_Event event, SDL_Surface
                     }
                 }
             }
-            else if(!(columnOffset - (lineNoOffset * 8))) {
-                if(tempCursor.column > text.data.textWidth && tempCursor.column < 2 * text.data.textWidth) {
+            else if(text.data.switchEditor == 0) {
+                if(tempCursor.column > text.data.textWidth && tempCursor.column < 2 * (lineNoOffset + text.data.textWidth)) {
                     text.data.switchEditor = 1;
                     return text;
                 }
-                else if(tempCursor.column > 2 * text.data.textWidth) {
+                else if(tempCursor.column > 2 * (text.data.textWidth + lineNoOffset)) {
                     text.data.switchEditor = 2;
                     return text;
                 }

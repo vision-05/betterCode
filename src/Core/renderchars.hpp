@@ -58,7 +58,11 @@ Uint32 unpackUint8Bit(int index, Uint8 number, Uint32 color, Uint32 colorbg);
 //! better::scroll emulates scrolling using a scroll wheel on the text, shifting the topline and topcolumn of the textbuffer to be rendered depending on the direction of the scroll.
 //! This topLine and topColumn is used to tell the render function the first line and column to render, so shifting these makes the illusion of scrolling.
 
-better::Text scroll(better::Text text, SDL_Event event);
+better::Text scroll(better::Text text, SDL_Event event); //move all following functions to more suitable file.
+better::Text scrollUp(better::Text text, int y, int row);
+better::Text scrollDown(better::Text text, int y, int row);
+better::Text scrollLeft(better::Text text, int x, int column);
+better::Text scrollRight(better::Text text, int x, int column, int row);
 
 }
 

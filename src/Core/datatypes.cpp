@@ -46,7 +46,7 @@ better::Text better::backspace(better::Text text) { //couple of bugs with backsp
     return {text.textEdit.set(text.cursor.row,newLine), {text.cursor.row, text.cursor.column - 1}, {{false,false,false,false},text.data.isShift,text.data.isCaps,text.data.isScroll,text.data.isCtrl,text.data.clearHistory,text.data.switchEditor,-1,text.data.menu,text.data.filename,text.data.textHeight,text.data.textWidth}, text.topLineNumber, text.topColumnNumber, text.highlightStart, text.highlightEnd};
 }
 
-better::Text better::newLine(better::Text textEdit) { //create cases for the following: newline at start of line, newline at end of line, newline in middle of line, newline at end of text
+better::Text better::newLine(better::Text textEdit, bool autoIndent) { //create cases for the following: newline at start of line, newline at end of line, newline in middle of line, newline at end of text
     int textHeight {textEdit.data.textHeight};
     int textWidth {textEdit.data.textWidth};
 
@@ -56,10 +56,13 @@ better::Text better::newLine(better::Text textEdit) { //create cases for the fol
     bool textSizeRightSize {textEdit.textEdit.size() > (textHeight - 1) ? true : false}; //if end of text make sure to not just append a new row
     
     better::Text newText {endOfText ? textEdit.textEdit.set(textEdit.cursor.row, textEdit.textEdit[textEdit.cursor.row].take(textEdit.cursor.column)).push_back(textEdit.textEdit[textEdit.cursor.row].drop(textEdit.cursor.column)) : textEdit.textEdit.insert(textEdit.cursor.row + 1, textEdit.textEdit[textEdit.cursor.row].drop(textEdit.cursor.column)).set(textEdit.cursor.row, textEdit.textEdit[textEdit.cursor.row].take(textEdit.cursor.column)), {textEdit.cursor.row + 1, 0}, {{false,false,false,false},textEdit.data.isShift,textEdit.data.isCaps,textEdit.data.isScroll,textEdit.data.isCtrl,textEdit.data.clearHistory,textEdit.data.switchEditor,-1,textEdit.data.menu,textEdit.data.filename,textEdit.data.textHeight,textEdit.data.textWidth}, endOfText ? (textSizeRightSize ? textEdit.topLineNumber + 1 : 0) : textEdit.topLineNumber, 0, textEdit.highlightStart, textEdit.highlightEnd}; //insert newline unless at bottom
-    int prevIndent {better::getPreviousIndentLevel(textEdit, textEdit.cursor.row)};
     texts.push_back(newText);
-    for(int i{}; i < prevIndent; ++i) {
-        texts.push_back(better::updateText(texts.back(),' '));
+    
+    if(autoIndent) {
+        int prevIndent {better::getPreviousIndentLevel(textEdit, textEdit.cursor.row)};
+        for(int i{}; i < prevIndent; ++i) {
+            texts.push_back(better::updateText(texts.back(),' '));
+        }
     }
     //create new case for between {},[] and ()
     return texts.back();

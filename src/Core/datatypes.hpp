@@ -51,7 +51,7 @@ better::charMapArr makeCharMapArr(::Uint8 charArray[16]);
 
 better::Text updateText(better::Text textEdit, char newChar);
 better::Text backspace(better::Text textEdit);
-better::Text newLine(better::Text textEdit);
+better::Text newLine(better::Text textEdit, bool autoIndent);
 better::Text tab(better::Text text);
 
 Uint8 getRed(Uint32 color);
