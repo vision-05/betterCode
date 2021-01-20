@@ -26,6 +26,9 @@ immer::flex_vector<immer::flex_vector<char>> better::readFile(std::string filena
 
     std::ifstream infile {};
     infile.open(filename);
+    if(!infile) {
+        return immer::flex_vector<immer::flex_vector<char>>();
+    }
 
     while(std::getline(infile, buffer)) {
         textContents.push_back(stringToVector(buffer));
@@ -54,7 +57,7 @@ immer::flex_vector<char> better::stringToVector(std::string string) {
     return vector.persistent();
 }
 
-std::filesystem::path better::fileDialog() {
+std::filesystem::path better::fileDialog(std::optional<std::filesystem::path> folderPath) {
     SDL_Window* window = SDL_CreateWindow("File", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 560, 0);
     std::string menu {"Back"};
     SDL_Rect screen {.x = 0, .y = 16, .w = 800, .h = 560 - 16};
@@ -64,6 +67,9 @@ std::filesystem::path better::fileDialog() {
     std::vector<std::filesystem::directory_entry> folders {};
 
     std::filesystem::path path {std::filesystem::current_path()}; //start with current working directory
+    if(folderPath != std::nullopt) {
+        path = *folderPath;
+    }
     for(const std::filesystem::directory_entry& entry : std::filesystem::directory_iterator(path)) {
         if(std::filesystem::is_regular_file(entry.status())) {
             files.push_back(entry); //push back all the files to list of files

@@ -9,6 +9,7 @@
 #include <string>
 #include <unordered_map>
 #include <iostream>
+#include <filesystem>
 
 #include "datatypes.hpp"
 #include "fileUtils.hpp"
@@ -87,7 +88,14 @@ int main(int argc, char* argv[]) {
     SDL_SetMainReady();
     SDL_Init(SDL_INIT_VIDEO);
 
-    std::string filename {better::fileDialog().string()};
+    std::string filename {};
+
+    if(argc == 2) {
+        filename = (std::filesystem::current_path() / std::string(argv[1])).string();
+    }
+    else {
+        filename = better::fileDialog().string();
+    }
 
     SDL_Window* window = SDL_CreateWindow("Better Code",
                                           SDL_WINDOWPOS_UNDEFINED,
@@ -300,7 +308,9 @@ void better::edit1(SDL_Window* window, std::string filename, int textHeight, int
                 else if(event.key.keysym.sym == 'o') {
                     better::saveFile(texts[editorIndex].back().textEdit, texts[editorIndex].back().data.filename);
                     std::string tempFilename {};
-                    tempFilename = better::fileDialog().string();
+                    std::filesystem::path workspaceFolder {texts[editorIndex].back().data.filename};
+                    workspaceFolder = workspaceFolder.parent_path();
+                    tempFilename = better::fileDialog(workspaceFolder).string();
                     texts[editorIndex].back().data.clearHistory = true;
                     texts[editorIndex].back().textEdit = better::readFile(tempFilename);
                     texts[editorIndex].back().cursor = {0,0};
@@ -614,7 +624,9 @@ better::Text better::mouseButton(better::Text text, SDL_Event event, SDL_Surface
         }
         else if(clickRow == 1) {
             better::saveFile(text.textEdit, text.data.filename);
-            std::string tempFilename = better::fileDialog().string();
+            std::filesystem::path workspaceFolder {text.data.filename};
+            workspaceFolder = workspaceFolder.parent_path();
+            std::string tempFilename = better::fileDialog(workspaceFolder).string();
             text.data.clearHistory = true;
             text.textEdit = better::readFile(tempFilename);
             text.cursor = {0,0};
