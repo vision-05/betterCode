@@ -27,7 +27,8 @@ immer::flex_vector<immer::flex_vector<char>> better::readFile(std::string filena
     std::ifstream infile {};
     infile.open(filename);
     if(!infile) {
-        return immer::flex_vector<immer::flex_vector<char>>();
+        textContents.push_back(immer::flex_vector<char>());
+        return textContents.persistent();
     }
 
     while(std::getline(infile, buffer)) {
