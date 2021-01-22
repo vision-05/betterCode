@@ -27,7 +27,7 @@ immer::flex_vector<immer::flex_vector<char>> better::readFile(std::string filena
     std::ifstream infile {};
     infile.open(filename);
     if(!infile) {
-        textContents.push_back(immer::flex_vector<char>());
+        textContents.push_back({});
         return textContents.persistent();
     }
 
@@ -38,6 +38,9 @@ immer::flex_vector<immer::flex_vector<char>> better::readFile(std::string filena
 
     if(textContents[textContents.size() - 1].size() == 1 && textContents[textContents.size() - 1][0] == '\n') {
         textContents.take(textContents.size() - 2);
+    }
+    if(textContents.size() == 0) {
+        textContents.push_back({});
     }
 
     return textContents.persistent();
@@ -56,6 +59,22 @@ immer::flex_vector<char> better::stringToVector(std::string string) {
         }
     }
     return vector.persistent();
+}
+
+better::Text better::filedialog::mouseButtonDown(better::Text text, SDL_Event event) {
+    
+}
+
+better::Text bettter::filedialog::keyDown(better::Text text, SDL_Event event) {
+    
+}
+
+better::Text better::filedialog::mouseMotion(better::Text text, SDL_Event event) {
+    
+}
+
+better::Text better::filedialog::mouseWheel(better::Text text, SDL_Event event) {
+    
 }
 
 std::filesystem::path better::fileDialog(std::optional<std::filesystem::path> folderPath) {
@@ -85,20 +104,38 @@ std::filesystem::path better::fileDialog(std::optional<std::filesystem::path> fo
     std::filesystem::path filePath {}; //store the filepath to return
     bool isFound {false};
 
-    better::Text text; //this just displays the paths
-    text.cursor = {0,0};
+    better::Text text
+    {
+        immer::flex_vector<immer::flex_vector<char>>(), //textEdit
+        {0,0}, //cursor
+        { //data start
+            {false, false, false, false}, //menusToDraw
+            false, //isShift
+            false, //isCaps
+            false, //isScroll
+            false, //isCtrl
+            false, //clearHistory
+            0, //switchEditor
+            -1 //index
+            std::vector<std::string>(), //menu
+            std::string(), //filename
+            35, //textHeight
+            100 //textWidth
+        }, //data end
+        0, //topLineNumber
+        0, //topColumnNumber
+        {0,0}, //highlightStart
+        {0,0} //highlightEnd
+    };
+    
+    std::vector<better::Text> texts {text};
+    
     for(const std::filesystem::directory_entry& entry : folders) {
         text.textEdit = text.textEdit.push_back(better::stringToVector(folderString + entry.path().filename().string()));
     }
     for(const std::filesystem::directory_entry& entry : files) {
         text.textEdit = text.textEdit.push_back(better::stringToVector(fileString + entry.path().filename().string()));
     }
-    text.topColumnNumber = 0;
-    text.topLineNumber = 0;
-    text.highlightStart = {0,0};
-    text.highlightEnd = {0,0};
-    text.data.textHeight = 35;
-    text.data.textWidth = 100;
 
     SDL_FillRect(surface, NULL, SDL_MapRGBA(surface->format, 0x22, 0x22, 0x22, 0xFF));
     better::renderText(surface, text.textEdit, text.topLineNumber, text.topColumnNumber, 35, 100, text.highlightStart, text.highlightEnd, 0x222222FF, 0x5588AAFF, 0x222222FF, 0x5588AAFF, 0x5588AAFF, 0);

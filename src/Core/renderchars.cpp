@@ -225,66 +225,7 @@ Uint32 better::unpackUint8Bit(int index, Uint8 number, Uint32 color, Uint32 colo
     return result;
 }
 
-better::Text better::scroll(better::Text text, SDL_Event event) {
-    int row {text.topLineNumber + text.data.textHeight};
-    int column {text.topColumnNumber + text.data.textWidth};
 
-    if(event.wheel.y > 0) {
-        return better::scrollUp(text, event.wheel.y, row);
-    }
-    else {
-        return better::scrollDown(text, event.wheel.y, row);
-    }
-
-    if(event.wheel.x > 0) {
-        return better::scrollRight(text, event.wheel.x, column, row);
-    }
-    else {
-        return better::scrollLeft(text, event.wheel.x, column);
-    }
-
-    return text;
-}
-
-better::Text better::scrollLeft(better::Text text, int x, int column) {
-    for(int times{}; times > x; --times) {
-        if(text.topColumnNumber) {
-            column -= 1;
-            text.topColumnNumber -= 1;
-        }
-    }
-    return text;
-}
-
-better::Text better::scrollRight(better::Text text, int x, int column, int row) {
-    for(int times{}; times < x; ++times) {
-        if((column == text.topColumnNumber + text.data.textWidth) && (column < text.textEdit[row].size())) {
-            column += 1;
-            text.topColumnNumber += 1;
-        }
-    }
-    return text;
-}
-
-better::Text better::scrollDown(better::Text text, int y, int row) {
-    for(int times{}; times > y; --times) {
-        if((row == text.topLineNumber + text.data.textHeight) && (row - 1 < text.textEdit.size())) {
-            row += 1;
-            text.topLineNumber += 1;
-        }
-    }
-    return text;
-}
-
-better::Text better::scrollUp(better::Text text, int y, int row) {
-    for(int times{}; times < y; ++times) {
-        if(text.topLineNumber) {
-            row -= 1;
-            text.topLineNumber -= 1;
-        }
-    }
-    return text;
-}
 
 void better::renderLineNumbers(SDL_Surface* surface, int topLine, int columnOffset, int textLength, int editorHeight, Uint32 colorfg, Uint32 colorbg) {
     std::string number {std::to_string(textLength)};

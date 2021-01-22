@@ -59,6 +59,12 @@ Uint8 getGreen(Uint32 color);
 Uint8 getBlue(Uint32 color);
 Uint8 getAlpha(Uint32 color);
 
+better::Text scroll(better::Text text, SDL_Event event);
+better::Text scrollUp(better::Text text, int y, int row);
+better::Text scrollDown(better::Text text, int y, int row);
+better::Text scrollLeft(better::Text text, int x, int column);
+better::Text scrollRight(better::Text text, int x, int column, int row);
+
 int getPreviousIndentLevel(better::Text text, int row);
 
 }

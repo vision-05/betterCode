@@ -1,6 +1,5 @@
 //! @file
 //! This file contains all of the user defined structs used throughout the project
-//constexpr for textheight and textwidth, edit conditionals, get rid of ternaries
 #include "datatypes.hpp"
 
 better::Text better::updateText(better::Text textEdit, char newChar) {
@@ -10,7 +9,29 @@ better::Text better::updateText(better::Text textEdit, char newChar) {
     bool endOfLine {textEdit.cursor.column == textEdit.textEdit[textEdit.cursor.row].size()};
     bool endOfScreen {textEdit.cursor.column + 1 >= textEdit.topColumnNumber + textWidth};
     immer::flex_vector<char> line {endOfLine ? textEdit.textEdit[textEdit.cursor.row].push_back(newChar) : textEdit.textEdit[textEdit.cursor.row].insert(textEdit.cursor.column, newChar)}; //add the character to the line (change to insert unless the cursor is at the end of the line)
-    better::Text tempText {textEdit.textEdit.set(textEdit.cursor.row,line),{textEdit.cursor.row, textEdit.cursor.column + 1}, {{false,false,false,false},textEdit.data.isShift,textEdit.data.isCaps,textEdit.data.isScroll,textEdit.data.isCtrl,textEdit.data.clearHistory,textEdit.data.switchEditor,-1,textEdit.data.menu,textEdit.data.filename,textEdit.data.textHeight,textEdit.data.textWidth}, textEdit.topLineNumber, endOfScreen ? textEdit.topColumnNumber + 1 : textEdit.topColumnNumber, textEdit.highlightStart, textEdit.highlightEnd};
+    better::Text tempText
+    {
+        textEdit.textEdit.set(textEdit.cursor.row,line), //textEdit
+        {textEdit.cursor.row, textEdit.cursor.column + 1}, //cursor
+        { //data start
+            {false,false,false,false}, //menusToDraw
+            textEdit.data.isShift, //isShift
+            textEdit.data.isCaps, //isCaps
+            textEdit.data.isScroll, //isScroll
+            textEdit.data.isCtrl, //isCtrl
+            textEdit.data.clearHistory, //clearHistory
+            textEdit.data.switchEditor, //switchEditor
+            -1, //index
+            textEdit.data.menu, //menu
+            textEdit.data.filename, //filename
+            textEdit.data.textHeight, //textHeight
+            textEdit.data.textWidth //textWidth
+        }, //data end
+        textEdit.topLineNumber, //topLineNumber
+        endOfScreen ? textEdit.topColumnNumber + 1 : textEdit.topColumnNumber, //topColumnNumber
+        textEdit.highlightStart, //hightlightStart
+        textEdit.highlightEnd //higlightEnd
+    };
     return tempText;
 }
 
@@ -38,12 +59,78 @@ better::Text better::backspace(better::Text text) { //couple of bugs with backsp
                 topColumnNo = colNo - textWidth;
             }
             newLine = text.textEdit[text.cursor.row - 1] + text.textEdit[text.cursor.row];
-            return {text.textEdit.erase(text.cursor.row).set(text.cursor.row - 1, newLine), {text.cursor.row - 1, colNo}, {{false,false,false,false},text.data.isShift,text.data.isCaps,text.data.isScroll,text.data.isCtrl,text.data.clearHistory,text.data.switchEditor,-1,text.data.menu,text.data.filename,text.data.textHeight,text.data.textWidth}, text.cursor.row >= text.textEdit.size() - 1 ? text.topLineNumber - 1 : text.topLineNumber, topColumnNo, text.highlightStart, text.highlightEnd};
+            return
+            { //Text start
+                text.textEdit.erase(text.cursor.row).set(text.cursor.row - 1, newLine), //textEdit
+                {text.cursor.row - 1, colNo}, //cursor
+                { //data start
+                    {false,false,false,false}, //menusToDraw
+                    text.data.isShift, //isShift
+                    text.data.isCaps, //isCaps
+                    text.data.isScroll, //isScroll
+                    text.data.isCtrl, //isCtrl
+                    text.data.clearHistory, //clearHistory
+                    text.data.switchEditor, //switchEditor
+                    -1, //index
+                    text.data.menu, //menu
+                    text.data.filename, //filename
+                    text.data.textHeight, //textHeight
+                    text.data.textWidth //textWidth
+                }, //data end
+                text.cursor.row >= text.textEdit.size() - 1 ? text.topLineNumber - 1 : text.topLineNumber, //topLineNumber
+                topColumnNo, //topColumnNumber
+                text.highlightStart, //highlightStart
+                text.highlightEnd //highlightEnd
+            }; //Text end
         }
-        return {text.textEdit.erase(text.cursor.row), {text.cursor.row - 1, static_cast<int>(text.textEdit[text.cursor.row - 1].size())}, {{false,false,false,false},text.data.isShift,text.data.isCaps,text.data.isScroll,text.data.isCtrl,text.data.clearHistory,text.data.switchEditor,-1,text.data.menu,text.data.filename,text.data.textHeight,text.data.textWidth}, text.cursor.row >= text.textEdit.size() - 1 ? text.topLineNumber - 1 : text.topLineNumber, text.topColumnNumber, text.highlightStart, text.highlightEnd};
+        return
+        {
+            text.textEdit.erase(text.cursor.row),
+            {text.cursor.row - 1, static_cast<int>(text.textEdit[text.cursor.row - 1].size())},
+            {
+                {false,false,false,false},
+                text.data.isShift,
+                text.data.isCaps,
+                text.data.isScroll,
+                text.data.isCtrl,
+                text.data.clearHistory,
+                text.data.switchEditor,
+                -1,
+                text.data.menu,
+                text.data.filename,
+                text.data.textHeight,
+                text.data.textWidth
+            },
+            text.cursor.row >= text.textEdit.size() - 1 ? text.topLineNumber - 1 : text.topLineNumber,
+            text.topColumnNumber,
+            text.highlightStart,
+            text.highlightEnd
+        };
     }
 
-    return {text.textEdit.set(text.cursor.row,newLine), {text.cursor.row, text.cursor.column - 1}, {{false,false,false,false},text.data.isShift,text.data.isCaps,text.data.isScroll,text.data.isCtrl,text.data.clearHistory,text.data.switchEditor,-1,text.data.menu,text.data.filename,text.data.textHeight,text.data.textWidth}, text.topLineNumber, text.topColumnNumber, text.highlightStart, text.highlightEnd};
+    return
+    {
+        text.textEdit.set(text.cursor.row,newLine),
+        {text.cursor.row, text.cursor.column - 1}, 
+        {
+            {false,false,false,false},
+            text.data.isShift,
+            text.data.isCaps,
+            text.data.isScroll,
+            text.data.isCtrl,
+            text.data.clearHistory,
+            text.data.switchEditor,
+            -1,
+            text.data.menu,
+            text.data.filename,
+            text.data.textHeight,
+            text.data.textWidth
+        },
+        text.topLineNumber,
+        text.topColumnNumber,
+        text.highlightStart,
+        text.highlightEnd
+    };
 }
 
 better::Text better::newLine(better::Text textEdit, bool autoIndent) { //create cases for the following: newline at start of line, newline at end of line, newline in middle of line, newline at end of text
@@ -55,7 +142,31 @@ better::Text better::newLine(better::Text textEdit, bool autoIndent) { //create 
     bool endOfText {textEdit.cursor.row == textEdit.textEdit.size() - 1 ? true : false};
     bool textSizeRightSize {textEdit.textEdit.size() > (textHeight - 1) ? true : false}; //if end of text make sure to not just append a new row
     
-    better::Text newText {endOfText ? textEdit.textEdit.set(textEdit.cursor.row, textEdit.textEdit[textEdit.cursor.row].take(textEdit.cursor.column)).push_back(textEdit.textEdit[textEdit.cursor.row].drop(textEdit.cursor.column)) : textEdit.textEdit.insert(textEdit.cursor.row + 1, textEdit.textEdit[textEdit.cursor.row].drop(textEdit.cursor.column)).set(textEdit.cursor.row, textEdit.textEdit[textEdit.cursor.row].take(textEdit.cursor.column)), {textEdit.cursor.row + 1, 0}, {{false,false,false,false},textEdit.data.isShift,textEdit.data.isCaps,textEdit.data.isScroll,textEdit.data.isCtrl,textEdit.data.clearHistory,textEdit.data.switchEditor,-1,textEdit.data.menu,textEdit.data.filename,textEdit.data.textHeight,textEdit.data.textWidth}, endOfText ? (textSizeRightSize ? textEdit.topLineNumber + 1 : 0) : textEdit.topLineNumber, 0, textEdit.highlightStart, textEdit.highlightEnd}; //insert newline unless at bottom
+    better::Text newText
+    {
+        endOfText ? textEdit.textEdit.set(textEdit.cursor.row, textEdit.textEdit[textEdit.cursor.row].take(textEdit.cursor.column)).push_back(textEdit.textEdit[textEdit.cursor.row].drop(textEdit.cursor.column)) :
+                    textEdit.textEdit.insert(textEdit.cursor.row + 1, textEdit.textEdit[textEdit.cursor.row].drop(textEdit.cursor.column)).set(textEdit.cursor.row, textEdit.textEdit[textEdit.cursor.row].take(textEdit.cursor.column)),
+        {textEdit.cursor.row + 1, 0},
+        {
+            {false,false,false,false},
+            textEdit.data.isShift,
+            textEdit.data.isCaps,
+            textEdit.data.isScroll,
+            textEdit.data.isCtrl,
+            textEdit.data.clearHistory,
+            textEdit.data.switchEditor,
+            -1,
+            textEdit.data.menu,
+            textEdit.data.filename,
+            textEdit.data.textHeight,
+            textEdit.data.textWidth
+        },
+        endOfText ? (textSizeRightSize ? textEdit.topLineNumber + 1 : 0) : textEdit.topLineNumber,
+        0,
+        textEdit.highlightStart,
+        textEdit.highlightEnd
+    };
+    
     texts.push_back(newText);
     
     if(autoIndent) {
@@ -64,7 +175,7 @@ better::Text better::newLine(better::Text textEdit, bool autoIndent) { //create 
             texts.push_back(better::updateText(texts.back(),' '));
         }
     }
-    //create new case for between {},[] and ()
+    
     return texts.back();
 }
 
@@ -96,6 +207,67 @@ Uint8 better::getBlue(Uint32 color) {
 
 Uint8 better::getAlpha(Uint32 color) {
     return static_cast<Uint8>(color & 0x000000FF);
+}
+
+better::Text better::scroll(better::Text text, SDL_Event event) {
+    int row {text.topLineNumber + text.data.textHeight};
+    int column {text.topColumnNumber + text.data.textWidth};
+
+    if(event.wheel.y > 0) {
+        return better::scrollUp(text, event.wheel.y, row);
+    }
+    else {
+        return better::scrollDown(text, event.wheel.y, row);
+    }
+
+    if(event.wheel.x > 0) {
+        return better::scrollRight(text, event.wheel.x, column, row);
+    }
+    else {
+        return better::scrollLeft(text, event.wheel.x, column);
+    }
+
+    return text;
+}
+
+better::Text better::scrollLeft(better::Text text, int x, int column) {
+    for(int times{}; times > x; --times) {
+        if(text.topColumnNumber) {
+            column -= 1;
+            text.topColumnNumber -= 1;
+        }
+    }
+    return text;
+}
+
+better::Text better::scrollRight(better::Text text, int x, int column, int row) {
+    for(int times{}; times < x; ++times) {
+        if((column == text.topColumnNumber + text.data.textWidth) && (column < text.textEdit[row].size())) {
+            column += 1;
+            text.topColumnNumber += 1;
+        }
+    }
+    return text;
+}
+
+better::Text better::scrollDown(better::Text text, int y, int row) {
+    for(int times{}; times > y; --times) {
+        if((row == text.topLineNumber + text.data.textHeight) && (row - 1 < text.textEdit.size())) {
+            row += 1;
+            text.topLineNumber += 1;
+        }
+    }
+    return text;
+}
+
+better::Text better::scrollUp(better::Text text, int y, int row) {
+    for(int times{}; times < y; ++times) {
+        if(text.topLineNumber) {
+            row -= 1;
+            text.topLineNumber -= 1;
+        }
+    }
+    return text;
 }
 
 int better::getPreviousIndentLevel(better::Text text, int row) {

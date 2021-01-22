@@ -23,6 +23,13 @@ immer::flex_vector<immer::flex_vector<char>> readFile(std::string filename);
 immer::flex_vector<char> stringToVector(std::string string);
 std::filesystem::path fileDialog(std::optional<std::filesystem::path> folderPath = std::nullopt);
 
+    namespace filedialog {
+        better::Text mouseButtonDown(better::Text text, SDL_Event event);
+        better::Text mouseMotion(better::Text text, SDL_Event event);
+        better::Text keyDown(better::Text text, SDL_Event event);
+        better::Text mouseWheel(better::Text text, SDL_Event event);
+    }
+
 }
 
 #endif
