@@ -116,7 +116,7 @@ std::filesystem::path better::fileDialog(std::optional<std::filesystem::path> fo
             false, //isCtrl
             false, //clearHistory
             0, //switchEditor
-	    -1, //index
+            -1, //index
             std::vector<std::string>(), //menu
             std::string(), //filename
             35, //textHeight
