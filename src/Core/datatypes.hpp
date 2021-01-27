@@ -16,7 +16,7 @@ struct Cursor { //store the line number and column number of the cursor
     int column;
 };
 
-better::Cursor findCursorPos(int topLine, int topColumn, SDL_Event event, int columnOffset);
+better::Cursor findCursorPos(int topLine, int topColumn, SDL_Event event, int columnOffset, int characterHeight, int characterWidth);
 
 struct editorData {
     bool menusToDraw[4] = {false, false, false, false};
@@ -42,12 +42,6 @@ struct Text {
     better::Cursor highlightStart {0,0};
     better::Cursor highlightEnd {0,0};
 };
-
-struct charMapArr {
-    ::Uint8 arr[16];
-};
-
-better::charMapArr makeCharMapArr(::Uint8 charArray[16]); 
 
 better::Text updateText(better::Text textEdit, char newChar);
 better::Text backspace(better::Text textEdit);

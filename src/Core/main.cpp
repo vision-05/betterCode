@@ -48,15 +48,15 @@ char unshiftLetter(char key);
 //! better::edit1 initialises a text editor the size of the window passed by its pointer.
 //! It also reads in the file into its own text buffer, and contains the event loop for that text edit.
 
-better::Text mouseMotion(better::Text text, SDL_Event event, SDL_Surface* surface, SDL_Cursor* guiCursor, int columnOffset, int editorCount);
+better::Text mouseMotion(better::Text text, SDL_Event event, SDL_Surface* surface, SDL_Cursor* guiCursor, int columnOffset, int editorCount, int characterHeight, int characterWidth);
 
-better::Text keyDown(better::Text text, SDL_Event event, SDL_Surface* surface, SDL_Cursor* guiCursor, int columnOffset, int editorCount);
+better::Text keyDown(better::Text text, SDL_Event event, SDL_Surface* surface, SDL_Cursor* guiCursor, int columnOffset, int editorCount, int characterHeight, int characterWidth);
 
-better::Text mouseButton(better::Text text, SDL_Event event, SDL_Surface* surface, SDL_Cursor* guiCursor, int columnOffset, int editorCount);
+better::Text mouseButton(better::Text text, SDL_Event event, SDL_Surface* surface, SDL_Cursor* guiCursor, int columnOffset, int editorCount, int characterHeight, int characterWidth);
 
-better::Text mouseButtonUp(better::Text text, SDL_Event event, SDL_Surface* surface, SDL_Cursor* guiCursor, int columnOffset, int editorCount);
+better::Text mouseButtonUp(better::Text text, SDL_Event event, SDL_Surface* surface, SDL_Cursor* guiCursor, int columnOffset, int editorCount, int characterHeight, int characterWidth);
 
-better::Text mouseWheel(better::Text text, SDL_Event event, SDL_Surface* surface, SDL_Cursor* guiCursor, int columnOffset, int editorCount);
+better::Text mouseWheel(better::Text text, SDL_Event event, SDL_Surface* surface, SDL_Cursor* guiCursor, int columnOffset, int editorCount, int characterHeight, int characterWidth);
 
 better::Text autoBracket(better::Text text, char bracket);
 
@@ -66,7 +66,7 @@ better::Text deleteHighlighted(better::Text text);
 
 better::Text handleKey(better::Text text, char key);
 
-void edit1(SDL_Window* window, std::string filename, int textHeight, int textWidth, Uint32 colorbg, Uint32 colorfg, Uint32 colorhighlight, Uint32 colorparens, Uint32 colorcomments);
+void edit1(SDL_Window* window, std::string filename, int textHeight, int textWidth, Uint32 colorbg, Uint32 colorfg, Uint32 colorhighlight, Uint32 colorparens, Uint32 colorcomments, int characterHeight, int characterWidth);
 
 void copyClipboard(better::Text text);
 
@@ -103,14 +103,16 @@ int main(int argc, char* argv[]) {
                                           1200,960,SDL_WINDOW_RESIZABLE);
 
     int textHeight {60};
-    int textWidth {150};
+    int textWidth {149};
+    int characterHeight {16};
+    int characterWidth {8};
     Uint32 colorbg {0x222222FF};
     Uint32 colorfg {0x5588AAFF};
     Uint32 colorhighlight {0x444444FF};
     Uint32 colorparens {0xAA6969FF};
     Uint32 colorcomments {0x666666FF};
     
-    better::edit1(window, filename, textHeight, textWidth, colorbg, colorfg, colorhighlight, colorparens, colorcomments);
+    better::edit1(window, filename, textHeight, textWidth, colorbg, colorfg, colorhighlight, colorparens, colorcomments, characterHeight, characterWidth);
     return 0;
 }
 
@@ -188,10 +190,10 @@ better::Text better::cutClipboard(better::Text text) {
     return better::deleteHighlighted(text);
 } 
 
-void better::edit1(SDL_Window* window, std::string filename, int textHeight, int textWidth, Uint32 colorbg, Uint32 colorfg, Uint32 colorhighlight, Uint32 colorparens, Uint32 colorcomments) {
+void better::edit1(SDL_Window* window, std::string filename, int textHeight, int textWidth, Uint32 colorbg, Uint32 colorfg, Uint32 colorhighlight, Uint32 colorparens, Uint32 colorcomments, int characterHeight, int characterWidth) {
     std::vector<std::vector<better::Text>> texts {{}};
-    int editorWidth {1200};
-    int editorHeight {960};
+    int editorWidth {characterWidth * 150};
+    int editorHeight {characterHeight * 60};
     int editorIndex {0};
     int editorCount {1};
     int columnOffset {editorIndex * (editorWidth / editorCount)};
@@ -200,29 +202,29 @@ void better::edit1(SDL_Window* window, std::string filename, int textHeight, int
     SDL_Cursor* guiCursor {SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_IBEAM)};
     SDL_SetCursor(guiCursor);
 
-    SDL_Rect screen {.x = 0, .y = 16, .w = 1200, .h = 960 - 16};
+    SDL_Rect screen {.x = 0, .y = characterHeight, .w = editorWidth, .h = editorHeight - characterHeight};
 
     SDL_Surface* surface = SDL_GetWindowSurface(window);
 
     std::string menus {" File  Edit  View  Settings + X "};
     std::vector<std::vector<std::string>> menuText {{"Open","Save","Exit"},{"Cut","Copy","Paste"},{},{"Edit Settings"}};
     better::Text firstText {better::readFile(filename), {0,0}, {{false,false,false,false}, false, false, false, false, false, 0, -1, {}, filename, 60, 149}, 0, 0, {0,0}, {0,0}};
-    firstText.data.textWidth = (((editorWidth / editorCount) / 8) - 1) - (std::to_string(firstText.textEdit.size()).size() + 1);
+    firstText.data.textWidth -= (std::to_string(firstText.textEdit.size()).size() + 1);
     texts[editorIndex].push_back(firstText);
-    lineNoOffset = 8 * (static_cast<int>(std::to_string(firstText.textEdit.size()).size()) + 1);
+    lineNoOffset = characterWidth * (static_cast<int>(std::to_string(firstText.textEdit.size()).size()) + 1);
     
     SDL_FillRect(surface, NULL, SDL_MapRGBA(surface->format, 0x22, 0x22, 0x22, 0xFF));
-    better::renderText(surface, texts[editorIndex].back().textEdit, texts[editorIndex].back().topLineNumber, texts[editorIndex].back().topColumnNumber, textHeight, textWidth, {0,0}, {0,0}, colorbg, colorfg, colorhighlight, colorparens, colorcomments, columnOffset + lineNoOffset);
-    SDL_Rect topline {.x = 0, .y = 0, .w = 1200, .h = 16};
+    better::renderText(surface, texts[editorIndex].back().textEdit, texts[editorIndex].back().topLineNumber, texts[editorIndex].back().topColumnNumber, texts[editorIndex].back().data.textHeight, texts[editorIndex].back().data.textWidth, {0,0}, {0,0}, colorbg, colorfg, colorhighlight, colorparens, colorcomments, columnOffset + lineNoOffset, characterHeight, characterWidth);
+    SDL_Rect topline {.x = 0, .y = 0, .w = characterWidth * 150, .h = characterHeight};
     SDL_FillRect(surface, &topline, SDL_MapRGBA(surface->format, 0x66, 0x66, 0x66, 0xFF));
-    better::drawMenuBar(surface, menus, 0xDDDDDDFF, 0x666666FF, editorWidth, columnOffset);
-    better::renderLineNumbers(surface, texts[0].back().topLineNumber, columnOffset, texts[0].back().textEdit.size(), texts[0].back().data.textHeight, colorfg, colorbg);
+    better::drawMenuBar(surface, menus, 0xDDDDDDFF, 0x666666FF, editorWidth, columnOffset, characterHeight, characterWidth);
+    better::renderLineNumbers(surface, texts[0].back().topLineNumber, columnOffset, texts[0].back().textEdit.size(), texts[0].back().data.textHeight, colorfg, colorbg, characterHeight, characterWidth);
 
     SDL_UpdateWindowSurface(window);
 
     SDL_Event event;
 
-    std::unordered_map<Uint32, better::Text(*)(better::Text, SDL_Event, SDL_Surface*, SDL_Cursor*, int, int)> handlers {
+    std::unordered_map<Uint32, better::Text(*)(better::Text, SDL_Event, SDL_Surface*, SDL_Cursor*, int, int, int, int)> handlers {
         {SDL_MOUSEMOTION, better::mouseMotion},
         {SDL_KEYDOWN, better::keyDown},
         {SDL_MOUSEBUTTONDOWN, better::mouseButton},
@@ -255,12 +257,12 @@ void better::edit1(SDL_Window* window, std::string filename, int textHeight, int
             }
             else if(event.type == SDL_WINDOWEVENT) {
                 if(event.window.event == SDL_WINDOWEVENT_RESIZED) {
-                    screen.h = event.window.data2 - 16;
+                    screen.h = event.window.data2 - characterHeight;
                     screen.w = event.window.data1;
                     for(int i{}; i < texts.size(); ++i) {
                         for(int j{}; j < texts[i].size(); ++j) {
-                            texts[i][j].data.textHeight = event.window.data2 / 16;
-                            texts[i][j].data.textWidth = (event.window.data1 / 8) / texts.size() - 1;
+                            texts[i][j].data.textHeight = event.window.data2 / characterHeight;
+                            texts[i][j].data.textWidth = (event.window.data1 / characterWidth) / texts.size() - 1;
                             texts[i][j].data.textWidth -= (std::to_string(texts[i][j].textEdit.size()).size() + 1);
                             editorWidth = event.window.data1;
                             editorHeight = event.window.data2;
@@ -270,13 +272,13 @@ void better::edit1(SDL_Window* window, std::string filename, int textHeight, int
                     surface = SDL_GetWindowSurface(window);
                     SDL_FillRect(surface, NULL, SDL_MapRGBA(surface->format, 0x22, 0x22, 0x22, 0xFF));
                     for(int i{}; i < texts.size(); ++i) {
-                        lineNoOffset = (8 * (std::to_string(texts[i].back().textEdit.size()).size() + 1));
+                        lineNoOffset = (characterWidth * (std::to_string(texts[i].back().textEdit.size()).size() + 1));
                         columnOffset = (i * (editorWidth / editorCount));
                         topline.w = editorWidth;
                         SDL_FillRect(surface, &topline, SDL_MapRGBA(surface->format, 0x66, 0x66, 0x66, 0xFF));
-                        better::drawMenuBar(surface, menus, 0xDDDDDDFF, 0x666666FF, event.window.data1, columnOffset);
-                        better::renderText(surface, texts[i].back().textEdit, texts[i].back().topLineNumber, texts[i].back().topColumnNumber, texts[i].back().data.textHeight, texts[i].back().data.textWidth, texts[i].back().highlightStart, texts[i].back().highlightEnd, colorbg, colorfg, colorhighlight, colorparens, colorcomments, columnOffset + lineNoOffset);
-                        better::renderLineNumbers(surface, texts[i].back().topLineNumber, columnOffset, texts[i].back().textEdit.size(), texts[i].back().data.textHeight, colorfg, colorbg);
+                        better::drawMenuBar(surface, menus, 0xDDDDDDFF, 0x666666FF, event.window.data1, columnOffset, characterHeight, characterWidth);
+                        better::renderText(surface, texts[i].back().textEdit, texts[i].back().topLineNumber, texts[i].back().topColumnNumber, texts[i].back().data.textHeight, texts[i].back().data.textWidth, texts[i].back().highlightStart, texts[i].back().highlightEnd, colorbg, colorfg, colorhighlight, colorparens, colorcomments, columnOffset + lineNoOffset, characterHeight, characterWidth);
+                        better::renderLineNumbers(surface, texts[i].back().topLineNumber, columnOffset, texts[i].back().textEdit.size(), texts[i].back().data.textHeight, colorfg, colorbg, characterHeight, characterWidth);
                     }
                     SDL_UpdateWindowSurface(window);
                     continue;
@@ -293,11 +295,13 @@ void better::edit1(SDL_Window* window, std::string filename, int textHeight, int
                     if(texts.size() < 3) {
                         editorIndex++;
                         editorCount++;
-                        filename = better::fileDialog().string();
+                        std::filesystem::path workspaceFolder {texts[editorIndex].back().data.filename};
+                        workspaceFolder = workspaceFolder.parent_path();
+                        filename = better::fileDialog(workspaceFolder).string();
                         texts.push_back({{better::readFile(filename), {0,0}, {{false,false,false,false}, false, false, false, false, false, editorIndex, -1, {}, filename, static_cast<int>(editorHeight / 16), static_cast<int>((editorWidth / (texts.size() + 1)) / 8)}, 0, 0, {0,0}, {0,0}}});
                         for(int i{}; i < texts.size(); ++i) {
                             for(int j{}; j < texts[i].size(); ++j) {
-                                texts[i][j].data.textWidth = (((editorWidth / editorCount) / 8) - 1) - (std::to_string(texts[editorIndex].back().textEdit.size()).size() + 1);
+                                texts[i][j].data.textWidth = (((editorWidth / editorCount) / characterWidth) - 1) - (std::to_string(texts[editorIndex].back().textEdit.size()).size() + 1);
                             }
                         }
                     }
@@ -344,7 +348,7 @@ void better::edit1(SDL_Window* window, std::string filename, int textHeight, int
 
             else if(event.type == SDL_KEYDOWN || event.type == SDL_MOUSEBUTTONDOWN || event.type == SDL_MOUSEMOTION || event.type == SDL_MOUSEWHEEL || event.type == SDL_MOUSEBUTTONUP) {
                 columnOffset = editorIndex * (editorWidth / editorCount);
-                better::Text tempText {(handlers[event.type])(texts[editorIndex].back(), event, surface, guiCursor, columnOffset + lineNoOffset, editorCount)};
+                better::Text tempText {(handlers[event.type])(texts[editorIndex].back(), event, surface, guiCursor, columnOffset + lineNoOffset, editorCount, characterHeight, characterWidth)};
                 if(tempText.data.clearHistory) {
                     texts[editorIndex].clear();
                     texts[editorIndex].push_back(tempText);
@@ -370,12 +374,12 @@ void better::edit1(SDL_Window* window, std::string filename, int textHeight, int
 
             SDL_FillRect(surface, &screen, SDL_MapRGBA(surface->format, 0x22, 0x22, 0x22, 0xFF));
             for(int i{}; i < texts.size(); ++i) {
-                lineNoOffset = (8 * (std::to_string(texts[i].back().textEdit.size()).size() + 1));
+                lineNoOffset = (characterWidth * (std::to_string(texts[i].back().textEdit.size()).size() + 1));
                 columnOffset = (i * static_cast<int>(editorWidth / editorCount));
-                better::drawMenuBar(surface, menus, 0xDDDDDDFF, 0x666666FF, editorWidth, columnOffset);
-                better::renderText(surface, texts[i].back().textEdit, texts[i].back().topLineNumber, texts[i].back().topColumnNumber, texts[i].back().data.textHeight, texts[i].back().data.textWidth, texts[i].back().highlightStart, texts[i].back().highlightEnd, colorbg, colorfg, colorhighlight, colorparens, colorcomments, columnOffset + lineNoOffset);
+                better::drawMenuBar(surface, menus, 0xDDDDDDFF, 0x666666FF, editorWidth, columnOffset, characterHeight, characterWidth);
+                better::renderText(surface, texts[i].back().textEdit, texts[i].back().topLineNumber, texts[i].back().topColumnNumber, texts[i].back().data.textHeight, texts[i].back().data.textWidth, texts[i].back().highlightStart, texts[i].back().highlightEnd, colorbg, colorfg, colorhighlight, colorparens, colorcomments, columnOffset + lineNoOffset, characterHeight, characterWidth);
                 if(!texts[i].back().data.isScroll) {
-                    better::renderCursor(surface, texts[i].back().cursor.column, texts[i].back().cursor.row, texts[i].back().topLineNumber, texts[i].back().topColumnNumber, columnOffset + lineNoOffset);
+		  better::renderCursor(surface, texts[i].back().cursor.column, texts[i].back().cursor.row, texts[i].back().topLineNumber, texts[i].back().topColumnNumber, columnOffset + lineNoOffset, characterHeight, characterWidth);
                 }
                 texts[i].back().data.index = better::selectMenu(texts[i].back().data.menusToDraw);
                 if(texts[i].back().data.index < 0 || texts[i].back().data.index > 3) {
@@ -385,18 +389,18 @@ void better::edit1(SDL_Window* window, std::string filename, int textHeight, int
                     texts[i].back().data.menu = menuText[texts[i].back().data.index];
                 }
 
-                better::renderLineNumbers(surface, texts[i].back().topLineNumber, columnOffset, texts[i].back().textEdit.size(), texts[i].back().data.textHeight, colorfg, colorbg);
-                better::drawMenus(surface, texts[i].back().data.menu, 0xDDDDDDFF, colorhighlight, columnOffset);
+                better::renderLineNumbers(surface, texts[i].back().topLineNumber, columnOffset, texts[i].back().textEdit.size(), texts[i].back().data.textHeight, colorfg, colorbg, characterHeight, characterWidth);
+                better::drawMenus(surface, texts[i].back().data.menu, 0xDDDDDDFF, colorhighlight, columnOffset, characterHeight, characterWidth);
             }
             SDL_UpdateWindowSurface(window);
         }
     }
 }
 
-better::Text better::mouseButtonUp(better::Text text, SDL_Event event, SDL_Surface* surface, SDL_Cursor* guiCursor, int columnOffset, int editorCount) {
-    better::Cursor tempCursor = better::findCursorPos(text.topLineNumber, text.topColumnNumber, event, columnOffset);
+better::Text better::mouseButtonUp(better::Text text, SDL_Event event, SDL_Surface* surface, SDL_Cursor* guiCursor, int columnOffset, int editorCount, int characterHeight, int characterWidth) {
+    better::Cursor tempCursor = better::findCursorPos(text.topLineNumber, text.topColumnNumber, event, columnOffset, characterHeight, characterWidth);
     if(event.button.button == SDL_BUTTON_LEFT) {
-        if(event.button.y < 16) {
+        if(event.button.y < characterHeight) {
             return text;
         }
         text.highlightEnd = tempCursor;
@@ -421,12 +425,12 @@ better::Text better::autoBracket(better::Text text, char letter) {
     return better::horizontalNav(better::updateText(better::updateText(text,letter),letter + num),SDL_SCANCODE_LEFT);
 }
 
-better::Text better::mouseWheel(better::Text text, SDL_Event event, SDL_Surface* surface, SDL_Cursor* guiCursor, int columnOffset, int editorCount) {
+better::Text better::mouseWheel(better::Text text, SDL_Event event, SDL_Surface* surface, SDL_Cursor* guiCursor, int columnOffset, int editorCount, int characterHeight, int characterWidth) {
     text.data.isScroll = true;
     return better::scroll(text, event);
 }
 
-better::Text better::keyDown(better::Text text, SDL_Event event, SDL_Surface* surface, SDL_Cursor* guiCursor, int columnOffset, int editorCount) {
+better::Text better::keyDown(better::Text text, SDL_Event event, SDL_Surface* surface, SDL_Cursor* guiCursor, int columnOffset, int editorCount, int characterHeight, int characterWidth) {
     if(event.key.keysym.scancode == SDL_SCANCODE_DOWN || event.key.keysym.scancode == SDL_SCANCODE_UP) {
         text.highlightStart = text.highlightEnd;
         return better::verticalNav(text, event.key.keysym.scancode);
@@ -531,9 +535,9 @@ better::Text better::handleKey(better::Text text, char key) {
 }
 
 //cases separate for left and right click, break up this function
-better::Text better::mouseButton(better::Text text, SDL_Event event, SDL_Surface* surface, SDL_Cursor* guiCursor, int columnOffset, int editorCount) {
+better::Text better::mouseButton(better::Text text, SDL_Event event, SDL_Surface* surface, SDL_Cursor* guiCursor, int columnOffset, int editorCount, int characterHeight, int characterWidth) {
     int lineNoOffset {static_cast<int>(std::to_string(text.textEdit.size()).size()) + 1};
-    better::Cursor tempCursor {better::findCursorPos(text.topLineNumber, text.topColumnNumber, event, columnOffset)};
+    better::Cursor tempCursor {better::findCursorPos(text.topLineNumber, text.topColumnNumber, event, columnOffset, characterHeight, characterWidth)};
     if(editorCount > 1) {
         if(editorCount == 2) {
             if(tempCursor.column < 0) {
@@ -589,8 +593,8 @@ better::Text better::mouseButton(better::Text text, SDL_Event event, SDL_Surface
     if(tempCursor.column > text.textEdit[tempCursor.row].size()) {
         tempCursor.column = text.textEdit[tempCursor.row].size();
     }
-    if((event.button.y / 16) - 1 == -1) {
-        tempCursor.column = static_cast<int>((event.button.x - columnOffset) / 8);
+    if((event.button.y / characterHeight) - 1 == -1) {
+        tempCursor.column = static_cast<int>((event.button.x - columnOffset) / characterWidth);
         tempCursor.row = -1;
         text.data.isScroll = true;
         better::resetMenus(text.data.menusToDraw);
@@ -609,13 +613,13 @@ better::Text better::mouseButton(better::Text text, SDL_Event event, SDL_Surface
         tempCursor.column = 0;
     }
 
-    else if((better::selectMenu(text.data.menusToDraw) > -1) && ((((event.button.x - columnOffset) / 8) > 20) || ((event.button.y / 16) > text.data.menu.size()))){
+    else if((better::selectMenu(text.data.menusToDraw) > -1) && ((((event.button.x - columnOffset) / characterWidth) > 20) || ((event.button.y / 16) > text.data.menu.size()))){
         better::resetMenus(text.data.menusToDraw);
     }
 
     int selectedMenu {better::selectMenu(text.data.menusToDraw)};
-    int clickRow {event.button.y / 16};
-    int clickColumn {event.button.x / 8};
+    int clickRow {event.button.y / characterHeight};
+    int clickColumn {event.button.x / characterWidth};
     if(selectedMenu == 0) {
         if(clickRow == 2) {
             better::saveFile(text.textEdit, text.data.filename);
@@ -675,8 +679,8 @@ better::Text better::mouseButton(better::Text text, SDL_Event event, SDL_Surface
 }
 
 //cases for mouse over context menu or dropdown menu
-better::Text better::mouseMotion(better::Text text, SDL_Event event, SDL_Surface* surface, SDL_Cursor* guiCursor, int columnOffset, int editorCount) {
-    if((event.motion.y / 16) == 0) {
+better::Text better::mouseMotion(better::Text text, SDL_Event event, SDL_Surface* surface, SDL_Cursor* guiCursor, int columnOffset, int editorCount, int characterHeight, int characterWidth) {
+    if((event.motion.y / characterHeight) == 0) {
         SDL_FreeCursor(guiCursor);
         guiCursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
     }

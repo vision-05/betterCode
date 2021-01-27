@@ -5,8 +5,40 @@
 //TODO: symbols have different colours to text
 
 namespace better {
-    static std::array<better::charMapArr, 95> letters {
-        {{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //Space
+    static std::array<std::vector<Uint8>, 256> letters {
+        {{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //0
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //1
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //2
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //3
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //4
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //5
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //6
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //7
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //8
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //9
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //10
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //11
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //12
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //13
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //14
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //15
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //16
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //17
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //18
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //19
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //20
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //21
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //22
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //23
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //24
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //25
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //26
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //27
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //28
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //29
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //30
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //31
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //Space
         {0,8,8,8,8,8,8,0,0,8,8,0,0,0,0,0}, //!
         {0,20,20,20,0,0,0,0,0,0,0,0,0,0,0,0}, //"
         {0,54,54,127,127,54,54,127,127,54,54,0,0,0,0,0}, //# make thinner
@@ -108,7 +140,7 @@ void better::setPixel(SDL_Surface* surface, int x, int y, Uint32 pixel, int colu
     SDL_LockSurface(surface); //use pixelIndex here
     Uint32 rowOffset = row * surface->w * charHeight; //select the chars pixels by getting the row
     Uint32 location = rowOffset + column * charWidth; //then the column
-    Uint32* targetPixel = &(((Uint32*)(surface->pixels))[location + x + y * surface->w]); //then from there select the individual pixel to change
+    Uint32* targetPixel = &(reinterpret_cast<Uint32*>(surface->pixels)[location + x + y * surface->w]); //then from there select the individual pixel to change
     int redComponent {static_cast<int>((pixel & 0xFF000000) >> 24)};
     int greenComponent {static_cast<int>((pixel & 0x00FF0000) >> 16)};
     int blueComponent {static_cast<int>((pixel & 0x0000FF00) >> 8)};
@@ -117,37 +149,37 @@ void better::setPixel(SDL_Surface* surface, int x, int y, Uint32 pixel, int colu
     SDL_UnlockSurface(surface);
 }
 
-void better::renderLetter(SDL_Surface* surface, Uint8 pixelGrid[12], int column, int row, Uint32 colorfg, Uint32 colorbg) {
-    for(int i{}; i < 16; ++i) {
-        for(int j{}; j < 8; ++j) {
-            better::setPixel(surface, j, i, better::unpackUint8Bit(j + 1, pixelGrid[i], colorfg, colorbg), column, row, 8, 16); //basically set each pixel for a character
+void better::renderLetter(SDL_Surface* surface, std::vector<Uint8> pixelGrid, int column, int row, Uint32 colorfg, Uint32 colorbg, int characterHeight, int characterWidth) {
+    for(int i{}; i < characterHeight; ++i) {
+        for(int j{}; j < characterWidth; ++j) {
+            better::setPixel(surface, j, i, better::unpackUint8Bit(j + 1, pixelGrid[i], colorfg, colorbg), column, row, characterWidth, characterHeight); //basically set each pixel for a character
         }
     }
 }
 
-void better::renderCursor(SDL_Surface* surface, int column, int row, int topLine, int topColumn, int columnOffset) {
+void better::renderCursor(SDL_Surface* surface, int column, int row, int topLine, int topColumn, int columnOffset, int characterHeight, int characterWidth) {
     Uint8 cursor[16] {
         3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3
     };
     row -= topLine;
     row += 1;
     column -= topColumn;
-    for(int i{}; i < 16; ++i) {
+    for(int i{}; i < characterHeight; ++i) {
         for(int j{}; j < 2; ++j) {
-            better::setPixel(surface, j, i, better::unpackUint8Bit(j + 1, cursor[i], 0xAA7069FF, 0x222222FF), column + static_cast<int>(columnOffset / 8), row, 8, 16);
+            better::setPixel(surface, j, i, better::unpackUint8Bit(j + 1, cursor[i], 0xAA7069FF, 0x222222FF), column + static_cast<int>(columnOffset / characterWidth), row, characterWidth, characterHeight);
         }
     }
 }
 
-better::charMapArr better::charCheck(char letter, std::array<better::charMapArr,95> letters) {
-    return letters[letter - 32];
+std::vector<Uint8> better::charCheck(char letter, std::array<std::vector<Uint8>,256> letters) {
+    return letters[letter];
 }
 
-void better::createLetter(SDL_Surface* surface, char letter, int column, int row, Uint32 colorfg, Uint32 colorbg) {
-    better::renderLetter(surface, better::charCheck(letter, better::letters).arr, column, row, colorfg, colorbg);
+void better::createLetter(SDL_Surface* surface, char letter, int column, int row, Uint32 colorfg, Uint32 colorbg, int characterHeight, int characterWidth) {
+  better::renderLetter(surface, better::charCheck(letter, better::letters), column, row, colorfg, colorbg, characterHeight, characterWidth);
 }
 
-void better::renderText(SDL_Surface* surface, immer::flex_vector<immer::flex_vector<char>> vector, int topLine, int topColumn, int textHeight, int textWidth, better::Cursor highlightStart, better::Cursor highlightEnd, Uint32 colorbg, Uint32 colorfg, Uint32 colorhighlight, Uint32 colorparens, Uint32 colorcomments, int columnOffset) {
+void better::renderText(SDL_Surface* surface, immer::flex_vector<immer::flex_vector<char>> vector, int topLine, int topColumn, int textHeight, int textWidth, better::Cursor highlightStart, better::Cursor highlightEnd, Uint32 colorbg, Uint32 colorfg, Uint32 colorhighlight, Uint32 colorparens, Uint32 colorcomments, int columnOffset, int characterHeight, int characterWidth) {
     bool highlight {false};
     bool multilineComment {false};
     bool comment {false};
@@ -196,14 +228,17 @@ void better::renderText(SDL_Surface* surface, immer::flex_vector<immer::flex_vec
                     }
                 } 
             }
-            else if((vector[lineIndex][letterIndex] > 32 && vector[lineIndex][letterIndex] < 48) || (vector[lineIndex][letterIndex] > 59 && vector[lineIndex][letterIndex] < 63) || (vector[lineIndex][letterIndex] > 90 && vector[lineIndex][letterIndex] < 95) || (vector[lineIndex][letterIndex] > 122 && vector[lineIndex][letterIndex] < 126)) {
+            else if((vector[lineIndex][letterIndex] > 32 && vector[lineIndex][letterIndex] < 48) ||
+            (vector[lineIndex][letterIndex] > 59 && vector[lineIndex][letterIndex] < 63) ||
+            (vector[lineIndex][letterIndex] > 90 && vector[lineIndex][letterIndex] < 95) ||
+            (vector[lineIndex][letterIndex] > 122 && vector[lineIndex][letterIndex] < 126)) {
                 foreground = colorparens;
             }
             else {
                 foreground = colorfg;
             }
             if(letterIndex >= topColumn && letterIndex < topColumn + textWidth) {
-                better::createLetter(surface, vector[lineIndex][letterIndex], columnIndex - topColumn + static_cast<int>(columnOffset / 8), rowIndex, foreground, background); //render text line by line
+            better::createLetter(surface, vector[lineIndex][letterIndex], columnIndex - topColumn + static_cast<int>(columnOffset / characterWidth), rowIndex, foreground, background, characterHeight, characterWidth); //render text line by line
             }
         }
     }  
@@ -227,9 +262,9 @@ Uint32 better::unpackUint8Bit(int index, Uint8 number, Uint32 color, Uint32 colo
 
 
 
-void better::renderLineNumbers(SDL_Surface* surface, int topLine, int columnOffset, int textLength, int editorHeight, Uint32 colorfg, Uint32 colorbg) {
+void better::renderLineNumbers(SDL_Surface* surface, int topLine, int columnOffset, int textLength, int editorHeight, Uint32 colorfg, Uint32 colorbg, int characterHeight, int characterWidth) {
     std::string number {std::to_string(textLength)};
-    SDL_Rect side {.x = columnOffset, .y = 16, .w = static_cast<int>(number.size()) * 8, .h = editorHeight * 16};
+    SDL_Rect side {.x = columnOffset, .y = characterHeight, .w = static_cast<int>(number.size()) * characterWidth, .h = editorHeight * characterHeight};
     SDL_FillRect(surface, &side, SDL_MapRGBA(surface->format, better::getRed(colorbg), better::getGreen(colorbg), better::getBlue(colorbg), better::getAlpha(colorbg)));
     if(editorHeight > textLength) {
         editorHeight = textLength + 1;
@@ -237,8 +272,8 @@ void better::renderLineNumbers(SDL_Surface* surface, int topLine, int columnOffs
     for(int i{topLine + 1}; i < topLine + editorHeight; ++i) {
         number = std::to_string(i);
         number.push_back(' ');
-        for(int j{}; j < number.size(); ++ j) {
-            better::createLetter(surface, number[j], j + static_cast<int>(columnOffset / 8), i - topLine, colorfg, colorbg);
+        for(int j{}; j < number.size(); ++j) {
+        better::createLetter(surface, number[j], j + static_cast<int>(columnOffset / characterWidth), i - topLine, colorfg, colorbg, characterHeight, characterWidth);
         }
     }
 }

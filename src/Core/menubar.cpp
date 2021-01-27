@@ -4,8 +4,40 @@
 #include "menubar.hpp"
 
 namespace better {
-    static std::array<better::charMapArr, 95> letters2 {
-        {{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //Space
+    static std::array<std::vector<Uint8>, 256> letters2 {
+        {{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //0
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //1
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //2
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //3
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //4
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //5
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //6
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //7
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //8
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //9
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //10
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //11
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //12
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //13
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //14
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //15
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //16
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //17
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //18
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //19
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //20
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //21
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //22
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //23
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //24
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //25
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //26
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //27
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //28
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //29
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //30
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //31
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, //Space
         {0,8,8,8,8,8,8,0,0,8,8,0,0,0,0,0}, //!
         {0,20,20,20,0,0,0,0,0,0,0,0,0,0,0,0}, //"
         {0,54,54,127,127,54,54,127,127,54,54,0,0,0,0,0}, //# make thinner
@@ -103,22 +135,22 @@ namespace better {
     };
 }
 
-void better::drawMenuBar(SDL_Surface* surface, std::string menus, Uint32 colorfg, Uint32 colorbg, int windowWidth, int columnOffset) {
+void better::drawMenuBar(SDL_Surface* surface, std::string menus, Uint32 colorfg, Uint32 colorbg, int windowWidth, int columnOffset, int characterHeight, int characterWidth) {
     int column {};
     for(const char& letter : menus) {
-        better::renderLetter(surface, better::charCheck(letter, better::letters2).arr, column + static_cast<int>(columnOffset / 8), 0, colorfg, colorbg);
+        better::renderLetter(surface, better::charCheck(letter, better::letters2), column + static_cast<int>(columnOffset / characterWidth), 0, colorfg, colorbg, characterHeight, characterWidth);
         ++column;
     }
 }
 
-void better::drawMenus(SDL_Surface* surface, std::vector<std::string> menus, Uint32 color, Uint32 colorbg, int columnOffset) {
+void better::drawMenus(SDL_Surface* surface, std::vector<std::string> menus, Uint32 color, Uint32 colorbg, int columnOffset, int characterHeight, int characterWidth) {
     if(!menus.size()) {
         return;
     }
-    const int menuWidth {8 * 20};
-    int menuHeight {16 * static_cast<int>(menus.size())};
+    const int menuWidth {characterWidth * 20};
+    int menuHeight {characterHeight * static_cast<int>(menus.size())};
 
-    SDL_Rect menu {.x = columnOffset, .y = 16, .w = menuWidth, .h = menuHeight};
+    SDL_Rect menu {.x = columnOffset, .y = characterHeight, .w = menuWidth, .h = menuHeight};
     SDL_FillRect(surface, &menu, SDL_MapRGBA(surface->format, better::getRed(colorbg), better::getGreen(colorbg), better::getBlue(colorbg), better::getAlpha(colorbg)));
 
     int column {0};
@@ -126,7 +158,7 @@ void better::drawMenus(SDL_Surface* surface, std::vector<std::string> menus, Uin
 
     for(int i{}; i < menus.size(); ++i) {
         for(const char& letter : menus[i]) {
-            better::renderLetter(surface, better::charCheck(letter, better::letters2).arr, column + static_cast<int>(columnOffset / 8), row, color, colorbg);
+	    better::renderLetter(surface, better::charCheck(letter, better::letters2), column + static_cast<int>(columnOffset / characterWidth), row, color, colorbg, characterHeight, characterWidth);
             ++column;
         }
         column = 0;
