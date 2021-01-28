@@ -82,6 +82,8 @@ void quitApp(SDL_Cursor* cursor, SDL_Surface* surface, SDL_Window* window);
 
 bool operator!=(better::Text lhs, better::Text rhs);
 
+better::Text openFile(std::string filename, int editorCount, int editorHeight, int editorWidth, int characterHeight, int characterWidth, int editorIndex);
+
 }
 
 int main(int argc, char* argv[]) {
@@ -188,7 +190,34 @@ better::Text better::deleteHighlighted(better::Text text) {
 better::Text better::cutClipboard(better::Text text) {
     better::copyClipboard(text);
     return better::deleteHighlighted(text);
-} 
+}
+
+better::Text better::openFile(std::string filename, int editorCount, int editorHeight, int editorWidth, int characterHeight, int characterWidth, int editorIndex) {
+    immer::flex_vector<immer::flex_vector<char>> tempText {better::readFile(filename)};
+    return
+    {
+        tempText,
+        {0,0},
+        {
+            {false,false,false,false},
+            false,
+            false,
+            false,
+            false,
+            false,
+            editorIndex,
+            -1,
+            std::vector<std::string>(),
+            filename,
+            (editorHeight / characterHeight) - 1,
+            (((editorWidth / editorCount) / characterWidth) - 1) - (static_cast<int>(std::to_string(tempText.size()).size()) + 1)
+        },
+        0,
+        0,
+        {0,0},
+        {0,0}
+    };
+}
 
 void better::edit1(SDL_Window* window, std::string filename, int textHeight, int textWidth, Uint32 colorbg, Uint32 colorfg, Uint32 colorhighlight, Uint32 colorparens, Uint32 colorcomments, int characterHeight, int characterWidth) {
     std::vector<std::vector<better::Text>> texts {{}};
@@ -295,10 +324,10 @@ void better::edit1(SDL_Window* window, std::string filename, int textHeight, int
                     if(texts.size() < 3) {
                         editorIndex++;
                         editorCount++;
-                        std::filesystem::path workspaceFolder {texts[editorIndex].back().data.filename};
+                        std::filesystem::path workspaceFolder {texts[editorIndex - 1].back().data.filename};
                         workspaceFolder = workspaceFolder.parent_path();
                         filename = better::fileDialog(workspaceFolder).string();
-                        texts.push_back({{better::readFile(filename), {0,0}, {{false,false,false,false}, false, false, false, false, false, editorIndex, -1, {}, filename, static_cast<int>(editorHeight / 16), static_cast<int>((editorWidth / (texts.size() + 1)) / 8)}, 0, 0, {0,0}, {0,0}}});
+                        texts.push_back({better::openFile(filename, editorCount, editorHeight, editorWidth, characterHeight, characterWidth, editorIndex)});
                         for(int i{}; i < texts.size(); ++i) {
                             for(int j{}; j < texts[i].size(); ++j) {
                                 texts[i][j].data.textWidth = (((editorWidth / editorCount) / characterWidth) - 1) - (std::to_string(texts[editorIndex].back().textEdit.size()).size() + 1);
@@ -315,20 +344,8 @@ void better::edit1(SDL_Window* window, std::string filename, int textHeight, int
                     std::filesystem::path workspaceFolder {texts[editorIndex].back().data.filename};
                     workspaceFolder = workspaceFolder.parent_path();
                     tempFilename = better::fileDialog(workspaceFolder).string();
+                    texts[editorIndex].push_back(better::openFile(filename, editorCount, editorHeight, editorWidth, characterHeight, characterWidth, editorIndex));
                     texts[editorIndex].back().data.clearHistory = true;
-                    texts[editorIndex].back().textEdit = better::readFile(tempFilename);
-                    texts[editorIndex].back().cursor = {0,0};
-                    texts[editorIndex].back().topLineNumber = 0;
-                    texts[editorIndex].back().topColumnNumber = 0;
-                    texts[editorIndex].back().highlightStart = {0,0};
-                    texts[editorIndex].back().highlightEnd = {0,0};
-                    texts[editorIndex].back().data.index = -1;
-                    texts[editorIndex].back().data.isScroll = false;
-                    texts[editorIndex].back().data.isCaps = false;
-                    texts[editorIndex].back().data.isShift = false;
-                    texts[editorIndex].back().data.isCtrl = false;
-                    texts[editorIndex].back().data.menu.clear();
-                    texts[editorIndex].back().data.filename = tempFilename;
                 }
                 else if(event.key.keysym.sym == 'c') {
                     better::copyClipboard(texts[editorIndex].back());
@@ -379,7 +396,7 @@ void better::edit1(SDL_Window* window, std::string filename, int textHeight, int
                 better::drawMenuBar(surface, menus, 0xDDDDDDFF, 0x666666FF, editorWidth, columnOffset, characterHeight, characterWidth);
                 better::renderText(surface, texts[i].back().textEdit, texts[i].back().topLineNumber, texts[i].back().topColumnNumber, texts[i].back().data.textHeight, texts[i].back().data.textWidth, texts[i].back().highlightStart, texts[i].back().highlightEnd, colorbg, colorfg, colorhighlight, colorparens, colorcomments, columnOffset + lineNoOffset, characterHeight, characterWidth);
                 if(!texts[i].back().data.isScroll) {
-		  better::renderCursor(surface, texts[i].back().cursor.column, texts[i].back().cursor.row, texts[i].back().topLineNumber, texts[i].back().topColumnNumber, columnOffset + lineNoOffset, characterHeight, characterWidth);
+          better::renderCursor(surface, texts[i].back().cursor.column, texts[i].back().cursor.row, texts[i].back().topLineNumber, texts[i].back().topColumnNumber, columnOffset + lineNoOffset, characterHeight, characterWidth);
                 }
                 texts[i].back().data.index = better::selectMenu(texts[i].back().data.menusToDraw);
                 if(texts[i].back().data.index < 0 || texts[i].back().data.index > 3) {
@@ -434,6 +451,11 @@ better::Text better::keyDown(better::Text text, SDL_Event event, SDL_Surface* su
     if(event.key.keysym.scancode == SDL_SCANCODE_DOWN || event.key.keysym.scancode == SDL_SCANCODE_UP) {
         text.highlightStart = text.highlightEnd;
         return better::verticalNav(text, event.key.keysym.scancode);
+    }
+    
+    else if(event.key.keysym.scancode == SDL_SCANCODE_DELETE) {
+        better::Text tempText {better::horizontalNav(text,SDL_SCANCODE_RIGHT)};
+        return better::backspace(tempText);
     }
 
     else if(event.key.keysym.scancode == SDL_SCANCODE_RIGHT || event.key.keysym.scancode == SDL_SCANCODE_LEFT) {
