@@ -518,6 +518,8 @@ better::Text better::handleKey(better::Text text, char key) {
     text.highlightStart = text.cursor;
     text.highlightEnd = text.cursor;
     switch(key) {
+        case 127: //delete key crashes. It is unhandled for now 
+            return text;
         case '\b':
             return better::backspace(text);
         case '\'':
