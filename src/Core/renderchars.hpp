@@ -19,11 +19,6 @@ namespace better {
 
 void setPixel(SDL_Surface* surface, int x, int y, Uint32 pixel, int column, int row, int charWidth, int charHeight);
 
-//! This function is pretty useless
-//! I should probably remove it when refactoring
-
-void createLetter(SDL_Surface* surface, char letter, int column, int row, Uint32 colorfg, Uint32 colorbg, int characterHeight, int characterWidth);
-
 //! better::renderLetter maps the pixels of a letters character map and its position in the text buffer onto the screen.
 //! Each letter has a size of 8 pixels wide by 16 pixels long.
 
@@ -32,15 +27,15 @@ void renderLetter(SDL_Surface* surface, std::vector<Uint8>, int column, int row,
 //! better::renderText iterates through the whole text buffer to output the letters to the screen one by one onto the pixel surface
 //! This function makes sure that there are only 59 lines rendered and 150 columns rendered on a screen max
 
-void renderText(SDL_Surface* surface, immer::flex_vector<immer::flex_vector<char>> vector, int topLine, int topColumn, const int textHeight, const int textWidth, better::Cursor higlightStart, better::Cursor highlightEnd, Uint32 colorbg, Uint32 colorfg, Uint32 colorhighglight, Uint32 colorparens, Uint32 colorcomments, int columnOffset, int characterHeight, int characterWidth);
+void renderText(SDL_Surface* surface, better::Text text, better::ConfigData config, int columnOffset);
 
 //! better::renderCursor renders the text cursor onto the screen, using an offset in the text buffer dictated by the top line being rendered and the first column being rendered on the left of the screen
 //! the physical location on the screen of the cursor.
 //! The cursor is rendered on the first 2 pixels of the "character" 8x16 grid.
 
-void renderCursor(SDL_Surface* surface, int column, int row, int topLine, int topColumn, int columnOffset, int characterHeight, int characterWidth);
+void renderCursor(SDL_Surface* surface, better::Cursor cursor, better::ConfigData config, int topLineNumber, int topColumnNumber, int columnOffset);
 
-void renderLineNumbers(SDL_Surface* surface, int topLine, int columnOffset, int textLength, int editorHeight, Uint32 colorfg, Uint32 colorbg, int characterHeight, int characterWidth);
+void renderLineNumbers(SDL_Surface* surface, better::ConfigData config, better::editorData data, int topLine, int columnOffset, int textLength, int editorHeight);
 
 //! better::charCheck takes a character and returns its corresponding bitmap.
 //! this is passed as a better::charMapArr struct

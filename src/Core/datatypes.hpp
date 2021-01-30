@@ -43,6 +43,24 @@ struct Text {
     better::Cursor highlightEnd {0,0};
 };
 
+struct ConfigData {
+    Uint32 foregroundColor;
+    Uint32 backgroundColor;
+    Uint32 identifierColor;
+    Uint32 keywordColor;
+    Uint32 symbolColor;
+    Uint32 cursorColor;
+    Uint32 lineNoColor;
+    Uint32 highlightColor;
+    Uint32 commentColor;
+    Uint32 lineSelectColor;
+    Uint32 menuColor;
+    Uint32 menuBarColor;
+    Uint32 menuTextColor;
+    int characterHeight;
+    int characterWidth;
+};
+
 better::Text updateText(better::Text textEdit, char newChar);
 better::Text backspace(better::Text textEdit);
 better::Text newLine(better::Text textEdit, bool autoIndent);

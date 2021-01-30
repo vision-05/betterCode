@@ -159,16 +159,14 @@ void better::renderLetter(SDL_Surface* surface, std::vector<Uint8> pixelGrid, in
     }
 }
 
-void better::renderCursor(SDL_Surface* surface, int column, int row, int topLine, int topColumn, int columnOffset, int characterHeight, int characterWidth) {
-    Uint8 cursor[16] {
-        3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3
-    };
-    row -= topLine;
-    row += 1;
-    column -= topColumn;
-    for(int i{}; i < characterHeight; ++i) {
+void better::renderCursor(SDL_Surface* surface, better::Cursor cursor, better::ConfigData config, int topLine, int topColumn, int columnOffset) {
+    Uint8 caret[16] {3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3};
+    cursor.row -= topLine;
+    cursor.row += 1;
+    cursor.column -= topColumn;
+    for(int i{}; i < config.characterHeight; ++i) {
         for(int j{}; j < 2; ++j) {
-            better::setPixel(surface, j, i, better::unpackUint8Bit(j + 1, cursor[i], 0xAA7069FF, 0x222222FF), column + static_cast<int>(columnOffset / characterWidth), row, characterWidth, characterHeight);
+            better::setPixel(surface, j, i, better::unpackUint8Bit(j + 1, caret[i], 0xAA7069FF, 0x222222FF), cursor.column + static_cast<int>(columnOffset / config.characterWidth), cursor.row, config.characterWidth, config.characterHeight);
         }
     }
 }
@@ -177,70 +175,84 @@ std::vector<Uint8> better::charCheck(char letter, std::array<std::vector<Uint8>,
     return letters[letter];
 }
 
-void better::createLetter(SDL_Surface* surface, char letter, int column, int row, Uint32 colorfg, Uint32 colorbg, int characterHeight, int characterWidth) {
-  better::renderLetter(surface, better::charCheck(letter, better::letters), column, row, colorfg, colorbg, characterHeight, characterWidth);
-}
-
-void better::renderText(SDL_Surface* surface, immer::flex_vector<immer::flex_vector<char>> vector, int topLine, int topColumn, int textHeight, int textWidth, better::Cursor highlightStart, better::Cursor highlightEnd, Uint32 colorbg, Uint32 colorfg, Uint32 colorhighlight, Uint32 colorparens, Uint32 colorcomments, int columnOffset, int characterHeight, int characterWidth) {
+void better::renderText(SDL_Surface* surface, better::Text text, better::ConfigData config, int columnOffset) {
     bool highlight {false};
     bool multilineComment {false};
     bool comment {false};
-    Uint32 foreground {colorfg};
-    Uint32 background {colorbg};
-    if(highlightEnd.row != highlightStart.row || highlightEnd.column != highlightStart.column) {
+    Uint32 foreground {config.foregroundColor};
+    Uint32 background {config.backgroundColor};
+    if(text.highlightEnd.row != text.highlightStart.row || text.highlightEnd.column != text.highlightStart.column) {
         highlight = true;
     }
     
-    int size = vector.size();
-    if(vector.size() - 1 >= topLine + textHeight - 1) {
-        size = topLine + textHeight - 1;
+    int size {static_cast<int>(text.textEdit.size())};
+    if(size - 1 >= text.topLineNumber + text.data.textHeight - 1) {
+        size = text.topLineNumber + text.data.textHeight - 1;
     }
-    for(int lineIndex{topLine}, rowIndex{1}; lineIndex < size; ++lineIndex, ++rowIndex) { //TODO: create cases for space, newline and tabs
-        int colSize = vector[lineIndex].size();
-        if(vector[lineIndex].size() >= topColumn + textWidth) {
-            colSize = topColumn + textWidth;
+    for(int lineIndex{text.topLineNumber}, rowIndex{1}; lineIndex < size; ++lineIndex, ++rowIndex) { //TODO: create cases for space, newline and tabs
+        int colSize = text.textEdit[lineIndex].size();
+        if(text.textEdit[lineIndex].size() >= text.topColumnNumber + text.data.textWidth) {
+            colSize = text.topColumnNumber + text.data.textWidth;
         }
         comment = false;
         for(int letterIndex{}, columnIndex{}; letterIndex < colSize; ++letterIndex, ++columnIndex) {
-            if((highlight) && (((lineIndex >= highlightStart.row && lineIndex <= highlightEnd.row) && (letterIndex >= highlightStart.column && letterIndex <= highlightEnd.column)) || (((highlightEnd.row != highlightStart.row && highlightEnd.column != highlightStart.column)) && ((lineIndex == highlightStart.row && letterIndex >= highlightStart.column) || (lineIndex == highlightEnd.row && letterIndex <= highlightEnd.column) || (lineIndex < highlightEnd.row && lineIndex > highlightStart.row))))) {
-                background = colorhighlight;
+            if(
+                (highlight) && 
+                (
+                    (
+                        (lineIndex >= text.highlightStart.row && lineIndex <= text.highlightEnd.row) && 
+                        (letterIndex >= text.highlightStart.column && letterIndex <= text.highlightEnd.column)
+                    ) || 
+                    (
+                        (
+                            (text.highlightEnd.row != text.highlightStart.row && text.highlightEnd.column != text.highlightStart.column)
+                        ) && 
+                        (
+                            (lineIndex == text.highlightStart.row && letterIndex >= text.highlightStart.column) ||
+                            (lineIndex == text.highlightEnd.row && letterIndex <= text.highlightEnd.column) ||
+                            (lineIndex < text.highlightEnd.row && lineIndex > text.highlightStart.row)
+                        )
+                    )
+                )
+            ) {
+                background = config.highlightColor;
             }
             else {
-                background = colorbg;
+                background = config.backgroundColor;
             }
-            if(multilineComment && vector[lineIndex][letterIndex] == '/') {
-                if(vector[lineIndex][letterIndex - 1] == '*') {
+            if(multilineComment && text.textEdit[lineIndex][letterIndex] == '/') {
+                if(text.textEdit[lineIndex][letterIndex - 1] == '*') {
                     multilineComment = false;
-                    foreground = colorcomments;
+                    foreground = config.commentColor;
                 }
             }
             else if(comment || multilineComment) {
-                foreground = colorcomments;
+                foreground = config.commentColor;
             }
-            else if(vector[lineIndex][letterIndex] == '/') {
-                foreground = colorparens;
-                if(letterIndex < vector[lineIndex].size() - 1) {
-                    if(vector[lineIndex][letterIndex + 1] == '/') {
+            else if(text.textEdit[lineIndex][letterIndex] == '/') {
+                foreground = config.symbolColor;
+                if(letterIndex < text.textEdit[lineIndex].size() - 1) {
+                    if(text.textEdit[lineIndex][letterIndex + 1] == '/') {
                         comment = true;
-                        foreground = colorcomments;
+                        foreground = config.commentColor;
                     }
-                    else if(vector[lineIndex][letterIndex + 1] == '*') {
+                    else if(text.textEdit[lineIndex][letterIndex + 1] == '*') {
                         multilineComment = true;
-                        foreground = colorcomments;
+                        foreground = config.commentColor;
                     }
                 } 
             }
-            else if((vector[lineIndex][letterIndex] > 32 && vector[lineIndex][letterIndex] < 48) ||
-            (vector[lineIndex][letterIndex] > 59 && vector[lineIndex][letterIndex] < 63) ||
-            (vector[lineIndex][letterIndex] > 90 && vector[lineIndex][letterIndex] < 95) ||
-            (vector[lineIndex][letterIndex] > 122 && vector[lineIndex][letterIndex] < 126)) {
-                foreground = colorparens;
+            else if((text.textEdit[lineIndex][letterIndex] > 32 && text.textEdit[lineIndex][letterIndex] < 48) ||
+            (text.textEdit[lineIndex][letterIndex] > 59 && text.textEdit[lineIndex][letterIndex] < 63) ||
+            (text.textEdit[lineIndex][letterIndex] > 90 && text.textEdit[lineIndex][letterIndex] < 95) ||
+            (text.textEdit[lineIndex][letterIndex] > 122 && text.textEdit[lineIndex][letterIndex] < 126)) {
+                foreground = config.symbolColor;
             }
             else {
-                foreground = colorfg;
+                foreground = config.foregroundColor;
             }
-            if(letterIndex >= topColumn && letterIndex < topColumn + textWidth) {
-            better::createLetter(surface, vector[lineIndex][letterIndex], columnIndex - topColumn + static_cast<int>(columnOffset / characterWidth), rowIndex, foreground, background, characterHeight, characterWidth); //render text line by line
+            if(letterIndex >= text.topColumnNumber && letterIndex < text.topColumnNumber + text.data.textWidth - 1) {
+                better::renderLetter(surface, better::charCheck(text.textEdit[lineIndex][letterIndex],better::letters), columnIndex - text.topColumnNumber + static_cast<int>(columnOffset / config.characterWidth), rowIndex, foreground, background, config.characterHeight, config.characterWidth); //render text line by line
             }
         }
     }  
@@ -264,18 +276,18 @@ Uint32 better::unpackUint8Bit(int index, Uint8 number, Uint32 color, Uint32 colo
 
 
 
-void better::renderLineNumbers(SDL_Surface* surface, int topLine, int columnOffset, int textLength, int editorHeight, Uint32 colorfg, Uint32 colorbg, int characterHeight, int characterWidth) {
+void better::renderLineNumbers(SDL_Surface* surface, better::ConfigData config, better::editorData data, int topLine, int columnOffset, int textLength, int editorHeight) {
     std::string number {std::to_string(textLength)};
-    SDL_Rect side {.x = columnOffset, .y = characterHeight, .w = static_cast<int>(number.size()) * characterWidth, .h = editorHeight * characterHeight};
-    SDL_FillRect(surface, &side, SDL_MapRGBA(surface->format, better::getRed(colorbg), better::getGreen(colorbg), better::getBlue(colorbg), better::getAlpha(colorbg)));
+    SDL_Rect side {.x = columnOffset, .y = config.characterHeight, .w = static_cast<int>(number.size() + 1) * config.characterWidth, .h = editorHeight};
+    SDL_FillRect(surface, &side, SDL_MapRGBA(surface->format, better::getRed(config.backgroundColor), better::getGreen(config.backgroundColor), better::getBlue(config.backgroundColor), better::getAlpha(config.backgroundColor)));
     if(editorHeight > textLength) {
         editorHeight = textLength + 1;
     }
-    for(int i{topLine + 1}; i < topLine + editorHeight; ++i) {
+    for(int i{topLine + 1}; i < topLine + data.textHeight; ++i) {
         number = std::to_string(i);
         number.push_back(' ');
         for(int j{}; j < number.size(); ++j) {
-        better::createLetter(surface, number[j], j + static_cast<int>(columnOffset / characterWidth), i - topLine, colorfg, colorbg, characterHeight, characterWidth);
+            better::renderLetter(surface, better::charCheck(number[j], better::letters), j + static_cast<int>(columnOffset / config.characterWidth), i - topLine, config.foregroundColor, config.backgroundColor, config.characterHeight, config.characterWidth);
         }
     }
 }

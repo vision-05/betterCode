@@ -43,6 +43,7 @@
 .vscode/
 html/
 latex/
+bin/
 
 # Text files
 *.txt

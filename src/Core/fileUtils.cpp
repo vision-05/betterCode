@@ -61,26 +61,26 @@ immer::flex_vector<char> better::stringToVector(std::string string) {
     return vector.persistent();
 }
 
-better::Text better::filedialog::mouseButtonDown(better::Text text, SDL_Event event) {
+better::Text better::filedialog::mouseButtonDown(better::Text text, SDL_Event event, better::ConfigData config) {
     
 }
 
-better::Text better::filedialog::keyDown(better::Text text, SDL_Event event) {
+better::Text better::filedialog::keyDown(better::Text text, SDL_Event event, better::ConfigData config) {
     
 }
 
-better::Text better::filedialog::mouseMotion(better::Text text, SDL_Event event) {
+better::Text better::filedialog::mouseMotion(better::Text text, SDL_Event event, better::ConfigData config) {
     
 }
 
-better::Text better::filedialog::mouseWheel(better::Text text, SDL_Event event) {
+better::Text better::filedialog::mouseWheel(better::Text text, SDL_Event event, better::ConfigData config) {
     
 }
 
-std::filesystem::path better::fileDialog(std::optional<std::filesystem::path> folderPath) {
+std::filesystem::path better::fileDialog(better::ConfigData config, std::optional<std::filesystem::path> folderPath) {
     SDL_Window* window = SDL_CreateWindow("File", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 560, 0);
     std::string menu {"Back"};
-    SDL_Rect screen {.x = 0, .y = 16, .w = 800, .h = 560 - 16};
+    SDL_Rect screen {.x = 0, .y = config.characterHeight, .w = 800, .h = 560 - config.characterHeight};
 
     SDL_Surface* surface = SDL_GetWindowSurface(window);
     std::vector<std::filesystem::directory_entry> files {};
@@ -137,11 +137,14 @@ std::filesystem::path better::fileDialog(std::optional<std::filesystem::path> fo
         text.textEdit = text.textEdit.push_back(better::stringToVector(fileString + entry.path().filename().string()));
     }
 
-    SDL_FillRect(surface, NULL, SDL_MapRGBA(surface->format, 0x22, 0x22, 0x22, 0xFF));
-    better::renderText(surface, text.textEdit, text.topLineNumber, text.topColumnNumber, 35, 100, text.highlightStart, text.highlightEnd, 0x222222FF, 0x5588AAFF, 0x222222FF, 0x5588AAFF, 0x5588AAFF, 0, 16, 8);
-    better::drawMenuBar(surface, menu, 0xDDDDDDFF, 0x666666FF, 800, 0, 16, 8);
+    SDL_Rect topLineBar { .x = 0, .y = 0, .w = 800, .h = config.characterHeight};
+
+    SDL_FillRect(surface, NULL, SDL_MapRGBA(surface->format, better::getRed(config.backgroundColor), better::getGreen(config.backgroundColor), better::getBlue(config.backgroundColor), better::getAlpha(config.backgroundColor)));
+    SDL_FillRect(surface, &topLineBar, SDL_MapRGBA(surface->format, better::getRed(config.menuBarColor), better::getGreen(config.menuBarColor), better::getBlue(config.menuBarColor), better::getAlpha(config.menuBarColor)));
+    better::renderText(surface, text, config, 0);
+    better::drawMenuBar(surface, menu, config.menuTextColor, config.menuBarColor, 800, 0, config.characterHeight, config.characterWidth);
     SDL_UpdateWindowSurface(window);
-    SDL_FillRect(surface, &screen, SDL_MapRGBA(surface->format, 0x22, 0x22, 0x22, 0xFF));
+    SDL_FillRect(surface, &screen, SDL_MapRGBA(surface->format, better::getRed(config.backgroundColor), better::getGreen(config.backgroundColor), better::getBlue(config.backgroundColor), better::getAlpha(config.backgroundColor)));
 
     SDL_Event event;
 
@@ -154,7 +157,7 @@ std::filesystem::path better::fileDialog(std::optional<std::filesystem::path> fo
                 text.topLineNumber = newText.topLineNumber;
                 text.topColumnNumber = newText.topColumnNumber;
                 text.data.isScroll = true;
-                better::renderText(surface, text.textEdit, text.topLineNumber, text.topColumnNumber, 35, 100, text.highlightStart, text.highlightEnd, 0x222222FF, 0x5588AAFF, 0x222222FF, 0x5588AAFF, 0x5588AAFF, 0, 16, 8);
+                better::renderText(surface, text, config, 0);
                 SDL_UpdateWindowSurface(window);
                 SDL_FillRect(surface, &screen, SDL_MapRGBA(surface->format, 0x22, 0x22, 0x22, 0xFF));
             }
@@ -195,7 +198,7 @@ std::filesystem::path better::fileDialog(std::optional<std::filesystem::path> fo
                         text.topColumnNumber = 0;
                         text.topLineNumber = 0;
 
-                        better::renderText(surface, text.textEdit, text.topLineNumber, text.topColumnNumber, 35, 100, text.highlightStart, text.highlightEnd, 0x222222FF, 0x5588AAFF, 0x222222FF, 0x5588AAFF, 0x5588AAFF, 0, 16, 8);
+                        better::renderText(surface, text, config, 0);
                         SDL_UpdateWindowSurface(window);
                         SDL_FillRect(surface, &screen, SDL_MapRGBA(surface->format, 0x22, 0x22, 0x22, 0xFF));
                         continue;
@@ -231,7 +234,7 @@ std::filesystem::path better::fileDialog(std::optional<std::filesystem::path> fo
                     text.topColumnNumber = 0;
                     text.topLineNumber = 0;
 
-                    better::renderText(surface, text.textEdit, text.topLineNumber, text.topColumnNumber, 35, 100, text.highlightStart, text.highlightEnd, 0x222222FF, 0x5588AAFF, 0x222222FF, 0x5588AAFF, 0x5588AAFF, 0, 16, 8);
+                    better::renderText(surface, text, config, 0);
                     SDL_UpdateWindowSurface(window);
                     SDL_FillRect(surface, &screen, SDL_MapRGBA(surface->format, 0x22, 0x22, 0x22, 0xFF));
                 }
