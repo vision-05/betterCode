@@ -201,67 +201,6 @@ Uint8 better::getAlpha(Uint32 color) {
     return static_cast<Uint8>(color & 0x000000FF);
 }
 
-better::Text better::scroll(better::Text text, SDL_Event event) {
-    int row {text.topLineNumber + text.data.textHeight};
-    int column {text.topColumnNumber + text.data.textWidth};
-
-    if(event.wheel.y > 0) {
-        return better::scrollUp(text, event.wheel.y, row);
-    }
-    else {
-        return better::scrollDown(text, event.wheel.y, row);
-    }
-
-    if(event.wheel.x > 0) {
-        return better::scrollRight(text, event.wheel.x, column, row);
-    }
-    else {
-        return better::scrollLeft(text, event.wheel.x, column);
-    }
-
-    return text;
-}
-
-better::Text better::scrollLeft(better::Text text, int x, int column) {
-    for(int times{}; times > x; --times) {
-        if(text.topColumnNumber) {
-            column -= 1;
-            text.topColumnNumber -= 1;
-        }
-    }
-    return text;
-}
-
-better::Text better::scrollRight(better::Text text, int x, int column, int row) {
-    for(int times{}; times < x; ++times) {
-        if((column == text.topColumnNumber + text.data.textWidth) && (column < text.textEdit[row].size())) {
-            column += 1;
-            text.topColumnNumber += 1;
-        }
-    }
-    return text;
-}
-
-better::Text better::scrollDown(better::Text text, int y, int row) {
-    for(int times{}; times > y; --times) {
-        if((row == text.topLineNumber + text.data.textHeight) && (row - 1 < text.textEdit.size())) {
-            row += 1;
-            text.topLineNumber += 1;
-        }
-    }
-    return text;
-}
-
-better::Text better::scrollUp(better::Text text, int y, int row) {
-    for(int times{}; times < y; ++times) {
-        if(text.topLineNumber) {
-            row -= 1;
-            text.topLineNumber -= 1;
-        }
-    }
-    return text;
-}
-
 int better::getPreviousIndentLevel(better::Text text, int row) {
     int notSpace {0};
     for(int i{}; i < text.textEdit[row].size(); ++i) {
