@@ -61,7 +61,7 @@ better::Text better::upNav(better::Text text) {
         }
         if(text.textEdit[text.cursor.row - 1].size() < text.cursor.column) { //check the next row has less elements than current column of cursor position
             text.cursor.row -= 1;
-            text.cursor.column = text.textEdit[cursor.row].size();
+            text.cursor.column = text.textEdit[text.cursor.row].size();
         }
         else {
             text.cursor.row -= 1;
@@ -75,10 +75,10 @@ better::Text better::downNav(better::Text text) {
         if((text.cursor.row == text.textEdit.size() - 1) || (text.cursor.row == text.topLineNumber + text.data.textHeight - 1 && text.topLineNumber + text.data.textHeight - 1 >= text.textEdit.size() - 1)) {
             return text;
         }
-        if(text.textEdit[cursor.row + 1].size() < cursor.column) { //check the next row has less elements than current column of cursor position
+        if(text.textEdit[text.cursor.row + 1].size() < text.cursor.column) { //check the next row has less elements than current column of cursor position
             text.cursor.column -= 1;
             text.cursor.row += 1;
-            text.cursor.column = text.textEdit[cursor.row].size();
+            text.cursor.column = text.textEdit[text.cursor.row].size();
         }
         else {
             text.cursor.row += 1;

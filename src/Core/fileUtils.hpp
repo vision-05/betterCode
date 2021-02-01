@@ -15,6 +15,7 @@
 #include "renderchars.hpp"
 #include "datatypes.hpp"
 #include "menubar.hpp"
+#include "navigation.hpp"
 
 namespace better {
 //TODO: finish these function definitions to get file I/O working

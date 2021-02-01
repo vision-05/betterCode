@@ -16,6 +16,18 @@ struct Cursor { //store the line number and column number of the cursor
     int column;
 };
 
+static bool operator==(better::Cursor lhs, better::Cursor rhs) {
+    return (lhs.row == rhs.row) && (lhs.column == rhs.column);
+}
+
+static bool operator>=(better::Cursor lhs, better::Cursor rhs) {
+    return (lhs.row > rhs.row) || (lhs.row == rhs.row && lhs.column >= rhs. column);
+}
+
+static bool operator<=(better::Cursor lhs, better::Cursor rhs) {
+    return (lhs.row < rhs.row) || (lhs.row == rhs.row && lhs.column <= rhs.column);
+}
+
 better::Cursor findCursorPos(int topLine, int topColumn, SDL_Event event, int columnOffset, int characterHeight, int characterWidth);
 
 struct editorData {

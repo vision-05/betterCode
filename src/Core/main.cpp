@@ -11,6 +11,8 @@
 #include <unordered_map>
 #include <iostream>
 #include <filesystem>
+#include <chrono>
+#include <memory>
 
 #include "datatypes.hpp"
 #include "fileUtils.hpp"
@@ -73,7 +75,7 @@ int main(int argc, char* argv[]) {
     int textHeight {60};
     int textWidth {149};
     
-    better::edit1(window, filename, textHeight, textWidth, config);
+    better::eventLoop(window, filename, textHeight, textWidth, config);
     return 0;
 }
 
@@ -134,7 +136,7 @@ void better::eventLoop(SDL_Window* window, std::string filename, int textHeight,
     lineNoOffset = config.characterWidth * (static_cast<int>(std::to_string(firstText.textEdit.size()).size()) + 1);
     
     SDL_FillRect(surface, NULL, SDL_MapRGBA(surface->format, better::getRed(config.backgroundColor), better::getGreen(config.backgroundColor), better::getBlue(config.backgroundColor), better::getAlpha(config.backgroundColor)));
-    better::renderText(surface, texts[0].back(), config,  columnOffset + lineNoOffset);
+    better::renderText(surface, texts[0].back(), config,  columnOffset + lineNoOffset, texts[0].back());
     SDL_Rect topline {.x = 0, .y = 0, .w = config.characterWidth * 150, .h = config.characterHeight};
     SDL_FillRect(surface, &topline, SDL_MapRGBA(surface->format, better::getRed(config.menuBarColor), better::getGreen(config.menuBarColor), better::getBlue(config.menuBarColor), better::getAlpha(config.menuBarColor)));
     better::drawMenuBar(surface, menus, 0xDDDDDDFF, 0x666666FF, editorWidth, columnOffset, config.characterHeight, config.characterWidth);
@@ -145,7 +147,6 @@ void better::eventLoop(SDL_Window* window, std::string filename, int textHeight,
     SDL_Event event;
 
     std::unordered_map<Uint32, better::Text(*)(better::Text, SDL_Event, SDL_Surface*, SDL_Cursor*, int, int, ConfigData)> handlers {
-        {SDL_MOUSEMOTION, better::mouseMotion},
         {SDL_KEYDOWN, better::keyDown},
         {SDL_MOUSEBUTTONDOWN, better::mouseButton},
         {SDL_MOUSEWHEEL, better::mouseWheel},
@@ -197,7 +198,7 @@ void better::eventLoop(SDL_Window* window, std::string filename, int textHeight,
                         topline.w = editorWidth;
                         SDL_FillRect(surface, &topline, SDL_MapRGBA(surface->format, better::getRed(config.menuBarColor), better::getGreen(config.menuBarColor), better::getBlue(config.menuBarColor), better::getAlpha(config.menuBarColor)));
                         better::drawMenuBar(surface, menus, 0xDDDDDDFF, 0x666666FF, event.window.data1, columnOffset, config.characterHeight, config.characterWidth);
-                        better::renderText(surface, texts[i].back(), config, columnOffset + lineNoOffset);
+                        better::renderText(surface, texts[i].back(), config, columnOffset + lineNoOffset, texts[i].back());
                         better::renderLineNumbers(surface, config, texts[i].back().data, texts[i].back().topLineNumber, texts[i].back().topColumnNumber, texts[i].back().textEdit.size(), editorHeight);
                     }
                     SDL_UpdateWindowSurface(window);
@@ -254,7 +255,12 @@ void better::eventLoop(SDL_Window* window, std::string filename, int textHeight,
                 texts[editorIndex].back().highlightEnd = texts[editorIndex].back().cursor;
             }
 
-            else if(event.type == SDL_KEYDOWN || event.type == SDL_MOUSEBUTTONDOWN || event.type == SDL_MOUSEMOTION || event.type == SDL_MOUSEWHEEL || event.type == SDL_MOUSEBUTTONUP) {
+            else if(event.type == SDL_MOUSEMOTION) {
+                better::mouseMotion(texts[editorIndex].back(), event, surface, guiCursor, columnOffset + lineNoOffset, editorCount, config);
+                continue;
+            }
+
+            else if(event.type == SDL_KEYDOWN || event.type == SDL_MOUSEBUTTONDOWN || event.type == SDL_MOUSEWHEEL || event.type == SDL_MOUSEBUTTONUP) {
                 columnOffset = editorIndex * (editorWidth / editorCount);
                 better::Text tempText {(handlers[event.type])(texts[editorIndex].back(), event, surface, guiCursor, columnOffset + lineNoOffset, editorCount, config)};
                 if(tempText.data.clearHistory) {
@@ -280,12 +286,19 @@ void better::eventLoop(SDL_Window* window, std::string filename, int textHeight,
             lineNoOffset = (8 * (std::to_string(texts[editorIndex].back().textEdit.size()).size() + 1));
             texts[editorIndex].back().data.textWidth = (((editorWidth / editorCount) / config.characterWidth) - 1) - (std::to_string(texts[editorIndex].back().textEdit.size()).size() + 1);
 
-            SDL_FillRect(surface, &screen, SDL_MapRGBA(surface->format, better::getRed(config.backgroundColor), better::getGreen(config.backgroundColor), better::getBlue(config.backgroundColor), better::getAlpha(config.backgroundColor)));
+            //SDL_FillRect(surface, &screen, SDL_MapRGBA(surface->format, better::getRed(config.backgroundColor), better::getGreen(config.backgroundColor), better::getBlue(config.backgroundColor), better::getAlpha(config.backgroundColor)));
             for(int i{}; i < texts.size(); ++i) {
                 lineNoOffset = (config.characterWidth * (std::to_string(texts[i].back().textEdit.size()).size() + 1));
                 columnOffset = (i * static_cast<int>(editorWidth / editorCount));
                 better::drawMenuBar(surface, menus, 0xDDDDDDFF, 0x666666FF, editorWidth, columnOffset, config.characterHeight, config.characterWidth);
-                better::renderText(surface, texts[i].back(), config, columnOffset + lineNoOffset);
+                
+                auto textStart = std::chrono::steady_clock::now();
+                bool notNew {texts[i].size() > 1};
+                better::renderText(surface, texts[i].back(), config, columnOffset + lineNoOffset, notNew ? texts[i][texts[i].size() - 2] : texts[i].back(), notNew ? false : true);
+                auto textEnd = std::chrono::steady_clock::now();
+                std::chrono::duration<double> textDur = textEnd - textStart;
+                std::cout << "Text: " << textDur.count() << '\n';
+                
                 if(!texts[i].back().data.isScroll) {
                     better::renderCursor(surface, texts[i].back().cursor, config, texts[i].back().topLineNumber, texts[i].back().topColumnNumber, columnOffset + lineNoOffset);
                 }

@@ -8,6 +8,8 @@
 #include <unordered_map>
 #include <array>
 #include <string>
+#include <chrono>
+#include <iostream>
 
 #include "datatypes.hpp"
 
@@ -27,7 +29,7 @@ void renderLetter(SDL_Surface* surface, std::vector<Uint8>, int column, int row,
 //! better::renderText iterates through the whole text buffer to output the letters to the screen one by one onto the pixel surface
 //! This function makes sure that there are only 59 lines rendered and 150 columns rendered on a screen max
 
-void renderText(SDL_Surface* surface, better::Text text, better::ConfigData config, int columnOffset);
+void renderText(SDL_Surface* surface, better::Text text, better::ConfigData config, int columnOffset, better::Text previousText, bool firstRender = true);
 
 //! better::renderCursor renders the text cursor onto the screen, using an offset in the text buffer dictated by the top line being rendered and the first column being rendered on the left of the screen
 //! the physical location on the screen of the cursor.
@@ -52,6 +54,10 @@ Uint32 unpackUint8Bit(int index, Uint8 number, Uint32 color, Uint32 colorbg);
 
 //! better::scroll emulates scrolling using a scroll wheel on the text, shifting the topline and topcolumn of the textbuffer to be rendered depending on the direction of the scroll.
 //! This topLine and topColumn is used to tell the render function the first line and column to render, so shifting these makes the illusion of scrolling.
+
+Uint32 getBackground(better::Text text, better::ConfigData config, int lineIndex, int letterIndex);
+
+Uint32 getForeground(better::Text text, better::ConfigData config, int lineIndex, int letterIndex, bool& isComment, bool& isMultilineComment);
 
 }
 

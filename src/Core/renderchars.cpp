@@ -175,7 +175,7 @@ std::vector<Uint8> better::charCheck(char letter, std::array<std::vector<Uint8>,
     return letters[letter];
 }
 
-void better::renderText(SDL_Surface* surface, better::Text text, better::ConfigData config, int columnOffset) {
+void better::renderText(SDL_Surface* surface, better::Text text, better::ConfigData config, int columnOffset, better::Text previousText, bool firstRender) {
     bool highlight {false};
     bool multilineComment {false};
     bool comment {false};
@@ -189,73 +189,88 @@ void better::renderText(SDL_Surface* surface, better::Text text, better::ConfigD
     if(size - 1 >= text.topLineNumber + text.data.textHeight - 1) {
         size = text.topLineNumber + text.data.textHeight - 1;
     }
+    int letterCount {0};
     for(int lineIndex{text.topLineNumber}, rowIndex{1}; lineIndex < size; ++lineIndex, ++rowIndex) { //TODO: create cases for space, newline and tabs
         int colSize = text.textEdit[lineIndex].size();
         if(text.textEdit[lineIndex].size() >= text.topColumnNumber + text.data.textWidth) {
             colSize = text.topColumnNumber + text.data.textWidth;
         }
         comment = false;
+        SDL_Rect line {.x = columnOffset, .y = rowIndex * config.characterHeight, .w = text.data.textWidth * config.characterWidth, .h = config.characterHeight};
+        if(lineIndex != previousText.cursor.row && !firstRender && previousText.textEdit[lineIndex] == text.textEdit[lineIndex] && text.topLineNumber == previousText.topLineNumber && text.topColumnNumber == previousText.topColumnNumber) {
+            continue;
+        }
+        SDL_FillRect(surface, &line, SDL_MapRGB(surface->format, better::getRed(config.backgroundColor), better::getGreen(config.backgroundColor), better::getBlue(config.backgroundColor)));
         for(int letterIndex{}, columnIndex{}; letterIndex < colSize; ++letterIndex, ++columnIndex) {
-            if(
-                (highlight) && 
-                (
-                    (
-                        (lineIndex >= text.highlightStart.row && lineIndex <= text.highlightEnd.row) && 
-                        (letterIndex >= text.highlightStart.column && letterIndex <= text.highlightEnd.column)
-                    ) || 
-                    (
-                        (
-                            (text.highlightEnd.row != text.highlightStart.row && text.highlightEnd.column != text.highlightStart.column)
-                        ) && 
-                        (
-                            (lineIndex == text.highlightStart.row && letterIndex >= text.highlightStart.column) ||
-                            (lineIndex == text.highlightEnd.row && letterIndex <= text.highlightEnd.column) ||
-                            (lineIndex < text.highlightEnd.row && lineIndex > text.highlightStart.row)
-                        )
-                    )
-                )
-            ) {
-                background = config.highlightColor;
-            }
-            else {
-                background = config.backgroundColor;
-            }
-            if(multilineComment && text.textEdit[lineIndex][letterIndex] == '/') {
-                if(text.textEdit[lineIndex][letterIndex - 1] == '*') {
-                    multilineComment = false;
-                    foreground = config.commentColor;
-                }
-            }
-            else if(comment || multilineComment) {
-                foreground = config.commentColor;
-            }
-            else if(text.textEdit[lineIndex][letterIndex] == '/') {
-                foreground = config.symbolColor;
-                if(letterIndex < text.textEdit[lineIndex].size() - 1) {
-                    if(text.textEdit[lineIndex][letterIndex + 1] == '/') {
-                        comment = true;
-                        foreground = config.commentColor;
-                    }
-                    else if(text.textEdit[lineIndex][letterIndex + 1] == '*') {
-                        multilineComment = true;
-                        foreground = config.commentColor;
-                    }
-                } 
-            }
-            else if((text.textEdit[lineIndex][letterIndex] > 32 && text.textEdit[lineIndex][letterIndex] < 48) ||
-            (text.textEdit[lineIndex][letterIndex] > 59 && text.textEdit[lineIndex][letterIndex] < 63) ||
-            (text.textEdit[lineIndex][letterIndex] > 90 && text.textEdit[lineIndex][letterIndex] < 95) ||
-            (text.textEdit[lineIndex][letterIndex] > 122 && text.textEdit[lineIndex][letterIndex] < 126)) {
-                foreground = config.symbolColor;
-            }
-            else {
-                foreground = config.foregroundColor;
-            }
+            background = getBackground(text, config, lineIndex, letterIndex);
+            foreground = getForeground(text, config, lineIndex, letterIndex, comment, multilineComment);
+            
+            
             if(letterIndex >= text.topColumnNumber && letterIndex < text.topColumnNumber + text.data.textWidth - 1) {
+                ++letterCount;
+                auto letterStart {std::chrono::steady_clock::now()};
                 better::renderLetter(surface, better::charCheck(text.textEdit[lineIndex][letterIndex],better::letters), columnIndex - text.topColumnNumber + static_cast<int>(columnOffset / config.characterWidth), rowIndex, foreground, background, config.characterHeight, config.characterWidth); //render text line by line
+                auto letterEnd {std::chrono::steady_clock::now()};
+                std::chrono::duration<double> letterDur {letterEnd - letterStart};
+                std::cout << "Letter: " << letterDur.count() << '\n';
+                std::cout << "Count: " << letterCount << '\n';
             }
         }
     }  
+}
+
+Uint32 better::getBackground(better::Text text, better::ConfigData config, int lineIndex, int letterIndex) {
+    better::Cursor currentLetter {lineIndex, letterIndex};
+    if(
+        (currentLetter >= text.highlightStart && currentLetter <= text.highlightEnd) || 
+        (
+            (
+                (text.highlightEnd.row != text.highlightStart.row && text.highlightEnd.column != text.highlightStart.column)
+            ) && 
+            (
+                (lineIndex == text.highlightStart.row && letterIndex >= text.highlightStart.column) ||
+                (lineIndex == text.highlightEnd.row && letterIndex <= text.highlightEnd.column) ||
+                (lineIndex < text.highlightEnd.row && lineIndex > text.highlightStart.row)
+            )
+        )
+    ) {
+        return config.highlightColor;
+    }
+    return config.backgroundColor;
+}
+
+Uint32 better::getForeground(better::Text text, better::ConfigData config, int lineIndex, int letterIndex, bool& isComment, bool& isMultilineComment) {
+    if(isMultilineComment && text.textEdit[lineIndex][letterIndex] == '/') {
+        if(text.textEdit[lineIndex][letterIndex - 1] == '*') {
+            isMultilineComment = false;
+            return config.commentColor;
+        }
+    }
+    else if(isComment || isMultilineComment) {
+        return config.commentColor;
+    }
+    else if(text.textEdit[lineIndex][letterIndex] == '/') {
+        if(letterIndex < text.textEdit[lineIndex].size() - 1) {
+            if(text.textEdit[lineIndex][letterIndex + 1] == '/') {
+                isComment = true;
+                return config.commentColor;
+            }
+            else if(text.textEdit[lineIndex][letterIndex + 1] == '*') {
+                isMultilineComment = true;
+                return config.commentColor;
+            }
+        }
+        return config.symbolColor;
+    }
+    else if((text.textEdit[lineIndex][letterIndex] > 32 && text.textEdit[lineIndex][letterIndex] < 48) ||
+    (text.textEdit[lineIndex][letterIndex] > 59 && text.textEdit[lineIndex][letterIndex] < 63) ||
+    (text.textEdit[lineIndex][letterIndex] > 90 && text.textEdit[lineIndex][letterIndex] < 95) ||
+    (text.textEdit[lineIndex][letterIndex] > 122 && text.textEdit[lineIndex][letterIndex] < 126)) {
+        return config.symbolColor;
+    }
+    else {
+        return config.foregroundColor;
+    }
 }
 
 Uint32 better::unpackUint8Bit(int index, Uint8 number, Uint32 color, Uint32 colorbg) {

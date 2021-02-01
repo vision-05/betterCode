@@ -141,7 +141,7 @@ std::filesystem::path better::fileDialog(better::ConfigData config, std::optiona
 
     SDL_FillRect(surface, NULL, SDL_MapRGBA(surface->format, better::getRed(config.backgroundColor), better::getGreen(config.backgroundColor), better::getBlue(config.backgroundColor), better::getAlpha(config.backgroundColor)));
     SDL_FillRect(surface, &topLineBar, SDL_MapRGBA(surface->format, better::getRed(config.menuBarColor), better::getGreen(config.menuBarColor), better::getBlue(config.menuBarColor), better::getAlpha(config.menuBarColor)));
-    better::renderText(surface, text, config, 0);
+    better::renderText(surface, text, config, 0, text);
     better::drawMenuBar(surface, menu, config.menuTextColor, config.menuBarColor, 800, 0, config.characterHeight, config.characterWidth);
     SDL_UpdateWindowSurface(window);
     SDL_FillRect(surface, &screen, SDL_MapRGBA(surface->format, better::getRed(config.backgroundColor), better::getGreen(config.backgroundColor), better::getBlue(config.backgroundColor), better::getAlpha(config.backgroundColor)));
@@ -157,7 +157,7 @@ std::filesystem::path better::fileDialog(better::ConfigData config, std::optiona
                 text.topLineNumber = newText.topLineNumber;
                 text.topColumnNumber = newText.topColumnNumber;
                 text.data.isScroll = true;
-                better::renderText(surface, text, config, 0);
+                better::renderText(surface, text, config, 0, text);
                 SDL_UpdateWindowSurface(window);
                 SDL_FillRect(surface, &screen, SDL_MapRGBA(surface->format, 0x22, 0x22, 0x22, 0xFF));
             }
@@ -198,7 +198,7 @@ std::filesystem::path better::fileDialog(better::ConfigData config, std::optiona
                         text.topColumnNumber = 0;
                         text.topLineNumber = 0;
 
-                        better::renderText(surface, text, config, 0);
+                        better::renderText(surface, text, config, 0, text);
                         SDL_UpdateWindowSurface(window);
                         SDL_FillRect(surface, &screen, SDL_MapRGBA(surface->format, 0x22, 0x22, 0x22, 0xFF));
                         continue;
@@ -234,7 +234,7 @@ std::filesystem::path better::fileDialog(better::ConfigData config, std::optiona
                     text.topColumnNumber = 0;
                     text.topLineNumber = 0;
 
-                    better::renderText(surface, text, config, 0);
+                    better::renderText(surface, text, config, 0, text);
                     SDL_UpdateWindowSurface(window);
                     SDL_FillRect(surface, &screen, SDL_MapRGBA(surface->format, 0x22, 0x22, 0x22, 0xFF));
                 }
