@@ -153,6 +153,8 @@ void better::eventLoop(SDL_Window* window, std::string filename, int textHeight,
         {SDL_MOUSEBUTTONUP, better::mouseButtonUp}
     };
 
+    bool firstTime {false};
+
     while(1) {
         if(SDL_WaitEvent(&event)) {
             if(texts[editorIndex].back().cursor.row == -1) {
@@ -225,6 +227,8 @@ void better::eventLoop(SDL_Window* window, std::string filename, int textHeight,
                                 texts[i][j].data.textWidth = (((editorWidth / editorCount) / config.characterWidth) - 1) - (std::to_string(texts[editorIndex].back().textEdit.size()).size() + 1);
                             }
                         }
+                        SDL_FillRect(surface, &screen, SDL_MapRGB(surface->format, better::getRed(config.backgroundColor), better::getGreen(config.backgroundColor), better::getBlue(config.backgroundColor)));
+                        firstTime = true;
                     }
                 }
                 else if(event.key.keysym.sym == 's') {
@@ -238,6 +242,8 @@ void better::eventLoop(SDL_Window* window, std::string filename, int textHeight,
                     tempFilename = better::fileDialog(config, workspaceFolder).string();
                     texts[editorIndex].push_back(better::openFile(filename, editorCount, editorHeight, editorWidth, editorIndex, config));
                     texts[editorIndex].back().data.clearHistory = true;
+                    SDL_FillRect(surface, &screen, SDL_MapRGB(surface->format, better::getRed(config.backgroundColor), better::getGreen(config.backgroundColor), better::getBlue(config.backgroundColor)));
+                    firstTime = true;
                 }
                 else if(event.key.keysym.sym == 'c') {
                     better::copyClipboard(texts[editorIndex].back());
@@ -294,7 +300,7 @@ void better::eventLoop(SDL_Window* window, std::string filename, int textHeight,
                 
                 auto textStart = std::chrono::steady_clock::now();
                 bool notNew {texts[i].size() > 1};
-                better::renderText(surface, texts[i].back(), config, columnOffset + lineNoOffset, notNew ? texts[i][texts[i].size() - 2] : texts[i].back(), notNew ? false : true);
+                better::renderText(surface, texts[i].back(), config, columnOffset + lineNoOffset, notNew ? (firstTime ? texts[i].back() : texts[i][texts[i].size() - 2]) : texts[i].back(), notNew ? false : true);
                 auto textEnd = std::chrono::steady_clock::now();
                 std::chrono::duration<double> textDur = textEnd - textStart;
                 std::cout << "Text: " << textDur.count() << '\n';
@@ -314,6 +320,7 @@ void better::eventLoop(SDL_Window* window, std::string filename, int textHeight,
                 better::drawMenus(surface, texts[i].back().data.menu, 0xDDDDDDFF, config.highlightColor, columnOffset, config.characterHeight, config.characterWidth);
             }
             SDL_UpdateWindowSurface(window);
+            firstTime = false;
         }
     }
 }

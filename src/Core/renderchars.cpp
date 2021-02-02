@@ -197,7 +197,7 @@ void better::renderText(SDL_Surface* surface, better::Text text, better::ConfigD
         }
         comment = false;
         SDL_Rect line {.x = columnOffset, .y = rowIndex * config.characterHeight, .w = text.data.textWidth * config.characterWidth, .h = config.characterHeight};
-        if(lineIndex != previousText.cursor.row && !firstRender && previousText.textEdit[lineIndex] == text.textEdit[lineIndex] && text.topLineNumber == previousText.topLineNumber && text.topColumnNumber == previousText.topColumnNumber) {
+        if(text.textEdit[lineIndex].size() != 0 && lineIndex != previousText.cursor.row && !firstRender && previousText.textEdit[lineIndex] == text.textEdit[lineIndex] && text.topLineNumber == previousText.topLineNumber && text.topColumnNumber == previousText.topColumnNumber) {
             continue;
         }
         SDL_FillRect(surface, &line, SDL_MapRGB(surface->format, better::getRed(config.backgroundColor), better::getGreen(config.backgroundColor), better::getBlue(config.backgroundColor)));
