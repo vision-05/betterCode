@@ -139,7 +139,6 @@ namespace better {
 }
 
 void better::setPixel(SDL_Surface* surface, int x, int y, Uint32 pixel, int column, int row, int charWidth, int charHeight) {
-    SDL_LockSurface(surface); //use pixelIndex here
     Uint32 rowOffset = row * surface->w * charHeight; //select the chars pixels by getting the row
     Uint32 location = rowOffset + column * charWidth; //then the column
     Uint32* targetPixel = &(reinterpret_cast<Uint32*>(surface->pixels)[location + x + y * surface->w]); //then from there select the individual pixel to change
@@ -148,7 +147,6 @@ void better::setPixel(SDL_Surface* surface, int x, int y, Uint32 pixel, int colu
     int blueComponent {static_cast<int>((pixel & 0x0000FF00) >> 8)};
     int alphaComponent {static_cast<int>(pixel & 0x000000FF)};
     *targetPixel = SDL_MapRGBA(surface->format, redComponent, greenComponent, blueComponent, alphaComponent);
-    SDL_UnlockSurface(surface);
 }
 
 void better::renderLetter(SDL_Surface* surface, std::vector<Uint8> pixelGrid, int column, int row, Uint32 colorfg, Uint32 colorbg, int characterHeight, int characterWidth) {
@@ -160,6 +158,7 @@ void better::renderLetter(SDL_Surface* surface, std::vector<Uint8> pixelGrid, in
 }
 
 void better::renderCursor(SDL_Surface* surface, better::Cursor cursor, better::ConfigData config, int topLine, int topColumn, int columnOffset) {
+    SDL_LockSurface(surface);
     Uint8 caret[16] {3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3};
     cursor.row -= topLine;
     cursor.row += 1;
@@ -169,6 +168,7 @@ void better::renderCursor(SDL_Surface* surface, better::Cursor cursor, better::C
             better::setPixel(surface, j, i, better::unpackUint8Bit(j + 1, caret[i], 0xAA7069FF, 0x222222FF), cursor.column + static_cast<int>(columnOffset / config.characterWidth), cursor.row, config.characterWidth, config.characterHeight);
         }
     }
+    SDL_UnlockSurface(surface);
 }
 
 std::vector<Uint8> better::charCheck(char letter, std::array<std::vector<Uint8>,256> letters) {
@@ -176,6 +176,7 @@ std::vector<Uint8> better::charCheck(char letter, std::array<std::vector<Uint8>,
 }
 
 void better::renderText(SDL_Surface* surface, better::Text text, better::ConfigData config, int columnOffset, better::Text previousText, bool firstRender) {
+    SDL_LockSurface(surface);
     bool highlight {false};
     bool multilineComment {false};
     bool comment {false};
@@ -207,16 +208,11 @@ void better::renderText(SDL_Surface* surface, better::Text text, better::ConfigD
             
             
             if(letterIndex >= text.topColumnNumber && letterIndex < text.topColumnNumber + text.data.textWidth - 1) {
-                ++letterCount;
-                auto letterStart {std::chrono::steady_clock::now()};
                 better::renderLetter(surface, better::charCheck(text.textEdit[lineIndex][letterIndex],better::letters), columnIndex - text.topColumnNumber + static_cast<int>(columnOffset / config.characterWidth), rowIndex, foreground, background, config.characterHeight, config.characterWidth); //render text line by line
-                auto letterEnd {std::chrono::steady_clock::now()};
-                std::chrono::duration<double> letterDur {letterEnd - letterStart};
-                std::cout << "Letter: " << letterDur.count() << '\n';
-                std::cout << "Count: " << letterCount << '\n';
             }
         }
-    }  
+    }
+    SDL_UnlockSurface(surface);
 }
 
 Uint32 better::getBackground(better::Text text, better::ConfigData config, int lineIndex, int letterIndex) {
@@ -292,6 +288,7 @@ Uint32 better::unpackUint8Bit(int index, Uint8 number, Uint32 color, Uint32 colo
 
 
 void better::renderLineNumbers(SDL_Surface* surface, better::ConfigData config, better::editorData data, int topLine, int columnOffset, int textLength, int editorHeight) {
+    SDL_LockSurface(surface);
     std::string number {std::to_string(textLength)};
     SDL_Rect side {.x = columnOffset, .y = config.characterHeight, .w = static_cast<int>(number.size() + 1) * config.characterWidth, .h = editorHeight};
     SDL_FillRect(surface, &side, SDL_MapRGBA(surface->format, better::getRed(config.backgroundColor), better::getGreen(config.backgroundColor), better::getBlue(config.backgroundColor), better::getAlpha(config.backgroundColor)));
@@ -305,4 +302,5 @@ void better::renderLineNumbers(SDL_Surface* surface, better::ConfigData config, 
             better::renderLetter(surface, better::charCheck(number[j], better::letters), j + static_cast<int>(columnOffset / config.characterWidth), i - topLine, config.foregroundColor, config.backgroundColor, config.characterHeight, config.characterWidth);
         }
     }
+    SDL_UnlockSurface(surface);
 }

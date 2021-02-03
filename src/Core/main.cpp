@@ -210,7 +210,7 @@ void better::eventLoop(SDL_Window* window, std::string filename, int textHeight,
 
             if(event.type == SDL_KEYDOWN && texts[editorIndex].back().data.isCtrl) {
                 if(event.key.keysym.sym == 'z') {
-                    if(texts[editorIndex].size() > 1) {
+                    if(texts[editorIndex].size() > 1) { //change to search for last time editor had different character buffer
                         texts[editorIndex].pop_back();
                     }
                 }
@@ -282,7 +282,6 @@ void better::eventLoop(SDL_Window* window, std::string filename, int textHeight,
                     texts[editorIndex].push_back(tempText);
                 }
                 else {
-                    texts[editorIndex].pop_back();
                     texts[editorIndex].push_back(tempText);
                 }
             }
@@ -297,13 +296,8 @@ void better::eventLoop(SDL_Window* window, std::string filename, int textHeight,
                 lineNoOffset = (config.characterWidth * (std::to_string(texts[i].back().textEdit.size()).size() + 1));
                 columnOffset = (i * static_cast<int>(editorWidth / editorCount));
                 better::drawMenuBar(surface, menus, 0xDDDDDDFF, 0x666666FF, editorWidth, columnOffset, config.characterHeight, config.characterWidth);
-                
-                auto textStart = std::chrono::steady_clock::now();
                 bool notNew {texts[i].size() > 1};
-                better::renderText(surface, texts[i].back(), config, columnOffset + lineNoOffset, notNew ? (firstTime ? texts[i].back() : texts[i][texts[i].size() - 2]) : texts[i].back(), notNew ? false : true);
-                auto textEnd = std::chrono::steady_clock::now();
-                std::chrono::duration<double> textDur = textEnd - textStart;
-                std::cout << "Text: " << textDur.count() << '\n';
+                better::renderText(surface, texts[i].back(), config, columnOffset + lineNoOffset, notNew ? (firstTime ? texts[i].back() : texts[i][texts[i].size() - 2]) : texts[i].back(), notNew ? false : (firstTime ? true : false));
                 
                 if(!texts[i].back().data.isScroll) {
                     better::renderCursor(surface, texts[i].back().cursor, config, texts[i].back().topLineNumber, texts[i].back().topColumnNumber, columnOffset + lineNoOffset);
@@ -316,7 +310,7 @@ void better::eventLoop(SDL_Window* window, std::string filename, int textHeight,
                     texts[i].back().data.menu = menuText[texts[i].back().data.index];
                 }
 
-                better::renderLineNumbers(surface, config, texts[i].back().data, texts[i].back().topLineNumber, texts[i].back().topColumnNumber, texts[i].back().textEdit.size(), editorHeight);
+                better::renderLineNumbers(surface, config, texts[i].back().data, texts[i].back().topLineNumber, columnOffset, texts[i].back().textEdit.size(), editorHeight);
                 better::drawMenus(surface, texts[i].back().data.menu, 0xDDDDDDFF, config.highlightColor, columnOffset, config.characterHeight, config.characterWidth);
             }
             SDL_UpdateWindowSurface(window);
