@@ -1,5 +1,0 @@
-#ifndef SYNTAX_HIGHLIGHTER_HPP
-#define SYNTAX_HIGHLIGHTER_HPP
-
-
-#endif

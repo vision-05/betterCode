@@ -1,13 +1,15 @@
-CC := clang++-10
+CC := g++
 
 CXXFLAGS := -g -Ofast -std=c++20
-LLDLIBS := -lSDL2main -lSDL2
 
-SRCS = $(shell find $(SRCDIR) -name '*.cpp')
-SRCDIRS = $(shell find . -nmae '*.cpp' | dirname {} | uniq | sed 's/\/$(SRCDIR)//g')
-OBJS = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(SRCS))
+SERVERSRCS = src/Server/DataTypes.cpp src/Server/TextEditor.cpp src/Server/FileOps.cpp src/Server/TextServer.cpp
+SERVERSRCDIRS = $(shell find . -nmae '*.cpp' | dirname {} | uniq | sed 's/\/$(SRCDIR)/$(SERVERDIR)//g')
+
+CLIENTSRCS = src/Server/GuiClient.cpp
+CLIENTSRCDIRS = $(shell find . -nmae '*.cpp' | dirname {} | uniq | sed 's/\/$(SRCDIR)/$(CLIENTDIR)//g')
 
 EXEC := BetterCode
+CLIENTEXEC := BetterCodeClient
 
 DESTDIR := /usr/local
 PREFIX := debug
@@ -15,15 +17,20 @@ PREFIX := debug
 EXECDIR := bin
 OBJDIR := bin
 SRCDIR := src
-INCLUDE := /usr/include/c++/10/immer-0.6.2/
+INCLUDE := /usr/local/include/c++/11.0.0/immer-0.6.2/ /usr/local/include/c++/11.0.0/
+SERVERDIR := Server
+CLIENTDIR := Client
 
-all: $(EXEC)
-$(EXEC): $(OBJS) $(HDRS) makefile
-	mkdir -p $(EXECDIR)/$(PREFIX)
-	$(CC) -o $(EXECDIR)/$(PREFIX)/$@ $(OBJS) $(CXXFLAGS) $(LLDLIBS)
+Server: $(EXEC)
+$(EXEC): $(SRCDIR)/$(SERVERDIR)/*.cpp makefile
+	mkdir -p $(EXECDIR)/$(PREFIX)/$(SERVERDIR)
+	$(CC) -o $(EXECDIR)/$(PREFIX)/$(SERVERDIR)/$@ $(CXXFLAGS) $(SERVERSRCS) $(INCLUDE:%=-I%)
 
-$(OBJDIR)/%.o: $(SRCDIR)/%.cpp
-	$(CC) $(OPTS) -c $< $(INCLUDE:%=-I%) -std=c++20 -o $@
+Client: $(CLIENTEXEC)
+$(CLIENTEXEC): $(SRCDIR)/$(CLIENTDIR)/*.cpp makefile
+	mkdir -p $(EXECDIR)/$(PREFIX)/$(CLIENTDIR)
+	$(CC) -o $(EXECDIR)/$(PREFIX)/$(CLIENTDIR)/$@ $(CXXFLAGS) $(CLIENTSRCS) $(INCLUDE:%=-I%)
+
 
 .PHONY: install
 install: $(EXEC)
@@ -36,4 +43,4 @@ uninstall:
 
 .PHONY: clean
 clean:
-	rm -f $(EXECDIR)/$(PREFIX)/$(EXEC) $(OBJS)
+	rm -f $(EXECDIR)/$(PREFIX)/$(SERVERDIR)/$(EXEC) $(EXECDIR)/$(PREFIX)/$(CLIENTDIR)/$CLIENTEXEC $(SERVEROBJS) $(CLIENTOBJS)
