@@ -21,10 +21,15 @@ namespace better::datatypes {
 
     struct Text {
         immer::flex_vector<immer::flex_vector<char>> textEdit; //keeps the text state
-        better::datatypes::Cursor cursor; //keeps the cursor state
         better::datatypes::Cursor highlightStart {0,0};
         better::datatypes::Cursor highlightEnd {0,0};
     };
+}
+
+namespace better {
+    better::datatypes::Cursor addColumn(const better::datatypes::Cursor cursor, int column);
+
+    better::datatypes::Cursor addRow(const better::datatypes::Cursor cursor, int row);
 }
 
 #endif

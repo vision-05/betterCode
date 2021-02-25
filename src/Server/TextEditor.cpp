@@ -1,34 +1,30 @@
 #include "TextEditor.hpp"
 
-better::datatypes::Text better::deleteHighlighted(better::datatypes::Text text) {
-    std::vector<better::datatypes::Text> tempTexts {text};
-    tempTexts.back().cursor = text.highlightEnd;
-    tempTexts.back().cursor.column += 1;
-    int stopColumn {0};
-    for(int i{tempTexts.back().cursor.row}; i >= tempTexts.back().highlightStart.row; --i) {
-        if(i == tempTexts.back().highlightStart.row) {
-            stopColumn = tempTexts.back().highlightStart.column + 1;
-        }
-        for(int j{tempTexts.back().cursor.column}; j >= stopColumn; --j) {
-            tempTexts.push_back(better::backspace(tempTexts.back()));
-        }
-    }
+better::datatypes::Text better::deleteHighlighted(better::datatypes::Text text, better::datatypes::Cursor cursor) { //simplify this with drops method.
+    std::vector<better::datatypes::Text> tempTexts {text}; //replace all of this
+    better::datatypes::Cursor endCursor {text.highlightEnd};
+    cursor.column += 1;
     tempTexts.back().highlightEnd = tempTexts.back().highlightStart;
     return tempTexts.back();
 }
 
-better::datatypes::Text better::moveCursorLeft(better::datatypes::Text text) {
-    text.cursor.column -= 1;
-    return text;
-}
-
-better::datatypes::Text better::autoBracket(better::datatypes::Text text, char letter) {
+better::datatypes::Text better::autoBracket(better::datatypes::Text text, better::datatypes::Cursor cursor, char letter) {
     int num {letter == '(' ? 1 : 2};
-    return better::moveCursorLeft(better::updateText(better::updateText(text,letter),letter + num)); //left not defined yet
+    return better::updateText(better::updateText(text, cursor, letter), addColumn(cursor, 1), letter + num);
 }
 
-better::datatypes::Text better::tab(better::datatypes::Text text, int tabWidth) {
-    return better::updateText(better::updateText(better::updateText(better::updateText(text,' '),' '),' '),' ');
+better::datatypes::Text better::tab(better::datatypes::Text text, better::datatypes::Cursor cursor, int tabWidth) { //use flex_vector transient here to reduce number of function calls
+    immer::flex_vector_transient<char> tab{};
+    for(int i{}; i < tabWidth; ++i) { //add spaces to transient vector.
+        tab.push_back(' ');
+    }
+    immer::flex_vector<char> newLine{text.textEdit[cursor.row].take(cursor.column) + tab.persistent() + text.textEdit[cursor.row].drop(cursor.column)}; //insert the tab at the right place
+
+    return {
+        text.textEdit.set(cursor.row, newLine), //replace the line with tabs added
+        text.highlightStart,
+        text.highlightEnd
+    };
 }
 
 int better::getPreviousIndentLevel(better::datatypes::Text text, int row) {
@@ -44,46 +40,42 @@ int better::getPreviousIndentLevel(better::datatypes::Text text, int row) {
     return notSpace;    
 }
 
-better::datatypes::Text better::updateText(better::datatypes::Text textEdit, char newChar) {
-    bool endOfLine {textEdit.cursor.column == textEdit.textEdit[textEdit.cursor.row].size()};
-    immer::flex_vector<char> line {endOfLine ? textEdit.textEdit[textEdit.cursor.row].push_back(newChar) : textEdit.textEdit[textEdit.cursor.row].insert(textEdit.cursor.column, newChar)}; //add the character to the line (change to insert unless the cursor is at the end of the line)
+better::datatypes::Text better::updateText(better::datatypes::Text textEdit, better::datatypes::Cursor cursor, char newChar) {
+    bool endOfLine {cursor.column == textEdit.textEdit[cursor.row].size()};
+    immer::flex_vector<char> line {endOfLine ? textEdit.textEdit[cursor.row].push_back(newChar) : textEdit.textEdit[cursor.row].insert(cursor.column, newChar)}; //add the character to the line (change to insert unless the cursor is at the end of the line)
     better::datatypes::Text tempText
     {
-        textEdit.textEdit.set(textEdit.cursor.row,line), //textEdit
-        {textEdit.cursor.row, textEdit.cursor.column + 1}, //cursor
+        textEdit.textEdit.set(cursor.row,line), //textEdit
         textEdit.highlightStart, //hightlightStart
         textEdit.highlightEnd //higlightEnd
     };
     return tempText;
 }
 
-better::datatypes::Text better::backspace(better::datatypes::Text text) { //couple of bugs with backspace, figure out once got all chars rendering
-    if(!text.cursor.row && !text.cursor.column) {
+better::datatypes::Text better::backspace(better::datatypes::Text text, better::datatypes::Cursor cursor) { //couple of bugs with backspace, figure out once got all chars rendering
+    if(!cursor.row && !cursor.column) {
         return text;
     }
 
     immer::flex_vector<char> newLine;
 
-    if(text.cursor.column > 0) {
-        newLine = text.textEdit[text.cursor.row].erase(text.cursor.column - 1); //make case for deleting newline
+    if(cursor.column > 0) {
+        newLine = text.textEdit[cursor.row].erase(cursor.column - 1); //make case for deleting newline
     }
     else {
         //concatenate rest of line with previous line
-        if(text.textEdit[text.cursor.row].size() > 0) {
-            int colNo = text.textEdit[text.cursor.row - 1].size();
-            newLine = text.textEdit[text.cursor.row - 1] + text.textEdit[text.cursor.row];
+        if(text.textEdit[cursor.row].size() > 0) {
+            newLine = text.textEdit[cursor.row - 1] + text.textEdit[cursor.row];
             return
             { //Text start
-                text.textEdit.erase(text.cursor.row).set(text.cursor.row - 1, newLine), //textEdit
-                {text.cursor.row - 1, colNo}, //cursor
+                text.textEdit.erase(cursor.row).set(cursor.row - 1, newLine), //textEdit
                 text.highlightStart, //highlightStart
                 text.highlightEnd //highlightEnd
             }; //Text end
         }
         return
         { //Text start
-            text.textEdit.erase(text.cursor.row), //textEdit
-            {text.cursor.row - 1, static_cast<int>(text.textEdit[text.cursor.row - 1].size())}, //cursor
+            text.textEdit.erase(cursor.row), //textEdit
             text.highlightStart, //highlightStart
             text.highlightEnd //highlightEnd
         }; //Text end
@@ -91,23 +83,21 @@ better::datatypes::Text better::backspace(better::datatypes::Text text) { //coup
 
     return
     { //Text start
-        text.textEdit.set(text.cursor.row,newLine), //textEdit
-        {text.cursor.row, text.cursor.column - 1}, //cursor
+        text.textEdit.set(cursor.row, newLine), //textEdit
         text.highlightStart, //highlightStart
         text.highlightEnd //hightlightEnd
     }; //Text end
 }
 
-better::datatypes::Text better::newLine(better::datatypes::Text textEdit, bool autoIndent) { //create cases for newline inbetween brackets.
+better::datatypes::Text better::newLine(better::datatypes::Text textEdit, better::datatypes::Cursor cursor, bool autoIndent) {
     std::vector<better::datatypes::Text> texts {};
 
-    bool endOfText {textEdit.cursor.row == textEdit.textEdit.size() - 1 ? true : false};
+    bool endOfText {cursor.row == textEdit.textEdit.size() - 1 ? true : false};
     
     better::datatypes::Text newText
     {
-        endOfText ? textEdit.textEdit.set(textEdit.cursor.row, textEdit.textEdit[textEdit.cursor.row].take(textEdit.cursor.column)).push_back(textEdit.textEdit[textEdit.cursor.row].drop(textEdit.cursor.column)) :
-                    textEdit.textEdit.insert(textEdit.cursor.row + 1, textEdit.textEdit[textEdit.cursor.row].drop(textEdit.cursor.column)).set(textEdit.cursor.row, textEdit.textEdit[textEdit.cursor.row].take(textEdit.cursor.column)), //textEdit
-        {textEdit.cursor.row + 1, 0}, //cursor
+        endOfText ? textEdit.textEdit.set(cursor.row, textEdit.textEdit[cursor.row].take(cursor.column)).push_back(textEdit.textEdit[cursor.row].drop(cursor.column)) :
+                    textEdit.textEdit.insert(cursor.row + 1, textEdit.textEdit[cursor.row].drop(cursor.column)).set(cursor.row, textEdit.textEdit[cursor.row].take(cursor.column)), //textEdit
         textEdit.highlightStart, //highlightStart
         textEdit.highlightEnd //highlightEnd
     };
@@ -115,16 +105,17 @@ better::datatypes::Text better::newLine(better::datatypes::Text textEdit, bool a
     texts.push_back(newText);
     
     if(autoIndent) {
-        int prevIndent {better::getPreviousIndentLevel(textEdit, textEdit.cursor.row)};
+        int prevIndent {better::getPreviousIndentLevel(textEdit, cursor.row)};
         for(int i{}; i < prevIndent; ++i) {
-            texts.push_back(better::updateText(texts.back(),' '));
+            texts.push_back(better::updateText(texts.back(), cursor,' '));
+            cursor.column += 1;
         }
     }
 
-    if(false) {
-        texts.push_back(better::newline(texts.back()));
-        texts.back().cursor.row -= 1;
-        texts.back().cursor.column = texts.back().textEdit[texts.back().cursor.row].size();
+    if(false) { //condition for if newline between brackets
+        texts.push_back(better::newLine(texts.back(), cursor, true));
+        cursor.row += 1;
+        texts.push_back(better::newLine(texts.back(), cursor, true));
     }
     
     return texts.back();
