@@ -2,14 +2,21 @@ CC := g++
 
 CXXFLAGS := -g -Ofast -std=c++20
 
-SERVERSRCS = src/Server/DataTypes.cpp src/Server/TextEditor.cpp src/Server/FileOps.cpp src/Server/TextServer.cpp
+SERVERSRCS = src/Server/DataTypes.cpp src/Server/TextEditor.cpp src/Server/FileOps.cpp
+SERVERTESTSRCS = $(SERVERSRCS) src/Server/Test.cpp
+SERVERAPPSRCS = $(SERVERSRCS) src/Server/TextServer.cpp
 SERVERSRCDIRS = $(shell find . -nmae '*.cpp' | dirname {} | uniq | sed 's/\/$(SRCDIR)/$(SERVERDIR)//g')
 
 CLIENTSRCS = src/Server/GuiClient.cpp
+CLIENTTESTSRCS = $(CLIENTSRCS) src/Client/Test.cpp
+CLIENTAPPSRCS = $(CLIENTSRCS)
 CLIENTSRCDIRS = $(shell find . -nmae '*.cpp' | dirname {} | uniq | sed 's/\/$(SRCDIR)/$(CLIENTDIR)//g')
 
 EXEC := BetterCode
 CLIENTEXEC := BetterCodeClient
+
+TESTEXEC := BetterTestServer
+TESTEXECCLIENT := BetterTestClient
 
 DESTDIR := /usr/local
 PREFIX := debug
@@ -17,20 +24,29 @@ PREFIX := debug
 EXECDIR := bin
 OBJDIR := bin
 SRCDIR := src
-INCLUDE := /usr/local/include/c++/11.0.0/immer-0.6.2/ /usr/local/include/c++/11.0.0/
+INCLUDE := /usr/include/c++/10.2.0/immer-0.6.2/ /usr/include/c++/10.2.0/
 SERVERDIR := Server
 CLIENTDIR := Client
 
 Server: $(EXEC)
 $(EXEC): $(SRCDIR)/$(SERVERDIR)/*.cpp makefile
 	mkdir -p $(EXECDIR)/$(PREFIX)/$(SERVERDIR)
-	$(CC) -o $(EXECDIR)/$(PREFIX)/$(SERVERDIR)/$@ $(CXXFLAGS) $(SERVERSRCS) $(INCLUDE:%=-I%)
+	$(CC) -o $(EXECDIR)/$(PREFIX)/$(SERVERDIR)/$@ $(CXXFLAGS) $(SERVERAPPSRCS) $(INCLUDE:%=-I%)
 
 Client: $(CLIENTEXEC)
 $(CLIENTEXEC): $(SRCDIR)/$(CLIENTDIR)/*.cpp makefile
 	mkdir -p $(EXECDIR)/$(PREFIX)/$(CLIENTDIR)
-	$(CC) -o $(EXECDIR)/$(PREFIX)/$(CLIENTDIR)/$@ $(CXXFLAGS) $(CLIENTSRCS) $(INCLUDE:%=-I%)
+	$(CC) -o $(EXECDIR)/$(PREFIX)/$(CLIENTDIR)/$@ $(CXXFLAGS) $(CLIENTAPPSRCS) $(INCLUDE:%=-I%)
 
+ServerTest: $(TESTEXEC)
+$(TESTEXEC): $(SRCDIR)/$(SERVERDIR)/*.cpp makefile
+	mkdir -p $(EXECDIR)/test/$(SERVERDIR)
+	$(CC) -o $(EXECDIR)/test/$(SERVERDIR)/$@ $(CXXFLAGS) $(SERVERTESTSRCS) $(INCLUDE:%=-I%) -lgtest
+
+ClientTest: $(TESTEXECCLIENT)
+$(TESTEXECCLIENT): $(SRCDIR)/$(CLIENTDIR)/*.cpp makefile
+	mkdir -p $(EXECDIR)/test/$(CLIENTDIR)
+	$(CC) -o $(EXECDIR)/test/$(CLIENTDIR)/$@ $(CXXFLAGS) $(CLIENTTESTSRCS) $(INCLUDE:%=-I%) -lgtest
 
 .PHONY: install
 install: $(EXEC)

@@ -13,7 +13,7 @@ better::datatypes::Text better::autoBracket(better::datatypes::Text text, better
     return better::updateText(better::updateText(text, cursor, letter), addColumn(cursor, 1), letter + num);
 }
 
-better::datatypes::Text better::tab(better::datatypes::Text text, better::datatypes::Cursor cursor, int tabWidth) { //use flex_vector transient here to reduce number of function calls
+better::datatypes::Text better::tab(better::datatypes::Text text, better::datatypes::Cursor cursor, int tabWidth) { //option for tabs as well as spaces
     immer::flex_vector_transient<char> tab{};
     for(int i{}; i < tabWidth; ++i) { //add spaces to transient vector.
         tab.push_back(' ');
@@ -41,6 +41,9 @@ int better::getPreviousIndentLevel(better::datatypes::Text text, int row) {
 }
 
 better::datatypes::Text better::updateText(better::datatypes::Text textEdit, better::datatypes::Cursor cursor, char newChar) {
+    if(newChar == '\n') {
+        return textEdit;
+    }
     bool endOfLine {cursor.column == textEdit.textEdit[cursor.row].size()};
     immer::flex_vector<char> line {endOfLine ? textEdit.textEdit[cursor.row].push_back(newChar) : textEdit.textEdit[cursor.row].insert(cursor.column, newChar)}; //add the character to the line (change to insert unless the cursor is at the end of the line)
     better::datatypes::Text tempText
@@ -91,8 +94,12 @@ better::datatypes::Text better::backspace(better::datatypes::Text text, better::
 
 better::datatypes::Text better::newLine(better::datatypes::Text textEdit, better::datatypes::Cursor cursor, bool autoIndent) {
     std::vector<better::datatypes::Text> texts {};
+    int tabWidth {4};
 
     bool endOfText {cursor.row == textEdit.textEdit.size() - 1 ? true : false};
+    bool isParen {(textEdit.textEdit[cursor.row][cursor.column - 1] == '{' && textEdit.textEdit[cursor.row][cursor.column] == '}') ||
+                  (textEdit.textEdit[cursor.row][cursor.column - 1] == '(' && textEdit.textEdit[cursor.row][cursor.column] == ')') ||
+                  (textEdit.textEdit[cursor.row][cursor.column - 1] == '[' && textEdit.textEdit[cursor.row][cursor.column] == ']')};
     
     better::datatypes::Text newText
     {
@@ -106,16 +113,18 @@ better::datatypes::Text better::newLine(better::datatypes::Text textEdit, better
     
     if(autoIndent) {
         int prevIndent {better::getPreviousIndentLevel(textEdit, cursor.row)};
+        cursor.row += 1;
         for(int i{}; i < prevIndent; ++i) {
             texts.push_back(better::updateText(texts.back(), cursor,' '));
             cursor.column += 1;
         }
     }
 
-    if(false) { //condition for if newline between brackets
-        texts.push_back(better::newLine(texts.back(), cursor, true));
-        cursor.row += 1;
-        texts.push_back(better::newLine(texts.back(), cursor, true));
+    cursor.column -= 1;
+
+    if(isParen) {
+        texts.push_back(better::newLine(texts.back(), cursor, true)); //create empty new line followed by brace
+        texts.push_back(better::tab(texts.back(), cursor, tabWidth)); //cursor is still at the start of empty line, add an indent there
     }
     
     return texts.back();
