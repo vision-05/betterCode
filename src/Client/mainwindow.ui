@@ -26,6 +26,12 @@
    <string>BetterCode</string>
   </property>
   <widget class="QWidget" name="centralwidget">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
    <property name="minimumSize">
     <size>
      <width>768</width>
@@ -52,6 +58,17 @@
       <width>768</width>
       <height>1030</height>
      </size>
+    </property>
+    <property name="maximumSize">
+     <size>
+      <width>768</width>
+      <height>16777215</height>
+     </size>
+    </property>
+    <property name="font">
+     <font>
+      <kerning>true</kerning>
+     </font>
     </property>
     <property name="frameShape">
      <enum>QFrame::StyledPanel</enum>
@@ -514,6 +531,7 @@
       <font>
        <family>Roboto Mono [GOOG]</family>
        <pointsize>8</pointsize>
+       <kerning>true</kerning>
       </font>
      </property>
      <property name="cursor">
@@ -990,6 +1008,7 @@
       <font>
        <family>Roboto Mono [GOOG]</family>
        <pointsize>8</pointsize>
+       <kerning>true</kerning>
       </font>
      </property>
      <property name="cursor" stdset="0">
@@ -1466,6 +1485,7 @@
       <font>
        <family>Roboto Mono [GOOG]</family>
        <pointsize>8</pointsize>
+       <kerning>true</kerning>
       </font>
      </property>
      <property name="mouseTracking">
