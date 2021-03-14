@@ -6,20 +6,6 @@
             [clojure.data :as data]
             [clojure.core.cache :as cache]))
 
-;(def style
-;  (css/register ::style
-;    (let [text-color "#E0CDCD"
-;          editor-color "#123F58"
-;          status-color "#275F77"
-;          background-color "#23282D"]
-;      {".text" {:-fx-text-fill text-color
-;                "-editor" {:-fx-background-color editor-color
-;                           :-fx-control-inner-background editor-color
-;                           :-fx-text-fill text-color}
-;                "-status" {:-fx-background-color status-color
-;                           :-fx-text-fill text-color}}
-;       ".rect" {:-fx-background-color background-color}})))
-
 (def *context
   (atom 
     (fx/create-context {:title "BetterCode"
@@ -29,15 +15,11 @@
                         :argument "hehe"}
                        #(cache/lru-cache-factory % :threshold 4096))))
 
-(defn spacer [{:keys [width]}]
+(defn spacer [{:keys [width height]}]
   {:fx/type :rectangle
    :width width
-   :style {:-fx-background-color "#23282D"
-           :-fx-control-inner-background "#23282D"}})
-
-(defn spacer-vertical [{:keys [height]}]
-  {:fx/type :rectangle
-   :height height})
+   :height height
+   :fill "#23282D"})
 
 (defn status-bar [{:keys [fx/context]}]
   "A status bar that stores the current column, line and filename"
@@ -60,6 +42,7 @@
    :max-height 896
    :text (fx/sub-val context :text-editor)
    :style {:-fx-control-inner-background "#123F58"
+           :-fx-background-color "#23282D"
            :-fx-text-fill "#E0CDCD"}
    :on-text-changed {:event/type ::type-text :fx/sync true}})
 
@@ -70,41 +53,51 @@
    :max-width 80
    :max-height 896
    :style {:-fx-control-inner-background "#275F77"
+           :-fx-background-color "#23282D"
            :-fx-text-fill "#E0CDCD"}})
 
 (defn status-row [{:keys [fx/context]}]
   {:fx/type :h-box
    :max-width 768
    :children [{:fx/type spacer
-               :width 14}
+               :width 14
+               :height 32}
               {:fx/type status-bar}
               {:fx/type spacer
-               :width 14}]})
+               :width 14
+               :height 32}]})
 
 (defn editor-row [{:keys [fx/context]}]
   {:fx/type :h-box
    :max-width 768
-   :max-height 1000
    :children [{:fx/type spacer
-               :width 14}
+               :width 14
+               :height 896}
               {:fx/type line-numbers}
               {:fx/type spacer
-               :width 28}
+               :width 28
+               :height 896}
               {:fx/type text-edit}
               {:fx/type spacer
-               :width 14}]})
+               :width 14
+               :height 896}]})
 
 (defn editor-pane [{:keys [fx/context]}]
   "An editor with line numbers in an hbox layout"
   {:fx/type :v-box
    :max-width 768
    :max-height 1080
-   :children [{:fx/type spacer-vertical
-               :height 30}
+   :children [{:fx/type spacer
+               :height 30
+               :width 768}
               {:fx/type status-row}
-              {:fx/type spacer-vertical
-               :height 26}
-              {:fx/type editor-row}]})
+              {:fx/type spacer
+               :height 26
+               :width 768}
+              {:fx/type editor-row}
+              {:fx/type spacer
+               :height 96
+               :width 768}]})
 
 (defmulti handle-event :event/type)
 
