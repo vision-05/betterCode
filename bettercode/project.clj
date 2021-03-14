@@ -5,7 +5,8 @@
             :url "https://www.eclipse.org/legal/epl-2.0/"}
   :dependencies [[org.clojure/clojure "1.10.1"]
                  [org.clojure/core.cache "1.0.207"]
-                 [cljfx "1.7.13"]]
+                 [cljfx "1.7.13"]
+                 [cljfx/css "1.1.0"]]
   :main ^:skip-aot bettercode.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all
