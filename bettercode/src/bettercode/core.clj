@@ -1,39 +1,30 @@
 (ns bettercode.core
   (:gen-class)
   (:require [cljfx.api :as fx]
-            [clojure.string :as str]
-            [clojure.data :as data]
             [clojure.core.cache :as cache]
+            [cljfx.css :as css]
             [bettercode.elements]))
 
 (def *context
-  (atom 
-    (fx/create-context {:title "BetterCode"
-                        :file-name "TextEditor.cpp"
-                        :text-editor (slurp "/home/tim/betterCode/Server/TextEditor.cpp")
-                        :action ""
-                        :argument "hehe"}
-                       #(cache/lru-cache-factory % :threshold 4096))))
-
-(defmulti handle-event :event/type)
-
-(defmethod handle-event :default [e]
-  (println e))
-
-(defmethod handle-event ::type-text [{:keys [fx/event fx/context]}]
-  {:context (fx/swap-context context 
-                             assoc 
-                             :text-editor event 
-                             :argument (data/diff event (fx/sub-val context :text-editor))
-                             :action "text-edit")})
+  (atom
+   (fx/create-context {:title "BetterCode"
+                       :file-name "TextEditor.cpp"
+                       :text-editor (slurp "/home/tim/betterCode/Server/TextEditor.cpp")
+                       :action ""
+                       :argument "hehe"}
+                      #(cache/lru-cache-factory % :threshold 4096))))
 
 (defn -main []
   (fx/create-app *context
-    :event-handler handle-event
-    :desc-fn (fn [_]
-                {:fx/type :stage
-                 :showing true
-                 :width 768
-                 :height 1080
-                 :scene {:fx/type :scene
-                         :root {:fx/type bettercode.elements/editor-pane}}})))
+                 :event-handler bettercode.elements/handle-event
+                 :desc-fn (fn [_]
+                            {:fx/type :stage
+                             :title "BetterCode"
+                             :showing true
+                             :width 768
+                             :height 1080
+                             :resizable true
+                             :scene {:fx/type :scene
+                                     :fill "#23282D"
+                                     :stylesheets [(::css/url bettercode.elements/style)]
+                                     :root {:fx/type bettercode.elements/editor-pane}}})))
