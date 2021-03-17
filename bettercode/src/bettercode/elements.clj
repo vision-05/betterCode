@@ -9,18 +9,19 @@
                       status-background-color "#275F77"
                       text-color "#E0CDCD"
                       background-color "#123F58"]
-                  {".text-area" {"-status" {:-fx-background-color status-background-color
-                                            :-fx-text-fill text-color}
-                                 "-editor" {:-fx-text-fill text-color
-                                            :-fx-background-color back-background-color
-                                            " .content" {:-fx-background-color background-color}
-                                            " .scroll-pane" {:-fx-hbar-policy :never
-                                                             :-fx-vbar-policy :never}}
-                                 "-numbers" {:-fx-text-fill text-color
-                                             :-fx-background-color back-background-color
-                                             " .content" {:-fx-background-color status-background-color}
-                                             " .scroll-pane" {:-fx-hbar-policy :never 
-                                                              :-fx-vbar-policy :never}}}})))
+                  {".root" {:-fx-background-color back-background-color
+                            "-text-area" {"-status" {:-fx-background-color status-background-color
+                                                     :-fx-text-fill text-color}
+                                          "-editor" {:-fx-text-fill text-color
+                                                     :-fx-background-color back-background-color
+                                                     " .content" {:-fx-background-color background-color}
+                                                     " .scroll-pane" {:-fx-hbar-policy :never
+                                                                      :-fx-vbar-policy :never}}
+                                          "-numbers" {:-fx-text-fill text-color
+                                                      :-fx-background-color back-background-color
+                                                      " .content" {:-fx-background-color status-background-color}
+                                                      " .scroll-pane" {:-fx-hbar-policy :never
+                                                                       :-fx-vbar-policy :never}}}}})))
 
 (defmulti handle-event :event/type)
 
@@ -48,7 +49,7 @@
    :max-height 32
    :alignment :center
    :text (fx/sub-val context :file-name)
-   :style-class "text-area-status"})
+   :style-class "root-text-area-status"})
 
 (defn text-edit [{:keys [fx/context]}] ;put in scroll pane and hide/disable scroll bars
   {:fx/type :text-area
@@ -58,7 +59,7 @@
    :max-height 896
    :wrap-text true
    :text (fx/sub-val context :text-editor)
-   :style-class "text-area-editor"
+   :style-class "root-text-area-editor"
    :on-text-changed {:event/type ::type-text :fx/sync true}})
 
 (defn line-numbers [{:keys [fx/context]}]
@@ -68,7 +69,7 @@
    :pref-height 896
    :max-width 80
    :max-height 896
-   :style-class "text-area-numbers"})
+   :style-class "root-text-area-numbers"})
 
 (defn status-row [{:keys [fx/context]}]
   {:fx/type :h-box

@@ -27,4 +27,5 @@
                              :scene {:fx/type :scene
                                      :fill "#23282D"
                                      :stylesheets [(::css/url bettercode.elements/style)]
-                                     :root {:fx/type bettercode.elements/editor-pane}}})))
+                                     :root {:fx/type bettercode.elements/editor-pane
+                                            :style-class "root"}}})))
