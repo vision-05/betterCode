@@ -1,4 +1,4 @@
 (ns bettercode.sockets
-  (:require [gniazdo.core :as ws]))
+  (:require [clojure.string :as str]))
 
 (def socket)
