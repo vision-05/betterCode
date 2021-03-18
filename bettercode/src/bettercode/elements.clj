@@ -1,40 +1,8 @@
 (ns bettercode.elements
   (:require [cljfx.api :as fx]
-            [cljfx.css :as css]
-            [clojure.data :as data]))
+            [bettercode.css]
+            [bettercode.events]))
 
-(def style
-  (css/register ::style
-                (let [back-background-color "#23282D"
-                      status-background-color "#275F77"
-                      text-color "#E0CDCD"
-                      background-color "#123F58"]
-                  {".root" {:-fx-background-color back-background-color
-                            "-text-area" {"-status" {:-fx-background-color status-background-color
-                                                     :-fx-text-fill text-color}
-                                          "-editor" {:-fx-text-fill text-color
-                                                     :-fx-background-color back-background-color
-                                                     " .content" {:-fx-background-color background-color}
-                                                     " .scroll-pane" {:-fx-hbar-policy :never
-                                                                      :-fx-vbar-policy :never}}
-                                          "-numbers" {:-fx-text-fill text-color
-                                                      :-fx-background-color back-background-color
-                                                      " .content" {:-fx-background-color status-background-color}
-                                                      " .scroll-pane" {:-fx-hbar-policy :never
-                                                                       :-fx-vbar-policy :never}}}}})))
-
-(defmulti handle-event :event/type)
-
-(defmethod handle-event :default [e]
-  (println e))
-
-(defmethod handle-event ::type-text [{:keys [fx/event fx/context]}]
-  (println (slurp (::css/url bettercode.elements/style)))
-  {:context (fx/swap-context context
-                             assoc
-                             :text-editor event
-                             :argument (data/diff event (fx/sub-val context :text-editor))
-                             :action "text-edit")})
 (defn spacer [{:keys [width height]}]
   {:fx/type :rectangle
    :width width
@@ -58,9 +26,11 @@
    :max-width 632
    :max-height 896
    :wrap-text true
+   :font "Roboto Mono"
+   :cursor :text
    :text (fx/sub-val context :text-editor)
    :style-class "root-text-area-editor"
-   :on-text-changed {:event/type ::type-text :fx/sync true}})
+   :on-text-changed {:event/type :bettercode.events/type-text :fx/sync true}})
 
 (defn line-numbers [{:keys [fx/context]}]
   {:fx/type :text-area
@@ -69,11 +39,14 @@
    :pref-height 896
    :max-width 80
    :max-height 896
+   :font "Roboto Mono"
    :style-class "root-text-area-numbers"})
 
 (defn status-row [{:keys [fx/context]}]
   {:fx/type :h-box
    :pref-width 768
+   :min-width 768
+   :max-width 768
    :children [{:fx/type spacer
                :width 14
                :height 32}
@@ -86,6 +59,8 @@
 (defn editor-row [{:keys [fx/context]}]
   {:fx/type :h-box
    :pref-width 768
+   :min-width 768
+   :max-width 768
    :children [{:fx/type spacer
                :width 14
                :height 896}
@@ -102,6 +77,8 @@
 (defn editor-pane [{:keys [fx/context]}]
   {:fx/type :v-box
    :pref-width 768
+   :min-width 768
+   :max-width 768
    :pref-height 1080
    :children [{:fx/type spacer
                :height 30
