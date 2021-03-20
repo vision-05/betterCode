@@ -88,14 +88,6 @@ int main() {
         std::abort();
     }
 
-    sa.sa_handler = sigchld_handler;
-    sigemptyset(&sa.sa_mask);
-    sa.sa_flags = SA_RESTART;
-    if(sigaction(SIGCHLD, &sa, NULL) == -1) {
-        std::cout << "sigaction\n";
-        std::abort();
-    }
-
     std::cout << "waiting for connections...\n";
 
     sin_size = sizeof(clientAddress);
@@ -107,9 +99,18 @@ int main() {
     inet_ntop(clientAddress.ss_family, get_in_addr(reinterpret_cast<sockaddr*>(&clientAddress)), s, sizeof(s));
     std::cout << "got connection from " << s << '\n';
 
+    //this is after connection, all that matters
+
     uint32_t bytes {};
     long int connected {recv(newFD, &bytes, sizeof(bytes), 0)};
-    std::cout << "received: " << ntohl(bytes) << " bytes\n";
+    bytes = ntohl(bytes);
+    char* data = new char[bytes];
+    connected = recv(newFD, data, bytes, 0);
+    std::cout << "received: " << bytes << " bytes\n";
+    std::string message {data, data + bytes};
+    std::cout << message << '\n';
+    delete data;
+    data = nullptr;
     close(socketFD);
     close(newFD);
     return 0;
