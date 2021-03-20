@@ -43,7 +43,8 @@
 
 (defn -main []
   (let [c @(client "tim-archpc" 7000)]
-    (println @(s/take! c)))
+    (println @(s/put! c "hello world")))
+  
   (fx/create-app *context
                  :event-handler bettercode.events/handle-event
                  :desc-fn (fn [_]

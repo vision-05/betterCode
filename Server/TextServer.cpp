@@ -12,6 +12,7 @@
 #include <cstdlib>
 #include <sys/wait.h>
 #include <errno.h>
+#include <chrono>
 
 #include "FileOps.hpp"
 #include "TextEditor.hpp"
@@ -97,27 +98,19 @@ int main() {
 
     std::cout << "waiting for connections...\n";
 
-    while(1) {
-        sin_size = sizeof(clientAddress);
-        newFD = accept(socketFD, reinterpret_cast<sockaddr*>(&clientAddress), &sin_size);
-        if(newFD == -1) {
-            std::cout << "accept\n";
-            continue;
-        }
-
-        inet_ntop(clientAddress.ss_family, get_in_addr(reinterpret_cast<sockaddr*>(&clientAddress)), s, sizeof(s));
-        std::cout << "got connection from " << s << '\n';
-
-        if(!fork()) {
-            close(socketFD);
-            if(send(newFD, "Hello, World!", 13, 0) == -1) {
-                std::cout << "send\n";
-            }
-            close(newFD);
-            break;
-        }
-        close(newFD);
+    sin_size = sizeof(clientAddress);
+    newFD = accept(socketFD, reinterpret_cast<sockaddr*>(&clientAddress), &sin_size);
+    if(newFD == -1) {
+        std::cout << "accept\n";
+        std::abort();
     }
+    inet_ntop(clientAddress.ss_family, get_in_addr(reinterpret_cast<sockaddr*>(&clientAddress)), s, sizeof(s));
+    std::cout << "got connection from " << s << '\n';
 
+    uint32_t bytes {};
+    long int connected {recv(newFD, &bytes, sizeof(bytes), 0)};
+    std::cout << "received: " << ntohl(bytes) << " bytes\n";
+    close(socketFD);
+    close(newFD);
     return 0;
 }
