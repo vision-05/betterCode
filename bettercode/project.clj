@@ -6,7 +6,10 @@
   :dependencies [[org.clojure/clojure "1.10.1"]
                  [org.clojure/core.cache "1.0.207"]
                  [cljfx "1.7.13"]
-                 [cljfx/css "1.1.0"]]
+                 [cljfx/css "1.1.0"]
+                 [aleph "0.4.6"]
+                 [gloss "0.2.6"]
+                 [manifold "0.1.9-alpha4"]]
   :main ^:skip-aot bettercode.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all
