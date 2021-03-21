@@ -30,6 +30,20 @@ namespace better{
         std::uint32_t size;
     };
 
+    class DataIn {
+    public:
+        char* data;
+        std::size_t size;
+
+        DataIn(std::size_t s) : size{s}, data{new char[s]} {}
+        ~DataIn() {
+            delete data;
+            data = nullptr;
+        }
+        std::string toString();
+        std::string toParsedString();
+    };
+
     better::Cursor addColumn(const better::Cursor cursor, int column);
 
     better::Cursor addRow(const better::Cursor cursor, int row);

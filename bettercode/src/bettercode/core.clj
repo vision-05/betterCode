@@ -36,14 +36,12 @@
   (atom
    (fx/create-context {:title "BetterCode"
                        :file-name "TextEditor.cpp"
-                       :text-editor (slurp "/home/tim/betterCode/Server/TextEditor.cpp")
-                       :action ""
-                       :argument "hehe"}
+                       :text-editor (slurp "/home/tim/betterCode/Server/TextEditor.cpp")}
                       #(cache/lru-cache-factory % :threshold 4096))))
 
 (defn -main []
   (let [c @(client "tim-archpc" 7000)]
-    (println @(s/put! c "hello world"))
+    (println @(s/put! c "made connection"))
     (fx/create-app *context
                    :event-handler bettercode.events/handle-event
                    :desc-fn (fn [_]

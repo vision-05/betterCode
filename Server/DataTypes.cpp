@@ -32,3 +32,11 @@ better::DataOut better::fvToString(const better::Text text) {
     }
     return better::DataOut {.text = stringText, .size = textSize};
 }
+
+std::string better::DataIn::toString() {
+    return std::string{this->data, this->data + this->size};
+}
+
+std::string better::DataIn::toParsedString() {
+    return std::string{this->data + 1, this->data + this->size - 1};
+}

@@ -56,3 +56,31 @@ immer::flex_vector<immer::flex_vector<char>> better::openFile(std::string filena
 
     return textContents.persistent();
 }
+
+std::vector<std::string> getDirectoryFiles(std::optional<std::string> workingDir = std::nullopt) {
+    std::filesystem::path basePath {std::filesystem::current_path()};
+    if(workingDir.value() != std::nullopt) {
+        basePath = workingDir.value();
+    }
+    std::vector<std::string> files {};
+    for(const std::filesystem::directory_entry& file : std::filesystem::iterator(basePath)) {
+        if(!file.is_directory()) {
+            files.append(file.path().string());
+        }
+    }
+    return files;
+}
+
+std::vector<std::string> getDirectoryDirectories(std::optional<std::string> workingDir = std::nullopt) {
+    std::filesystem::path basePath {std::filesystem::current_path()};
+    if(workingDir.value() != std::nullopt) {
+        basePath = workingDir.value();
+    }
+    std::vector<std::string> dir {};
+    for(const std::filesystem::directory_entry& dir : std::filesystem::iterator(basePath)) {
+        if(dir.is_directory()) {
+            dirs.append(dir.path().string());
+        }
+    }
+    return dirs;
+}

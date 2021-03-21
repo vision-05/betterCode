@@ -5,7 +5,6 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <arpa/inet.h>
-#include <signal.h>
 #include <unistd.h>
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -13,6 +12,7 @@
 #include <sys/wait.h>
 #include <errno.h>
 #include <chrono>
+#include <set>
 
 #include "FileOps.hpp"
 #include "TextEditor.hpp"
@@ -28,28 +28,8 @@ void* get_in_addr(sockaddr* sa) {
     return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
 
-int main() {
-    int socketFD, newFD;
-    char hostname[100];
-
-    int foo {gethostname(hostname, 100)};
-    std::cout << hostname;
-
-    addrinfo hints, *serverinfo;
-    sockaddr_storage clientAddress;
-    struct sigaction sa;
-    socklen_t sin_size;
-
+void bindServer(addrinfo* serverinfo, int& socketFD) {
     int yes {1};
-    char s[INET6_ADDRSTRLEN];
-    int rv;
-
-    memset(&hints, 0, sizeof(hints));
-    hints.ai_family = AF_UNSPEC;
-    hints.ai_socktype = SOCK_STREAM;
-    hints.ai_flags = AI_PASSIVE;
-
-    rv = getaddrinfo(NULL, "7000", &hints, &serverinfo);
     for(addrinfo* it {serverinfo}; it != NULL; it = it->ai_next) {
         if((socketFD = socket(it->ai_family, it->ai_socktype, it->ai_protocol)) == -1) {
             std::cout << "server: socket\n";
@@ -74,6 +54,30 @@ int main() {
         }
         break;
     }
+}
+
+int main() {
+    int socketFD, newFD;
+    char hostname[100];
+
+    int foo {gethostname(hostname, 100)};
+    std::cout << hostname;
+
+    addrinfo hints, *serverinfo;
+    sockaddr_storage clientAddress;
+    struct sigaction sa;
+    socklen_t sin_size;
+
+    char s[INET6_ADDRSTRLEN];
+    int rv;
+
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = AI_PASSIVE;
+
+    rv = getaddrinfo(NULL, "7000", &hints, &serverinfo);
+    bindServer(serverinfo, socketFD);
     
     freeaddrinfo(serverinfo);
 
@@ -95,18 +99,48 @@ int main() {
 
     //this is after connection, all that matters
 
-    uint32_t bytes {};
+    std::uint32_t bytes {};
+
+    std::set<std::string, std::vector<better::Text>> buffers {};
 
     while(1) {
-        long int connected {recv(newFD, &bytes, sizeof(bytes), 0)};
+        std::uint64_t connected {recv(newFD, &bytes, sizeof(bytes), 0)};
         bytes = ntohl(bytes);
-        char* data = new char[bytes];
-        connected = recv(newFD, data, bytes, 0);
+        better::DataIn command {bytes};
+        connected = recv(newFD, command.data, command.size, 0);
         std::cout << "received: " << bytes << " bytes\n";
-        std::string message {data, data + bytes};
+        std::string message {command.toParsedString()};
         std::cout << message << '\n';
-        delete data;
-        data = nullptr;
+
+        if(message == std::string("text-edit")) {
+            connected = recv(newFD, &bytes, sizeof(bytes), 0);
+            better::DataIn caretPos {ntohl(bytes)};
+            connected = recv(newFD, caretPos.data, caretPos.size, 0);
+
+            connected = recv(newFD, &bytes, sizeof(bytes), 0);
+            better::DataIn anchorPos {ntohl(bytes)};
+            connected = recv(newFD, anchorPos.data, anchorPos.size, 0);
+
+            connected = recv(newFD, &bytes, sizeof(bytes), 0);
+            better::DataIn keyTyped {ntohl(bytes)};
+            connected = recv(newFD, keyTyped.data, keyTyped.size, 0);
+            std::cout << "received " << ntohl(bytes) << " bytes\n";
+            std::cout << keyTyped.toParsedString() << '\n';
+            std::cout << caretPos.toString() << '\n';
+            std::cout << anchorPos.toString() << '\n';
+        }
+        else if(message == std::string("get-directory")) {
+
+        }
+        else if(message == std::string("open-file")) {
+
+        }
+        else if(message == std::string("close-file")) {
+
+        }
+        else {
+
+        }
     }
     
     close(socketFD);

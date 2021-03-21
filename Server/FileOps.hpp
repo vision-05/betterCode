@@ -15,6 +15,10 @@ namespace better {
     void saveFile(std::string filename, immer::flex_vector<immer::flex_vector<char>> contents);
 
     immer::flex_vector<immer::flex_vector<char>> openFile(std::string filename);
+
+    std::vector<std::string> getDirectoryFiles(std::optional<std::string> workingDir = std::nullopt);
+
+    std::vector<std::string> getDirectoryDirectories(std::optional<std::string> workingDir = std::nullopt);
 }
 
 #endif
