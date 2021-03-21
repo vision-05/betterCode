@@ -9,21 +9,21 @@
 #include "DataTypes.hpp"
 
 namespace better {
-    better::datatypes::Text tab(better::datatypes::Text text, better::datatypes::Cursor cursor, int tabWidth);
+    better::Text tab(better::Text text, better::Cursor cursor, int tabWidth);
 
-    int getPreviousIndentLevel(better::datatypes::Text text, int row);
+    int getPreviousIndentLevel(better::Text text, int row);
 
-    better::datatypes::Text updateText(better::datatypes::Text textEdit, better::datatypes::Cursor cursor, char newChar);
+    better::Text updateText(better::Text textEdit, better::Cursor cursor, char newChar);
 
-    better::datatypes::Text backspace(better::datatypes::Text text, better::datatypes::Cursor cursor);
+    better::Text backspace(better::Text text, better::Cursor cursor);
 
-    better::datatypes::Text newLine(better::datatypes::Text textEdit, better::datatypes::Cursor cursor, bool autoIndent);
+    better::Text newLine(better::Text textEdit, better::Cursor cursor, bool autoIndent);
 
-    better::datatypes::Text deleteHighlighted(better::datatypes::Text text, better::datatypes::Cursor cursor);
+    better::Text deleteHighlighted(better::Text text, better::Cursor cursor);
 
-    better::datatypes::Text autoBracket(better::datatypes::Text text, better::datatypes::Cursor cursor, char letter);
+    better::Text autoBracket(better::Text text, better::Cursor cursor, char letter);
     
-    immer::flex_vector<immer::flex_vector<char>> getHighlighted(better::datatypes::Text text);
+    immer::flex_vector<immer::flex_vector<char>> getHighlighted(better::Text text);
 }
 
 #endif

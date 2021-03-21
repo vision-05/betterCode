@@ -43,21 +43,21 @@
 
 (defn -main []
   (let [c @(client "tim-archpc" 7000)]
-    (println @(s/put! c "hello world")))
-  
-  (fx/create-app *context
-                 :event-handler bettercode.events/handle-event
-                 :desc-fn (fn [_]
-                            {:fx/type :stage
-                             :title "BetterCode"
-                             :showing true
-                             :width 768
-                             :height 1080
-                             :min-width 768
-                             :min-height 1080
-                             :resizable true
-                             :scene {:fx/type :scene
-                                     :fill "#23282D"
-                                     :stylesheets [(::css/url bettercode.css/style)]
-                                     :root {:fx/type bettercode.elements/editor-pane
-                                            :style-class "root"}}})))
+    (println @(s/put! c "hello world"))
+    (fx/create-app *context
+                   :event-handler bettercode.events/handle-event
+                   :desc-fn (fn [_]
+                              {:fx/type :stage
+                               :title "BetterCode"
+                               :showing true
+                               :width 768
+                               :height 1080
+                               :min-width 768
+                               :min-height 1080
+                               :resizable true
+                               :scene {:fx/type :scene
+                                       :fill "#23282D"
+                                       :stylesheets [(::css/url bettercode.css/style)]
+                                       :root {:fx/type bettercode.elements/editor-pane
+                                              :tclient c
+                                              :style-class "root"}}}))))

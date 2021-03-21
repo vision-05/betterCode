@@ -6,30 +6,35 @@
 #include <immer-0.6.2/immer/flex_vector.hpp>
 //TODO: get rid of cursor as part of text
 
-namespace better::datatypes {
+namespace better{
     
     struct Cursor { //store the line number and column number of the cursor
         int row;
         int column;
     };
 
-    bool operator==(better::datatypes::Cursor lhs, better::datatypes::Cursor rhs);
+    bool operator==(better::Cursor lhs, better::Cursor rhs);
 
-    bool operator>=(better::datatypes::Cursor lhs, better::datatypes::Cursor rhs);
+    bool operator>=(better::Cursor lhs, better::Cursor rhs);
 
-    bool operator<=(better::datatypes::Cursor lhs, better::datatypes::Cursor rhs);
+    bool operator<=(better::Cursor lhs, better::Cursor rhs);
 
     struct Text {
         immer::flex_vector<immer::flex_vector<char>> textEdit; //keeps the text state
-        better::datatypes::Cursor highlightStart {0,0};
-        better::datatypes::Cursor highlightEnd {0,0};
+        better::Cursor highlightStart {0,0};
+        better::Cursor highlightEnd {0,0};
     };
-}
 
-namespace better {
-    better::datatypes::Cursor addColumn(const better::datatypes::Cursor cursor, int column);
+    struct DataOut {
+        std::string text;
+        std::uint32_t size;
+    };
 
-    better::datatypes::Cursor addRow(const better::datatypes::Cursor cursor, int row);
+    better::Cursor addColumn(const better::Cursor cursor, int column);
+
+    better::Cursor addRow(const better::Cursor cursor, int row);
+
+    better::DataOut fvToString(const better::Text text);
 }
 
 #endif

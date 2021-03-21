@@ -21,12 +21,6 @@
 using addrinfo = struct addrinfo;
 using sockaddr_storage = struct sockaddr_storage;
 
-void sigchld_handler(int s) {
-    int savedErrno = errno;
-    while(waitpid(-1, NULL, WNOHANG) > 0);
-    errno = savedErrno;
-}
-
 void* get_in_addr(sockaddr* sa) {
     if(sa->sa_family == AF_INET) {
         return &(((struct sockaddr_in*)sa)->sin_addr);
@@ -102,15 +96,19 @@ int main() {
     //this is after connection, all that matters
 
     uint32_t bytes {};
-    long int connected {recv(newFD, &bytes, sizeof(bytes), 0)};
-    bytes = ntohl(bytes);
-    char* data = new char[bytes];
-    connected = recv(newFD, data, bytes, 0);
-    std::cout << "received: " << bytes << " bytes\n";
-    std::string message {data, data + bytes};
-    std::cout << message << '\n';
-    delete data;
-    data = nullptr;
+
+    while(1) {
+        long int connected {recv(newFD, &bytes, sizeof(bytes), 0)};
+        bytes = ntohl(bytes);
+        char* data = new char[bytes];
+        connected = recv(newFD, data, bytes, 0);
+        std::cout << "received: " << bytes << " bytes\n";
+        std::string message {data, data + bytes};
+        std::cout << message << '\n';
+        delete data;
+        data = nullptr;
+    }
+    
     close(socketFD);
     close(newFD);
     return 0;

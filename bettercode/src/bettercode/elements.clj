@@ -19,7 +19,7 @@
    :text (fx/sub-val context :file-name)
    :style-class "root-text-area-status"})
 
-(defn text-edit [{:keys [fx/context]}] ;put in scroll pane and hide/disable scroll bars
+(defn text-edit [{:keys [fx/context tclient]}] ;put in scroll pane and hide/disable scroll bars
   {:fx/type :text-area
    :pref-width 632
    :pref-height 896
@@ -30,7 +30,9 @@
    :cursor :text
    :text (fx/sub-val context :text-editor)
    :style-class "root-text-area-editor"
-   :on-text-changed {:event/type :bettercode.events/type-text :fx/sync true}})
+   :on-key-typed {:event/type :bettercode.events/type-text
+                  :fx/sync true
+                  :tclient tclient}})
 
 (defn line-numbers [{:keys [fx/context]}]
   {:fx/type :text-area
@@ -56,7 +58,7 @@
                :height 32
                :h-box/hgrow :always}]})
 
-(defn editor-row [{:keys [fx/context]}]
+(defn editor-row [{:keys [fx/context tclient]}]
   {:fx/type :h-box
    :pref-width 768
    :min-width 768
@@ -68,13 +70,14 @@
               {:fx/type spacer
                :width 28
                :height 896}
-              {:fx/type text-edit}
+              {:fx/type text-edit
+               :tclient tclient}
               {:fx/type spacer
                :width 14
                :height 896
                :h-box/hgrow :always}]})
 
-(defn editor-pane [{:keys [fx/context]}]
+(defn editor-pane [{:keys [fx/context tclient]}]
   {:fx/type :v-box
    :pref-width 768
    :min-width 768
@@ -88,7 +91,8 @@
                :height 26
                :width 768
                :v-box/vgrow :always}
-              {:fx/type editor-row}
+              {:fx/type editor-row
+               :tclient tclient}
               {:fx/type spacer
                :height 96
                :width 768}]})
