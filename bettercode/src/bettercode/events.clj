@@ -6,21 +6,28 @@
 (defmulti handle-event :event/type)
 
 (defmethod handle-event :default [e]
-  (println e))
+  (println "non event"))
 
 (defmethod handle-event ::type-text [{:keys [fx/event fx/context tclient]}]
   (println (.getCaretPosition (.getTarget event)))
+  (println (.getAnchor (.getTarget event)))
   @(s/put! tclient "text-edit")
-  @(s/put! tclient (.getCaretPosition (.getTarget event)))
-  @(s/put! tclient (.getAnchor (.getTarget event))) ;this does not give the correct anchor,
-  @(s/put! tclient (.getCharacter event))           ;store anchor in the context for correct
-  {:context context})                               ;one
+  @(s/put! tclient (fx/sub-val context :caret-pos))
+  @(s/put! tclient (fx/sub-val context :anchor-pos))
+  @(s/put! tclient (.getCharacter event))
+  {:context (fx/swap-context context
+                             assoc
+                             :anchor-pos (.getAnchor (.getSource event))
+                             :caret-pos (.getCaretPosition (.getSource event)))})
 
-(defmethod handle-event ::highlight-text [{:keys [fx/event fx/context tclient]}]
-  (println "highlighting"))
 
-(defmethod handle-event ::move-caret [{:keys [fx/event fx/context tclient]}]
-  (println "moving caret"))
+(defmethod handle-event ::mouse-click [{:keys [fx/event fx/context tclient]}]
+  (println "click")
+  (println (.getSource event))
+  {:context (fx/swap-context context
+                             assoc
+                             :anchor-pos (.getAnchor (.getSource event))
+                             :caret-pos (.getCaretPosition (.getSource event)))})
 
 (defmethod handle-event ::open-file [{:keys [fx/event fx/context tclient]}]
   (println "getting file")
