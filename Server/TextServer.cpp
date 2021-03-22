@@ -12,7 +12,7 @@
 #include <sys/wait.h>
 #include <errno.h>
 #include <chrono>
-#include <set>
+#include <map>
 
 #include "FileOps.hpp"
 #include "TextEditor.hpp"
@@ -20,6 +20,7 @@
 
 using addrinfo = struct addrinfo;
 using sockaddr_storage = struct sockaddr_storage;
+using namespace std::string_literals;
 
 void* get_in_addr(sockaddr* sa) {
     if(sa->sa_family == AF_INET) {
@@ -101,8 +102,8 @@ int main() {
 
     std::uint32_t bytes {};
 
-    std::set<std::string, std::vector<better::Text>> buffers {};
-    buffers.insert("foo.txt", {better::Text{better::openFile("/home/tim/foo.txt"),{0,0},{0,0}}})
+    std::map<std::string, std::vector<better::Text>> buffers {};
+    buffers.insert({"foo.txt"s, std::vector{better::Text{better::openFile("/home/tim/foo.txt"),{0,0},{0,0}}}});
 
     while(1) {
         std::uint64_t connected {recv(newFD, &bytes, sizeof(bytes), 0)};
@@ -113,7 +114,7 @@ int main() {
         std::string message {command.toParsedString()};
         std::cout << message << '\n';
 
-        if(message == std::string("text-edit")) {
+        if(message == "text-edit"s) {
             connected = recv(newFD, &bytes, sizeof(bytes), 0);
             better::DataIn caretPos {ntohl(bytes)};
             connected = recv(newFD, caretPos.data, caretPos.size, 0);
@@ -130,13 +131,13 @@ int main() {
             std::cout << caretPos.toString() << '\n';
             std::cout << anchorPos.toString() << '\n';
         }
-        else if(message == std::string("get-directory")) {
+        else if(message == "get-directory"s) {
 
         }
-        else if(message == std::string("open-file")) {
+        else if(message == "open-file"s) {
 
         }
-        else if(message == std::string("close-file")) {
+        else if(message == "close-file"s) {
 
         }
         else {
