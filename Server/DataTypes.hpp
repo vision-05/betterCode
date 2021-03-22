@@ -37,7 +37,7 @@ namespace better{
 
         DataIn(std::size_t s) : size{s}, data{new char[s]} {}
         ~DataIn() {
-            delete data;
+            delete[] data;
             data = nullptr;
         }
         std::string toString();
