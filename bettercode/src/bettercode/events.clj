@@ -31,13 +31,17 @@
 
 (defmethod handle-event ::open-file [{:keys [fx/event fx/context tclient]}]
   (println "getting file")
+  @(s/put! tclient "open-file")
   @(s/take! tclient))
 
 (defmethod handle-event ::close-file [{:keys [fx/event fx/context tclient]}]
-  (println "requesting close file"))
+  (println "requesting close file")
+  @(s/put! tclient "close-file"))
 
 (defmethod handle-event ::save-file [{:keys [fx/event fx/context tclient]}]
-  (println "saving file"))
+  (println "saving file")
+  @(s/put! tclient "save-file"))
 
 (defmethod handle-event ::save-all [{:keys [fx/event fx/context tclient]}]
-  (println "saving all buffers"))
+  (println "saving all buffers")
+  @(s/put! tclient "save-all"))

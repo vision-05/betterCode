@@ -35,8 +35,8 @@
 (def *context
   (atom
    (fx/create-context {:title "BetterCode"
-                       :file-name "TextEditor.cpp"
-                       :text-editor (slurp "/home/tim/betterCode/Server/TextEditor.cpp")
+                       :file-name "foo.txt"
+                       :text-editor (slurp "/home/tim/foo.txt")
                        :anchor-pos 0
                        :caret-pos 0}
                       #(cache/lru-cache-factory % :threshold 4096))))

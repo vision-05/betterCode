@@ -31,6 +31,16 @@ TEST(TextEditTest, DeletingHighlighted) {
     
 }
 
+TEST(DataTypesTest, translateIndexToCursor) {
+    EXPECT_EQ((better::Cursor {2,2}), (better::translateIndexToCursor(4, better::Text{fv{{'c','c'},{},{'f','f','j'}}, {0,0}, {0,0}})));
+    EXPECT_EQ((better::Cursor {-1,-1}), (better::translateIndexToCursor(10, better::Text{fv{{'c','c'},{},{'f','f','j'}}, {0,0}, {0,0}})));
+    EXPECT_EQ((better::Cursor {-1,-1}), (better::translateIndexToCursor(-1, better::Text{fv{{'c','c'},{},{'f','f','j'}}, {0,0}, {0,0}})));
+    EXPECT_EQ((better::Cursor {0,0}), (better::translateIndexToCursor(0, better::Text{fv{{'c','c'},{},{'f','f','j'}}, {0,0}, {0,0}})));
+    EXPECT_EQ((better::Cursor {3,3}), (better::translateIndexToCursor(9, better::Text{fv{{'c','c','c'},{},{'f','f','j'},{'s','s','s','s'}}, {0,0}, {0,0}})));
+    EXPECT_EQ((better::Cursor {-1,-1}), (better::translateIndexToCursor(5, better::Text{fv{{'c','c'},{},{'f','f','j'}}, {0,0}, {0,0}})));
+    EXPECT_EQ((better::Cursor {-1,-1}), (better::translateIndexToCursor(6, better::Text{fv{{'c','c'},{},{'f','f','j'}}, {0,0}, {0,0}})));
+}
+
 int main(int argc, char* argv[]) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

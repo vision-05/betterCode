@@ -102,6 +102,7 @@ int main() {
     std::uint32_t bytes {};
 
     std::set<std::string, std::vector<better::Text>> buffers {};
+    buffers.insert("foo.txt", {better::Text{better::openFile("/home/tim/foo.txt"),{0,0},{0,0}}})
 
     while(1) {
         std::uint64_t connected {recv(newFD, &bytes, sizeof(bytes), 0)};

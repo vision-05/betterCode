@@ -49,6 +49,8 @@ namespace better{
     better::Cursor addRow(const better::Cursor cursor, int row);
 
     better::DataOut fvToString(const better::Text text);
+
+    better::Cursor translateIndexToCursor(int index, const better::Text text);
 }
 
 #endif

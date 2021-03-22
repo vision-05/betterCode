@@ -59,13 +59,13 @@ immer::flex_vector<immer::flex_vector<char>> better::openFile(std::string filena
 
 std::vector<std::string> getDirectoryFiles(std::optional<std::string> workingDir = std::nullopt) {
     std::filesystem::path basePath {std::filesystem::current_path()};
-    if(workingDir.value() != std::nullopt) {
+    if(workingDir != std::nullopt) {
         basePath = workingDir.value();
     }
     std::vector<std::string> files {};
-    for(const std::filesystem::directory_entry& file : std::filesystem::iterator(basePath)) {
+    for(const std::filesystem::directory_entry& file : std::filesystem::directory_iterator(basePath)) {
         if(!file.is_directory()) {
-            files.append(file.path().string());
+            files.push_back(file.path().string());
         }
     }
     return files;
@@ -73,13 +73,13 @@ std::vector<std::string> getDirectoryFiles(std::optional<std::string> workingDir
 
 std::vector<std::string> getDirectoryDirectories(std::optional<std::string> workingDir = std::nullopt) {
     std::filesystem::path basePath {std::filesystem::current_path()};
-    if(workingDir.value() != std::nullopt) {
+    if(workingDir != std::nullopt) {
         basePath = workingDir.value();
     }
-    std::vector<std::string> dir {};
-    for(const std::filesystem::directory_entry& dir : std::filesystem::iterator(basePath)) {
+    std::vector<std::string> dirs {};
+    for(const std::filesystem::directory_entry& dir : std::filesystem::directory_iterator(basePath)) {
         if(dir.is_directory()) {
-            dirs.append(dir.path().string());
+            dirs.push_back(dir.path().string());
         }
     }
     return dirs;

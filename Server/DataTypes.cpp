@@ -40,3 +40,19 @@ std::string better::DataIn::toString() {
 std::string better::DataIn::toParsedString() {
     return std::string{this->data + 1, this->data + this->size - 1};
 }
+
+better::Cursor better::translateIndexToCursor(int index, const better::Text text) {;
+    immer::flex_vector<immer::flex_vector<char>> buffer {text.textEdit};
+    int lineGreatest {0};
+
+    for(int i{}; i < buffer.size(); ++i) {
+        if(index >= lineGreatest + buffer[i].size()) {
+            lineGreatest += buffer[i].size();
+        }
+        else {
+            index -= lineGreatest;
+            return better::Cursor {.row = i, .column = index};
+        }
+    }
+    return better::Cursor {.row = -1, .column = -1};
+}
