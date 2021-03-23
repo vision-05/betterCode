@@ -109,7 +109,7 @@ int main() {
         std::uint64_t connected {recv(newFD, &bytes, sizeof(bytes), 0)};
         bytes = ntohl(bytes);
         better::DataIn command {bytes};
-        connected = recv(newFD, command.data, command.size, 0);
+        connected = recv(newFD, &command.data[0], command.data.size(), 0);
         std::cout << "received: " << bytes << " bytes\n";
         std::string message {command.toParsedString()};
         std::cout << message << '\n';
@@ -117,19 +117,29 @@ int main() {
         if(message == "text-edit"s) {
             connected = recv(newFD, &bytes, sizeof(bytes), 0);
             better::DataIn caretPos {ntohl(bytes)};
-            connected = recv(newFD, caretPos.data, caretPos.size, 0);
+            connected = recv(newFD, &caretPos.data[0], caretPos.data.size(), 0);
 
             connected = recv(newFD, &bytes, sizeof(bytes), 0);
             better::DataIn anchorPos {ntohl(bytes)};
-            connected = recv(newFD, anchorPos.data, anchorPos.size, 0);
+            connected = recv(newFD, &anchorPos.data[0], anchorPos.data.size(), 0);
 
             connected = recv(newFD, &bytes, sizeof(bytes), 0);
             better::DataIn keyTyped {ntohl(bytes)};
-            connected = recv(newFD, keyTyped.data, keyTyped.size, 0);
+            connected = recv(newFD, &keyTyped.data[0], keyTyped.data.size(), 0);
             std::cout << "received " << ntohl(bytes) << " bytes\n";
             std::cout << keyTyped.toParsedString() << '\n';
             std::cout << caretPos.toString() << '\n';
             std::cout << anchorPos.toString() << '\n';
+
+            buffers["foo.txt"s].push_back(
+                better::updateText(
+                    buffers["foo.txt"s].back(),
+                    better::translateIndexToCursor(std::stoi(caretPos.toString()), buffers["foo.txt"s].back()),
+                    keyTyped.data[1]
+                )
+            );
+
+            std::cout << better::fvToString(buffers["foo.txt"s].back()).text << '\n';
         }
         else if(message == "get-directory"s) {
 

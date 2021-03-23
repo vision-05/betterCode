@@ -3,29 +3,20 @@
             [bettercode.css]
             [bettercode.events]))
 
-(defn spacer [{:keys [width height]}]
-  {:fx/type :rectangle
-   :width width
-   :height height
-   :fill "#23282D"})
-
 (defn status-bar [{:keys [fx/context]}]
-  {:fx/type :label
-   :pref-width 740
-   :pref-height 32
-   :max-width 740
+  {:fx/type :text-field
+   :min-height 32
    :max-height 32
+   :min-width 740
+   :editable false
    :alignment :center
    :text (fx/sub-val context :file-name)
    :style-class "root-text-area-status"})
 
-(defn text-edit [{:keys [fx/context tclient]}] ;put in scroll pane and hide/disable scroll bars
+(defn text-edit [{:keys [fx/context tclient]}]
   {:fx/type :text-area
    :pref-width 632
    :pref-height 896
-   :max-width 632
-   :max-height 896
-   :wrap-text true
    :font "Roboto Mono"
    :cursor :text
    :text (fx/sub-val context :text-editor)
@@ -42,60 +33,38 @@
    :editable false
    :pref-width 80
    :pref-height 896
-   :max-width 80
-   :max-height 896
    :font "Roboto Mono"
    :style-class "root-text-area-numbers"})
 
 (defn status-row [{:keys [fx/context]}]
   {:fx/type :h-box
-   :pref-width 768
    :min-width 768
-   :max-width 768
-   :children [{:fx/type spacer
-               :width 14
-               :height 32}
-              {:fx/type status-bar}
-              {:fx/type spacer
-               :width 14
-               :height 32
+   :padding 14
+   :children [{:fx/type status-bar
                :h-box/hgrow :always}]})
 
 (defn editor-row [{:keys [fx/context tclient]}]
   {:fx/type :h-box
    :pref-width 768
    :min-width 768
-   :max-width 768
-   :children [{:fx/type spacer
-               :width 14
-               :height 896}
-              {:fx/type line-numbers}
-              {:fx/type spacer
-               :width 28
-               :height 896}
+   :padding 14
+   :spacing 28
+   :children [{:fx/type line-numbers
+               :h-box/vgrow :always}
               {:fx/type text-edit
-               :tclient tclient}
-              {:fx/type spacer
-               :width 14
-               :height 896
+               :tclient tclient
+               :h-box/vgrow :always
                :h-box/hgrow :always}]})
 
 (defn editor-pane [{:keys [fx/context tclient]}]
   {:fx/type :v-box
    :pref-width 768
    :min-width 768
-   :max-width 768
    :pref-height 1080
-   :children [{:fx/type spacer
-               :height 30
-               :width 768}
-              {:fx/type status-row}
-              {:fx/type spacer
-               :height 26
-               :width 768
-               :v-box/vgrow :always}
+   :min-height 1080
+   :children [{:fx/type status-row
+               :v-box/hgrow :always}
               {:fx/type editor-row
-               :tclient tclient}
-              {:fx/type spacer
-               :height 96
-               :width 768}]})
+               :tclient tclient
+               :v-box/vgrow :always
+               :v-box/hgrow :always}]})

@@ -34,11 +34,12 @@ better::DataOut better::fvToString(const better::Text text) {
 }
 
 std::string better::DataIn::toString() {
-    return std::string{this->data, this->data + this->size};
+    return std::string{this->data.begin(), this->data.end()};
 }
 
 std::string better::DataIn::toParsedString() {
-    return std::string{this->data + 1, this->data + this->size - 1};
+    std::string tempStr{this->toString()};
+    return std::string{&tempStr[0] + 1, &tempStr[0] + tempStr.size() - 1};
 }
 
 better::Cursor better::translateIndexToCursor(int index, const better::Text text) {;
@@ -46,8 +47,8 @@ better::Cursor better::translateIndexToCursor(int index, const better::Text text
     int lineGreatest {0};
 
     for(int i{}; i < buffer.size(); ++i) {
-        if(index >= lineGreatest + buffer[i].size()) {
-            lineGreatest += buffer[i].size();
+        if(index >= lineGreatest + buffer[i].size() + 1) {
+            lineGreatest += buffer[i].size() + 1;
         }
         else {
             index -= lineGreatest;

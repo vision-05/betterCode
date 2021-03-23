@@ -32,14 +32,10 @@ namespace better{
 
     class DataIn {
     public:
-        char* data;
-        std::size_t size;
+        std::vector<char> data{};
 
-        DataIn(std::size_t s) : size{s}, data{new char[s]} {}
-        ~DataIn() {
-            delete[] data;
-            data = nullptr;
-        }
+        DataIn(std::size_t size) : data{std::vector<char>(size)} {}
+        ~DataIn() = default;
         std::string toString();
         std::string toParsedString();
     };

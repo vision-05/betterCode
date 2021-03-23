@@ -119,7 +119,6 @@ better::Text better::newLine(better::Text textEdit, better::Cursor cursor, bool 
             cursor.column += 1;
         }
     }
-
     cursor.column -= 1;
 
     if(isParen) {
