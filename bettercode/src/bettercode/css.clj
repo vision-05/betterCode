@@ -15,19 +15,7 @@
                             "-text-area" {"-status" {:-fx-background-color status-background-color
                                                      :-fx-text-fill text-color
                                                      :-fx-highlight-fill status-background-color}
-                                          "-editor" {:-fx-text-fill text-color
-                                                     :-fx-highlight-fill highlight-color
-                                                     :-fx-background-color back-background-color
-                                                     :-fx-border-color border-color
-                                                     " .content" {:-fx-background-color background-color}
-                                                     " .scroll-pane" {:-fx-background-color background-color
-                                                                      :-fx-hbar-policy :as-needed
-                                                                      :-fx-vbar-policy :as-needed
-                                                                      "> .corner" {:-fx-background-color scroll-color}
-                                                                      " .scroll-bar" {":horizontal" {:-fx-background-color scroll-color
-                                                                                                     " .thumb" {:-fx-background-color thumb-color}}
-                                                                                      ":vertical" {:-fx-background-color scroll-color
-                                                                                                   " .thumb" {:-fx-background-color thumb-color}}}}}
+                                          "-editor" {:-rtfx-background-color background-color}
                                           "-numbers" {:-fx-text-fill text-color
                                                       :-fx-background-color background-color
                                                       :-fx-border-color border-color
