@@ -1,17 +1,17 @@
 (ns bettercode.core
   (:gen-class)
   (:require [cljfx.api :as fx]
-            [clojure.core.cache :as cache]
             [cljfx.css :as css]
-            [bettercode.elements]
-            [bettercode.css]
-            [bettercode.events]
             [aleph.tcp :as tcp]
             [manifold.deferred :as d]
             [manifold.stream :as s]
-            [clojure.edn :as edn]
             [gloss.core :as gloss]
-            [gloss.io :as io]))
+            [gloss.io :as io]
+            [clojure.core.cache :as cache]
+            [clojure.edn :as edn]
+            [bettercode.elements]
+            [bettercode.css]
+            [bettercode.events]))
 
 (def protocol
   (gloss/compile-frame

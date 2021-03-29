@@ -10,9 +10,8 @@
                  [aleph "0.4.6"]
                  [gloss "0.2.6"]
                  [manifold "0.1.9-alpha4"]
-                 [org.fxmisc.richtext/richtextfx "0.10.6"]]
+                 [org.openjfx/javafx-base "15.0.1"]]
   :main ^:skip-aot bettercode.core
   :target-path "target/%s"
-  :repositories [["jitpack" "https://jitpack.io"]]
   :profiles {:uberjar {:aot :all
                        :jvm-opts ["-Dclojure.compiler.direct-linking=true"]}})

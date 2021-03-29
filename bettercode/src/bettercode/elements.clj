@@ -1,8 +1,8 @@
 (ns bettercode.elements
   (:require [cljfx.api :as fx]
             [bettercode.css]
-            [bettercode.events])
-  (:import (org.fxmisc.richtext CodeArea)))
+            [bettercode.events]
+            [bettercode.bettercodearea]))
 
 (defn status-bar [{:keys [fx/context]}]
   {:fx/type :text-field
@@ -15,25 +15,19 @@
    :style-class "root-text-area-status"})
 
 (defn text-edit [{:keys [fx/context tclient]}]
-  {:fx/type fx/ext-instance-factory ;figure out how to set style
-   :create #(doto (CodeArea. (slurp "/home/tim/foo.txt"))
-              (.setPrefWidth 632)
-              (.setPrefHeight 896))})
-
-;(defn text-edit [{:keys [fx/context tclient]}]
-;  {:fx/type StyleClassedTextArea
-;   :pref-width 632
-;   :pref-height 896
-;   :font "Roboto Mono"
-;   :cursor :text
-;   :text (fx/sub-val context :text-editor)
-;   :style-class "root-text-area-editor"
-;   :on-key-typed {:event/type :bettercode.events/type-text
-;                  :fx/sync true
-;                  :tclient tclient}
-;   :on-mouse-clicked {:event/type :bettercode.events/mouse-click
-;                      :fx/sync true
-;                      :tclient tclient}})
+  {:fx/type :text-area
+   :pref-width 632
+   :pref-height 896
+   :font "Roboto Mono"
+   :cursor :text
+   :text (fx/sub-val context :text-editor)
+   :style-class "root-text-area-editor"
+   :on-key-typed {:event/type :bettercode.events/type-text
+                  :fx/sync true
+                  :tclient tclient}
+   :on-mouse-clicked {:event/type :bettercode.events/mouse-click
+                      :fx/sync true
+                      :tclient tclient}})
 
 (defn line-numbers [{:keys [fx/context]}]
   {:fx/type :text-area
