@@ -3,7 +3,8 @@
    [cljfx.composite :as composite]
    [cljfx.lifecycle :as lifecycle]
    [cljfx.coerce :as coerce]
-   [cljfx.fx.text-input-control])
+   [cljfx.fx.text-input-control]
+   [cljfx.fx])
   (:import
    [javafx.geometry Pos]
    [javafx.scene AccessibleRole]
@@ -16,10 +17,10 @@
                     :style-class [:list lifecycle/scalar :coerce coerce/style-class
                                   :default ["text-input"]]
                     :accessible-role [:setter lifecycle/scalar :coerce (coerce/enum AccessibleRole)
-                                      :default :text-area]
+                                      :default :better-code-area]
                     :on-action [:setter lifecycle/event-handler :coerce coerce/event-handler])))
 
-(def lifecycle
+(def better-code-area
   (composite/describe BetterCodeArea
                       :ctor []
                       :props ::props))

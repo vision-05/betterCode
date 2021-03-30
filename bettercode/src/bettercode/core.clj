@@ -11,7 +11,8 @@
             [clojure.edn :as edn]
             [bettercode.elements]
             [bettercode.css]
-            [bettercode.events]))
+            [bettercode.events])
+  (:import [javafx.application Platform]))
 
 (def protocol
   (gloss/compile-frame
@@ -42,6 +43,7 @@
                       #(cache/lru-cache-factory % :threshold 4096))))
 
 (defn -main []
+  (Platform/setImplicitExit true)
   (let [c @(client "tim-archpc" 7000)]
     (println @(s/put! c "made connection"))
     (fx/create-app *context

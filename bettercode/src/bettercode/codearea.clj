@@ -1,25 +1,29 @@
 (ns bettercode.codearea
   (:require [cljfx.api :as fx]
-            [cljfx.fx.text-input-control])
-  (:import [javafx.scene.control TextInputControl]))
-  
+            [cljfx.fx.text-input-control]))
+
 (gen-class
-   :name bettercode.codearea.BetterCodeArea
-   :extends javafx.scene.control.TextInputControl
-   :state "state"
-   :init "init"
-   :prefix "bfx-"
-   :constructors {[java.lang.String java.lang.String] [java.lang.String java.lang.String]
-                  [] []}
-   :methods [["stateValue" [] java.lang.String]
-             ["getAnchors" [] java.util.List]
-             ["getCarets" [] java.util.List]])
+ :name bettercode.codearea.BetterCodeArea
+ :extends javafx.scene.control.TextInputControl
+ :prefix "bfx-"
+ :init "init"
+ :constructors {[] [javafx.scene.control.TextInputControl$Content]}
+ :methods [["stateValue" [] java.lang.String]
+           ["getAnchors" [] java.util.List]
+           ["getCarets" [] java.util.List]])
 
-(defn bfx-init
-  ([]
-   [[]])
-  ([text style]
-   [[] (atom text) (atom style)]))
+(gen-class
+ :name bettercode.codearea.BetterCodeArea.TextContent
+ :implements [javafx.scene.control.TextInputControl$Content]
+ :prefix "bfx-content-"
+ :init "init"
+ :constructors {[] []}
+ :methods [["get" [Integer Integer] String]
+           ["insert" [Integer String Boolean] Void]
+           ["delete" [Integer Integer Boolean] Void]])
 
-(defn bfx-stateValue [this]
-  @(.state this))
+(defn bfx-init []
+  [[(bettercode.codearea.BetterCodeArea.TextContent.)]])
+
+(defn bfx-content-init []
+  [[]])

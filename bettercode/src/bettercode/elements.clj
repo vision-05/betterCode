@@ -14,6 +14,9 @@
    :text (fx/sub-val context :file-name)
    :style-class "root-text-area-status"})
 
+(defn code-edit [{:keys [fx/context tclient]}]
+  {:fx/type bettercode.bettercodearea/better-code-area})
+
 (defn text-edit [{:keys [fx/context tclient]}]
   {:fx/type :text-area
    :pref-width 632
@@ -52,7 +55,7 @@
    :spacing 28
    :children [{:fx/type line-numbers
                :h-box/vgrow :always}
-              {:fx/type text-edit
+              {:fx/type code-edit
                :tclient tclient
                :h-box/vgrow :always
                :h-box/hgrow :always}]})
