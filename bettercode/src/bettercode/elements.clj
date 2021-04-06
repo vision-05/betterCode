@@ -2,7 +2,8 @@
   (:require [cljfx.api :as fx]
             [bettercode.css]
             [bettercode.events]
-            [bettercode.bettercodearea]))
+            [bettercode.bettercodearea]
+            ))
 
 (defn status-bar [{:keys [fx/context]}]
   {:fx/type :text-field
@@ -55,7 +56,7 @@
    :spacing 28
    :children [{:fx/type line-numbers
                :h-box/vgrow :always}
-              {:fx/type code-edit
+              {:fx/type text-edit
                :tclient tclient
                :h-box/vgrow :always
                :h-box/hgrow :always}]})

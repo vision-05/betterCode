@@ -1,4 +1,4 @@
-package javafx.scene.control;
+package bettercode.codearea;
 
 import java.util.AbstractList;
 import java.util.ArrayList;
@@ -29,7 +29,10 @@ import javafx.scene.control.skin.TextAreaSkin;
 import javafx.css.Styleable;
 import javafx.scene.AccessibleRole;
 
-public class CodeArea extends TextInputControl {
+import javafx.scene.control.TextInputControl;
+import javafx.collections.ObservableList;
+
+public class BetterCodeArea extends TextInputControl {
     private static final class CodeAreaContent implements Content {
         private ExpressionHelper<String> helper = null;
         private ArrayList<StringBuilder> paragraphs = new ArrayList<StringBuilder>();
@@ -55,17 +58,55 @@ public class CodeArea extends TextInputControl {
             }
 
             if(text == null) {
-                throw new IllegalArgumetnException();
+                throw new IllegalArgumentException();
             }
 
             text = TextInputControl.filterInput(text, false, false);
             int length = text.length();
 
-            //implement rest here
+            int characterCount = 0;
+            int startLineIndex = 0;
+
+            for(int i = 0; i < paragraphs.size(); i++) {
+                if(characterCount + paragraphs.get(i).length() <= index) {
+                    startLineIndex++;
+                    characterCount += paragraphs.get(i).length();
+                }
+            }
+            start -= characterCount;
+
+            ArrayList<StringBuilder> textLines = new ArrayList<StringBuilder>();
+            StringBuilder line = new StringBuilder(length);
+            for(int i = 0; i < text.length(); i++) {
+                if(text.charAt(i) == '\n') {
+                    textLines.add(line);
+                    line = new StringBuilder(length);
+                }
+                else {
+                    line.append(textLines.charAt(i));
+                }
+            }
+
+            int endLineIndex = textLines.length() + startLineIndex - 1;
+
+            ArrayList<StringBuilder> tempParagraphs = new ArrayList<StringBuilder>();
+            Collections.copy(tempParagraphs, paragraphs);
+
+            //insert textLines into paragraphs, use copy and swap
+            tempParagraphs.get(startLineIndex).append(textLines.get(0));
+            for(int i = startLineIndex + 1; i < endLineIndex - 1; i++) {
+                tempParagraphs.add(i, textLines.get(i - (startLineIndex + 1))
+            }
+            
+            line = tempParagraphs.get(endLineIndex);
+            //change below to .set() method
+            tempParagraphs.remove(endLineIndex);
+            tempParagraphs.add(textLines.get(textLines.length() - 1));
+            tempParagraphs.get(endLineIndex).append(line);
         }
 
         @Override public void delete(int start, int end, boolean notifyListeners) {
-            if(index < 0 || index > contentLength || end > contentLength || end < 0) {
+            if(start < 0 || start > contentLength || end > contentLength || end < 0) {
                 throw new IndexOutOfBoundsException();
             }
 
@@ -81,35 +122,39 @@ public class CodeArea extends TextInputControl {
             }
 
             for(int i = 0; i < paragraphs.size(); i++) {
-                if(characterCount + paragraphs[i].size() <= start) {
+                if(characterCount + paragraphs.get(i).length() <= start) {
                     startLineIndex++;
                     endLineIndex++;
-                    characterCount += paragraphs[i].size();
+                    characterCount += paragraphs.get(i).length();
                 }
-                start -= characterCount;
-                else if(characterCount + paragraphs[i].size() >= start && characterCount + paragraphs[i].size() <= end) {
+                else if(characterCount + paragraphs.get(i).length() >= start && characterCount + paragraphs.get(i).length() <= end) {
                     endLineIndex++;
-                    characterCount += paragraphs[i].size();
+                    characterCount += paragraphs.get(i).length();
                 }
-                end -= characterCount;
             }
 
-            ArrayList<StringBuilder> tempParagraphs = new ArrayList<StringBuilder>(paragraphs);
+            //start -= characterCount (get offset into line);
+            end -= characterCount;
+
+            ArrayList<StringBuilder> tempParagraphs = new ArrayList<StringBuilder>();
+            Collections.copy(tempParagraphs, paragraphs);
 
             int removeLineDiff = (endLineIndex - startLineIndex) - 1;
 
-            if(removeLineDiff) {
+            if(removeLineDiff != 0) {
                 for(int i = 0; i < removeLineDiff; i++) {
                     tempParagraphs.remove(startLineIndex + 1); //other rows shift left 1
                 }
                 endLineIndex -= removeLineDiff;
 
-                tempParagraphs[startLineIndex].delete(start, tempParagraphs[startLineIndex].size() - 1);
-                tempParagraphs[endLineIndex].delete(0, end);
+                tempParagraphs.get(startLineIndex).delete(start, tempParagraphs.get(startLineIndex).size() - 1);
+                tempParagraphs.get(endLineIndex).delete(0, end);
             }
             else {
-                tempParagraphs[startLineIndex].delete(start, end);
+                tempParagraphs.get(startLineIndex).delete(start, end);
             }
+
+            paragraphs = tempParagraphs; //maybe copy
         }
 
         @Override public int length() {
@@ -125,11 +170,11 @@ public class CodeArea extends TextInputControl {
 
     }
 
-    public CodeArea(String) {
+    public BetterCodeArea(String text) {
 
     }
 
-    public CodeArea() {
+    public BetterCodeArea() {
         this("");
     }
 }
