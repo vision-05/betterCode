@@ -13,7 +13,7 @@
                  [org.openjfx/javafx-base "15.0.1"]]
   :main ^:skip-aot bettercode.core
   :target-path "target/%s"
-  ;:java-source-paths ["src/fx-classes"]
+  :java-source-paths ["src/fx-classes"]
   :prep-tasks ["javac" "compile"]
   :profiles {:uberjar {:aot :all
                        :jvm-opts ["-Dclojure.compiler.direct-linking=true"]}})
