@@ -5,6 +5,7 @@
             [gloss.io :as io]
             [gloss.core :as gloss]
             [clojure.edn :as edn]
+            [clojure.string :as str]
             [bettercodeserver.buffer :as buffer]))
 
 (def protocol
@@ -22,13 +23,22 @@
     (s/splice out
               (io/decode-stream s protocol))))
 
-(defn event-loop [f]
+(defn parse-request [message agent-name]
+  (let [split-req (conj [] (str/split message #" "))]
+    (case (split-req 0)
+      "text-edit" (buffer/text-edit agent-name (split-req 1) (split-req 3) (split-req 2))
+      "open-file" (buffer/add-file agent-name (split-req 1))
+      "close-file" (buffer/remove-file agent-name (split-req 1))
+      "save-file" (buffer/save-file agent-name (split-req 1))
+      "save-all" (buffer/save-all-files agent-name))))
+
+(defn event-loop [f files-agent]
   (fn [s info]
     (d/loop []
             (->
                 (d/let-flow [msg (s/take! s ::none)]
                             (when-not (= ::none msg)
-                              (d/let-flow [msg-two (d/future (f msg))
+                              (d/let-flow [msg-two (d/future (f msg files-agent))
                                            result (s/put! s msg-two)]
                                           (when result
                                             (d/recur)))))

@@ -12,7 +12,7 @@
 
 (defn add-file
   ([agent-name full-file-path]
-   (send agent-name assoc full-file-path (slurp full-file-path)))
+   (add-file agent-name full-file-path (slurp full-file-path)))
   ([agent-name full-file-path string]
    (send agent-name assoc full-file-path string)))
 
@@ -27,6 +27,19 @@
 
 (defn del-char [agent-name full-file-path position]
   (send agent-name update-in [full-file-path] remove-char position))
+
+(defn text-edit [agent-name full-file-path string index]
+  (cond
+    (= string "\b") (del-char agent-name full-file-path index)
+    :else (add-string agent-name full-file-path index string)))
+
+(defn save-file [agent-name full-file-path]
+  (spit full-file-path (@agent-name full-file-path)))
+
+(defn save-all-files [agent-name]
+  (let [all-files @agent-name]
+    (doseq [file-name all-files]
+      (save-file agent-name file-name))))
 
 (defn close-all-buffers []
   (shutdown-agents))
