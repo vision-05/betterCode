@@ -1,6 +1,6 @@
 # BetterCode
 
-![BetterCode Logo](https://github.com/vision-05/vision-05/logo.svg)
+![BetterCode Logo](https://github.com/vision-05/vision-05/blob/main/logo.svg)
 
 A modern text editor with remote editing built in, made entirely in Clojure using the CLJFX library for UI, and the Gloss, Aleph and Manifold libraries for sockets.
 
