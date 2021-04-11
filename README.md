@@ -1,7 +1,9 @@
 # BetterCode
 
+A modern text editor with remote editing built in, made entirely in Clojure using the CLJFX library for UI, and the Gloss, Aleph and Manifold libraries for sockets.
+
 What you will need to compile this project:
-The immer immutable data structures library found here (latest version) https://github.com/arximboldi/immer/releases
+JVM, Clojure compiler and leiningen build tool
 
 Status: WIP, development still continuing. 16/02/2021
 
