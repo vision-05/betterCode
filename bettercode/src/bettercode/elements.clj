@@ -1,8 +1,7 @@
 (ns bettercode.elements
   (:require [cljfx.api :as fx]
             [bettercode.css]
-            [bettercode.events]
-            [bettercode.bettercodearea]))
+            [bettercode.events]))
 
 (defn status-bar [{:keys [fx/context]}]
   {:fx/type :text-field
