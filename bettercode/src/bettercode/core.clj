@@ -44,7 +44,7 @@
 
 (defn -main []
   (Platform/setImplicitExit true)
-  (let [c @(client "tim-archpc" 7000)]
+  (let [c @(client "localhost" 8080)]
     (println @(s/put! c "made connection"))
     (fx/create-app *context
                    :event-handler bettercode.events/handle-event

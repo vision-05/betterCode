@@ -1,9 +1,7 @@
 (ns bettercode.elements
   (:require [cljfx.api :as fx]
             [bettercode.css]
-            [bettercode.events]
-            [bettercode.bettercodearea]
-            ))
+            [bettercode.events]))
 
 (defn status-bar [{:keys [fx/context]}]
   {:fx/type :text-field
@@ -14,9 +12,6 @@
    :alignment :center
    :text (fx/sub-val context :file-name)
    :style-class "root-text-area-status"})
-
-(defn code-edit [{:keys [fx/context tclient]}]
-  {:fx/type bettercode.bettercodearea/better-code-area})
 
 (defn text-edit [{:keys [fx/context tclient]}]
   {:fx/type :text-area
