@@ -10,6 +10,7 @@
 
 (defmethod handle-event ::type-text [{:keys [fx/event fx/context tclient]}]
   @(s/put! tclient (str "text-edit " (fx/sub-val context :file-path) " " (fx/sub-val context :caret-pos) " " (.getCharacter event)))
+  (println @(s/take! tclient))
   {:context (fx/swap-context context
                              assoc
                              :anchor-pos (.getAnchor (.getSource event))
@@ -24,16 +25,13 @@
                              :anchor-pos (.getAnchor (.getSource event))
                              :caret-pos (.getCaretPosition (.getSource event)))})
 
-(defmethod handle-event ::open-file [{:keys [fx/event fx/context tclient file-path]}]
+(defmethod handle-event ::open-file [{:keys [fx/event fx/context tclient]}]
   (println "getting file")
-  @(s/put! tclient (str "open-file " file-path))
-  {:context (fx/swap-context (fx/swap-context context
-                                              assoc
-                                              :text-editor
-                                              @(s/take! tclient))
+  @(s/put! tclient (str "open-file " (fx/sub-val context :file-path)))
+  {:context (fx/swap-context context
                              assoc
-                             :file-name
-                             file-path)})
+                             :text-editor
+                             @(s/take! tclient))})
 
 (defmethod handle-event ::close-file [{:keys [fx/event fx/context tclient]}]
   (println "requesting close file")
