@@ -1,8 +1,11 @@
 # BetterCode
 
+![BetterCode Logo](https://github.com/vision-05/vision-05/blob/main/logo.svg)
+
 A modern text editor with remote editing built in, made entirely in Clojure using the CLJFX library for UI, and the Gloss, Aleph and Manifold libraries for sockets.
 
-What you will need to compile this project: JVM, Clojure compiler and leiningen build tool
+What you will need to compile this project:
+JVM, Clojure compiler and leiningen build tool
 
 Status: WIP, development still continuing. 16/02/2021
 
