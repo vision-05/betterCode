@@ -36,7 +36,7 @@
 (def *context
   (atom
    (fx/create-context {:title ""
-                       :file-path ""
+                       :file-path "/home/tim/foo.txt"
                        :text-editor ""
                        :anchor-pos 0
                        :caret-pos 0

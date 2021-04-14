@@ -26,12 +26,13 @@
   (send agent-name update-in [full-file-path] remove-string position length))
 
 (defn del-char [agent-name full-file-path position]
-  (send agent-name update-in [full-file-path] remove-char position))
+  (send agent-name update-in [full-file-path] remove-char (- position 1)))
 
 (defn text-edit [agent-name full-file-path string index]
   (cond
-    (= string "\b") (del-char agent-name full-file-path index)
-    :else (add-string agent-name full-file-path index string)))
+    (and (= string "\b") (> index 0)) (del-char agent-name full-file-path index)
+    (> index -1) (add-string agent-name full-file-path index string)
+    :else false))
 
 (defn save-file [agent-name full-file-path]
   (spit full-file-path (@agent-name full-file-path)))
