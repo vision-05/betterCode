@@ -68,3 +68,6 @@
                :tclient tclient
                :v-box/vgrow :always
                :v-box/hgrow :always}]})
+
+(defn fs-view [{:keys [fx/context tclient]}]
+  {:fx/type :list-view})

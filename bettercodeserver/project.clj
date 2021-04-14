@@ -7,7 +7,8 @@
                  [org.clojure/core.cache "1.0.207"]
                  [aleph "0.4.6"]
                  [gloss "0.2.6"]
-                 [manifold "0.1.9-alpha4"]]
+                 [manifold "0.1.9-alpha4"]
+                 [me.raynes/fs "1.4.6"]]
   :main ^:skip-aot bettercodeserver.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all

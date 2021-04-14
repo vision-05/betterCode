@@ -5,7 +5,9 @@
             [gloss.io :as io]
             [gloss.core :as gloss]
             [clojure.edn :as edn]
-            [bettercodeserver.buffer :as buffer]))
+            [clojure.string :as str]
+            [bettercodeserver.buffer :as buffer]
+            [bettercodeserver.filenav :as fnav]))
 
 (def protocol
   (gloss/compile-frame
@@ -22,20 +24,33 @@
     (s/splice out
               (io/decode-stream s protocol))))
 
-(defn event-loop [f]
+(defn parse-request [message agent-name]
+  (case (message 0)
+    "text-edit" (buffer/text-edit agent-name (message 1) (message 3) (message 2))
+    "open-file" (buffer/add-file agent-name (message 1))
+    "close-file" (buffer/remove-file agent-name (message 1))
+    "save-file" (buffer/save-file agent-name (message 1))
+    "save-all" (buffer/save-all-files agent-name)
+    "get-dir" (fnav/get-folder-contents (message 1))))
+
+(defn event-loop [f files-agent]
   (fn [s info]
     (d/loop []
-            (->
-                (d/let-flow [msg (s/take! s ::none)]
-                            (when-not (= ::none msg)
-                              (d/let-flow [msg-two (d/future (f msg))
-                                           result (s/put! s msg-two)]
-                                          (when result
-                                            (d/recur)))))
-                (d/catch
-                 (fn [exception]
-                   (s/put! s (str "ERROR: " exception))
-                   (s/close! s)))))))
+      (->
+       (d/let-flow [msg (s/take! s ::none)]
+                   (when-not (= ::none msg)
+                     (d/let-flow [msg-two (d/future (f msg files-agent))
+                                  result (cond
+                                           (= (class "") (class msg-two)) @(s/put! s msg-two)
+                                           :else @(s/put! s true))]
+                                 (when result
+                                   (println @files-agent)
+                                   (d/recur)))))
+       (d/catch
+        (fn [exception]
+          (println agent-error exception)
+          (s/put! s (str "ERROR: " exception))
+          (s/close! s)))))))
 
 (defn start-server [handler port]
   (tcp/start-server

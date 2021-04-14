@@ -35,17 +35,20 @@
 
 (def *context
   (atom
-   (fx/create-context {:title "BetterCode"
-                       :file-name "foo.txt"
-                       :text-editor (slurp "/home/tim/foo.txt")
+   (fx/create-context {:title ""
+                       :file-path "/home/tim/foo.txt"
+                       :text-editor ""
                        :anchor-pos 0
-                       :caret-pos 0}
+                       :caret-pos 0
+                       :dir-contents {:dir-path ""
+                                      :directories []
+                                      :files []}}
                       #(cache/lru-cache-factory % :threshold 4096))))
 
+;create file opening screen
 (defn -main []
   (Platform/setImplicitExit true)
   (let [c @(client "localhost" 8080)]
-    (println @(s/put! c "made connection"))
     (fx/create-app *context
                    :event-handler bettercode.events/handle-event
                    :desc-fn (fn [_]
