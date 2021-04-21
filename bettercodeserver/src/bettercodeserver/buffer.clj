@@ -31,7 +31,7 @@
 (defn text-edit [agent-name full-file-path string index]
   (cond
     (and (= string "\b") (> index 0)) (del-char agent-name full-file-path index)
-    (> index -1) (add-string agent-name full-file-path index string)
+    (and (> index -1) (not= string "\b")) (add-string agent-name full-file-path index string)
     :else false))
 
 (defn save-file [agent-name full-file-path]

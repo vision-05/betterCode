@@ -24,7 +24,9 @@
     (s/splice out
               (io/decode-stream s protocol))))
 
-(defn parse-request [message agent-name]
+(defn parse-request
+  "This function parses the message and then calls the appropriate function from the command in the message"
+  [message agent-name]
   (case (message 0)
     "text-edit" (buffer/text-edit agent-name (message 1) (message 3) (message 2))
     "open-file" (buffer/add-file agent-name (message 1))
@@ -33,7 +35,9 @@
     "save-all" (buffer/save-all-files agent-name)
     "get-dir" (fnav/get-folder-contents (message 1))))
 
-(defn event-loop [f files-agent]
+(defn event-loop 
+  "Main event loop for the text server. Pass in the event handler and the agent with the file state"
+  [f files-agent]
   (fn [s info]
     (d/loop []
       (->
@@ -44,7 +48,7 @@
                                            (= (class "") (class msg-two)) @(s/put! s msg-two)
                                            :else @(s/put! s true))]
                                  (when result
-                                   (println @files-agent)
+                                   (prn (@files-agent "/home/tim/foo.txt"))
                                    (d/recur)))))
        (d/catch
         (fn [exception]
@@ -52,7 +56,9 @@
           (s/put! s (str "ERROR: " exception))
           (s/close! s)))))))
 
-(defn start-server [handler port]
+(defn start-server
+  "Function borrowed from Aleph TCP example that starts a server connected to duplex stream"
+  [handler port]
   (tcp/start-server
    (fn [s info]
      (handler (wrap-duplex-stream protocol s) info))

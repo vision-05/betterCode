@@ -5,7 +5,7 @@
 ; Happy coding! ♥️
 
 ; Jacking in...
-; Starting Jack-in Terminal: lein update-in :dependencies conj '[nrepl,"0.8.3"]' -- update-in :plugins conj '[cider/cider-nrepl,"0.25.8"]' -- update-in '[:repl-options,:nrepl-middleware]' conj '["cider.nrepl/cider-middleware"]' -- with-profile +uberjar repl :headless
+; Starting Jack-in Terminal: lein update-in :dependencies conj '[nrepl,"0.8.3"]' -- update-in :plugins conj '[cider/cider-nrepl,"0.25.10"]' -- update-in '[:repl-options,:nrepl-middleware]' conj '["cider.nrepl/cider-middleware"]' -- with-profile +uberjar repl :headless
 ; Hooking up nREPL sessions...
 ; Connected session: clj
 ; TIPS: 
@@ -18,7 +18,14 @@
 clj꞉bettercode.core꞉> 
 ; Jack-in done.
 clj꞉bettercode.core꞉> 
-(println "this is based on CIDER")
-this is based on CIDER
+(-main)
+{:renderer #function[cljfx.renderer/create/render--2126],
+ :handler #function[cljfx.event-handler/wrap-async/dispatch-async!--2018]}
+clj꞉bettercode.core꞉> 
+(def bar 2)
+#'bettercode.core/bar
+clj꞉bettercode.core꞉> 
+(print bar)#
+2
 nil
 clj꞉bettercode.core꞉> 
