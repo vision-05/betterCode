@@ -12,7 +12,9 @@
 
 (defn add-file
   ([agent-name full-file-path]
-   (add-file agent-name full-file-path (slurp full-file-path)))
+   (try (let [contents (slurp full-file-path)]
+          (add-file agent-name full-file-path (slurp full-file-path)))
+        (catch java.io.FileNotFoundException e (add-file agent-name full-file-path ""))))
   ([agent-name full-file-path string]
    (send agent-name assoc full-file-path string)))
 
@@ -30,8 +32,8 @@
 
 (defn text-edit [agent-name full-file-path string index]
   (cond
-    (and (= string "\b") (> index 0)) (del-char agent-name full-file-path index)
-    (and (> index -1) (not= string "\b")) (add-string agent-name full-file-path index string)
+    (and (= string "\b") (> index 0)) (del-char agent-name full-file-path (+ index 1))
+    (and (> index -1) (not= string "\b")) (add-string agent-name full-file-path (- index (count string)) string)
     :else false))
 
 (defn save-file [agent-name full-file-path]

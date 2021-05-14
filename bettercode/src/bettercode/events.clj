@@ -9,17 +9,13 @@
   (println "non event"))
 
 (defmethod handle-event ::type-text [{:keys [fx/event fx/context tclient]}]
-  @(s/put! tclient ["text-edit" (fx/sub-val context :file-path) (fx/sub-val context :caret-pos) (.getCharacter event)])
+  (println event) ;get soruce of event, prefereably
+  @(s/put! tclient ["text-edit" (fx/sub-val context :file-path) (.getCharacter event) (.getCaretPosition (.getSource event))])
   (println @(s/take! tclient))
-  {:context (fx/swap-context context
-                             assoc
-                             :anchor-pos (.getAnchor (.getSource event))
-                             :caret-pos (.getCaretPosition (.getSource event)))})
+  {:context context})
 
-
-;similar event must be made for arrow key press
 (defmethod handle-event ::mouse-click [{:keys [fx/event fx/context tclient]}]
-  (println "click")
+  (println (:fx/event event))
   (println (.getSource event))
   {:context (fx/swap-context context
                              assoc

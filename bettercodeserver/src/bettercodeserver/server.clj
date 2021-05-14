@@ -28,7 +28,7 @@
   "This function parses the message and then calls the appropriate function from the command in the message"
   [message agent-name]
   (case (message 0)
-    "text-edit" (buffer/text-edit agent-name (message 1) (message 3) (message 2))
+    "text-edit" (buffer/text-edit agent-name (message 1) (message 2) (message 3))
     "open-file" (buffer/add-file agent-name (message 1))
     "close-file" (buffer/remove-file agent-name (message 1))
     "save-file" (buffer/save-file agent-name (message 1))

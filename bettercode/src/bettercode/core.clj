@@ -11,7 +11,8 @@
             [clojure.edn :as edn]
             [bettercode.elements]
             [bettercode.css]
-            [bettercode.events])
+            [bettercode.events]
+            [bettercode.utilelements])
   (:import [javafx.application Platform]))
 
 (def protocol
@@ -37,12 +38,7 @@
   (atom
    (fx/create-context {:title ""
                        :file-path "/home/tim/foo.txt"
-                       :text-editor ""
-                       :anchor-pos 0
-                       :caret-pos 0
-                       :dir-contents {:dir-path ""
-                                      :directories []
-                                      :files []}}
+                       :text-editor ""}
                       #(cache/lru-cache-factory % :threshold 4096))))
 
 ;create file opening screen
@@ -52,17 +48,28 @@
     (fx/create-app *context
                    :event-handler bettercode.events/handle-event
                    :desc-fn (fn [_]
-                              {:fx/type :stage
-                               :title "BetterCode"
-                               :showing true
-                               :width 768
-                               :height 1080
-                               :min-width 768
-                               :min-height 1080
-                               :resizable true
-                               :scene {:fx/type :scene
-                                       :fill "#23282D"
-                                       :stylesheets [(::css/url bettercode.css/style)]
-                                       :root {:fx/type bettercode.elements/editor-pane
-                                              :tclient c
-                                              :style-class "root"}}}))))
+                              {:fx/type fx/ext-many
+                               :desc [{:fx/type :stage
+                                       :title "BetterCode"
+                                       :showing true
+                                       :width 768
+                                       :height 1080
+                                       :min-width 768
+                                       :min-height 1080
+                                       :resizable true
+                                       :scene {:fx/type :scene
+                                               :fill "#23282D"
+                                               :stylesheets [(::css/url bettercode.css/style)]
+                                               :root {:fx/type bettercode.elements/editor-pane
+                                                      :tclient c
+                                                      :style-class "root"}}}
+                                      {:fx/type :stage
+                                       :title "Files"
+                                       :showing true
+                                       :width 768
+                                       :height 1080
+                                       :resizable false
+                                       :scene {:fx/type :scene
+                                               :fill "#23282D"
+                                               :stylesheets [(::css/url bettercode.css/style)]
+                                               :root {:fx/type bettercode.utilelements/file-window}}}]}))))
