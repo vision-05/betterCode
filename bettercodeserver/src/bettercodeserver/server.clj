@@ -33,7 +33,8 @@
     "close-file" (buffer/remove-file agent-name (message 1))
     "save-file" (buffer/save-file agent-name (message 1))
     "save-all" (buffer/save-all-files agent-name)
-    "get-dir" (fnav/get-folder-contents (message 1))))
+    "get-dir" (if (> (count message) 1) (fnav/get-folder-contents (message 1))
+                     (fnav/get-folder-contents))))
 
 (defn event-loop 
   "Main event loop for the text server. Pass in the event handler and the agent with the file state"
@@ -46,9 +47,12 @@
                      (d/let-flow [msg-two (d/future (f msg files-agent))
                                   result (cond
                                            (= (class "") (class msg-two)) @(s/put! s msg-two)
+                                           (= clojure.lang.Cons (class msg-two)) @(s/put! s msg-two)
+                                           (= clojure.lang.LazySeq (class msg-two)) @(s/put! s msg-two)
                                            :else @(s/put! s true))]
                                  (when result
-                                   (prn (@files-agent "/home/tim/foo.txt"))
+                                   (prn (class msg-two))
+                                   (prn @files-agent)
                                    (d/recur)))))
        (d/catch
         (fn [exception]

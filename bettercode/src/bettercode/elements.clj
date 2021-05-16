@@ -3,14 +3,14 @@
             [bettercode.css]
             [bettercode.events]))
 
-(defn status-bar [{:keys [fx/context]}]
+(defn status-bar [{:keys [fx/context file-path]}]
   {:fx/type :text-field
    :min-height 32
    :max-height 32
    :min-width 740
    :editable false
    :alignment :center
-   :text (fx/sub-val context :file-name)
+   :text file-path
    :style-class "root-text-area-status"})
 
 (defn text-edit [{:keys [fx/context tclient]}]
@@ -19,7 +19,7 @@
    :pref-height 896
    :font "Roboto Mono"
    :cursor :text
-   :text (fx/sub-val context :text-editor)
+   :text (fx/sub context :text-editor)
    :style-class "root-text-area-editor"
    :on-key-typed {:event/type :bettercode.events/type-text
                      :fx/sync true
@@ -41,6 +41,7 @@
    :min-width 768
    :padding 14
    :children [{:fx/type status-bar
+               :file-path (fx/sub context :file-path)
                :h-box/hgrow :always}]})
 
 (defn editor-row [{:keys [fx/context tclient]}]

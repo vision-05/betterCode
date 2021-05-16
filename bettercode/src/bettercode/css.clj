@@ -12,6 +12,7 @@
                       thumb-color "#4C566A44"
                       highlight-color "#4C566ACC"]
                   {".root" {:-fx-background-color back-background-color
+                            "-fsview" {:-fx-control-inner-background back-background-color}
                             "-text-area" {"-status" {:-fx-background-color status-background-color
                                                      :-fx-text-fill text-color
                                                      :-fx-highlight-fill status-background-color}

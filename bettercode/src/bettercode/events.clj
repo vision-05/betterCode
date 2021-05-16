@@ -8,6 +8,25 @@
 (defmethod handle-event :default [e]
   (println "non event"))
 
+(defmethod handle-event ::fexclick [{:keys [fx/event fx/context tclient]}]
+  (let [entry (.getText (.getTarget event))
+        entry-info (subs entry 0 5)
+        entry-name (subs entry 5)]
+    (cond
+      (= entry-info "DIR: ") (do @(s/put! tclient ["get-dir" entry-name])
+                                 (let [dir-contents @(s/take! tclient)]
+                                   (println dir-contents)
+                                   {:context (fx/swap-context context
+                                                              assoc
+                                                              :dir-contents dir-contents)}))
+      (= entry-info "FIL: ") (do @(s/put! tclient ["open-file" entry-name])
+                                 (let [file-contents @(s/take! tclient)]
+                                   (println file-contents)
+                                   {:context (fx/swap-context context
+                                                              assoc
+                                                              :file-path entry-name
+                                                              :text-editor file-contents)})))))
+
 (defmethod handle-event ::type-text [{:keys [fx/event fx/context tclient]}]
   (println event) ;get soruce of event, prefereably
   @(s/put! tclient ["text-edit" (fx/sub-val context :file-path) (.getCharacter event) (.getCaretPosition (.getSource event))])
@@ -21,14 +40,6 @@
                              assoc
                              :anchor-pos (.getAnchor (.getSource event))
                              :caret-pos (.getCaretPosition (.getSource event)))})
-
-(defmethod handle-event ::open-file [{:keys [fx/event fx/context tclient]}]
-  (println "getting file")
-  @(s/put! tclient ["open-file" (fx/sub-val context :file-path)])
-  {:context (fx/swap-context context
-                             assoc
-                             :text-editor
-                             @(s/take! tclient))})
 
 (defmethod handle-event ::close-file [{:keys [fx/event fx/context tclient]}]
   (println "requesting close file")
