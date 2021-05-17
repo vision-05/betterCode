@@ -8,6 +8,21 @@
 (defmethod handle-event :default [e]
   (println "non event"))
 
+(defmethod handle-event ::newclick [{:keys [fx/event fx/context tclient]}]
+  (let [msg @(s/put! tclient ["open-file" (str (fx/sub-val context :file-path))])]
+    {:context (fx/swap-context context ;how the fuck do I do this
+                               assoc
+                               :text-editor "")}))
+
+(defmethod handle-event ::backclick [{:keys [fx/event fx/context tclient]}]
+  (let [prev-dir (fx/sub-val :cur-path)
+        msg @(s/put! tclient ["get-dir" prev-dir]) ;get parent from :cur-path
+        dir-contents @(s/take! tclient)]
+    {:context (fx/swap-context context
+                               assoc
+                               :dir-contents dir-contents
+                               :cur-path prev-dir)}))
+
 (defmethod handle-event ::fexclick [{:keys [fx/event fx/context tclient]}]
   (let [entry (.getText (.getTarget event))
         entry-info (subs entry 0 5)
@@ -18,14 +33,16 @@
                                    (println dir-contents)
                                    {:context (fx/swap-context context
                                                               assoc
-                                                              :dir-contents dir-contents)}))
+                                                              :dir-contents dir-contents
+                                                              :cur-path entry-name)}))
       (= entry-info "FIL: ") (do @(s/put! tclient ["open-file" entry-name])
                                  (let [file-contents @(s/take! tclient)]
                                    (println file-contents)
                                    {:context (fx/swap-context context
                                                               assoc
                                                               :file-path entry-name
-                                                              :text-editor file-contents)})))))
+                                                              :text-editor file-contents
+                                                              :file-explorer-show false)})))))
 
 (defmethod handle-event ::type-text [{:keys [fx/event fx/context tclient]}]
   (println event) ;get soruce of event, prefereably

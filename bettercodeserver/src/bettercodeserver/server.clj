@@ -49,6 +49,7 @@
                                            (= (class "") (class msg-two)) @(s/put! s msg-two)
                                            (= clojure.lang.Cons (class msg-two)) @(s/put! s msg-two)
                                            (= clojure.lang.LazySeq (class msg-two)) @(s/put! s msg-two)
+                                           (= clojure.lang.PersistentList (class msg-two)) @(s/put! s msg-two)
                                            :else @(s/put! s true))]
                                  (when result
                                    (prn (class msg-two))
