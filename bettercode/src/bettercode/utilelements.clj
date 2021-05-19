@@ -5,11 +5,13 @@
 
 (defn back-button [{:keys [fx/context tclient]}]
   {:fx/type :button
+   :style-class "root-fsview-button"
    :on-mouse-clicked {:event/type :bettercode.events/backclick}
    :text "Back"})
 
 (defn new-button [{:keys [fx/context tclient]}]
   {:fx/type :button
+   :style-class "root-fsview-button"
    :on-mouse-clicked {:event/type :bettercode.events/newclick
                       :fx/sync true
                       :tclient tclient}
@@ -17,6 +19,9 @@
 
 (defn button-layout [{:keys [fx/context tclient]}]
   {:fx/type :h-box
+   :alignment :center-right
+   :padding 5
+   :spacing 10
    :children [{:fx/type back-button
                :tclient tclient}
               {:fx/type new-button

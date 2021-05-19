@@ -16,8 +16,13 @@
                                assoc
                                :text-editor "")}))
 
+(defmethod handle-event ::openfex [{:keys [fx/event fx/context]}]
+  {:context (fx/swap-context context
+                             assoc
+                             :file-explorer-show true)})
+
 (defmethod handle-event ::backclick [{:keys [fx/event fx/context tclient]}]
-  (let [prev-dir (fx/sub-val :cur-path)
+  (let [prev-dir (fx/sub-val context :cur-path)
         msg @(s/put! tclient ["get-dir" prev-dir]) ;get parent from :cur-path
         dir-contents @(s/take! tclient)]
     {:context (fx/swap-context context

@@ -47,17 +47,30 @@
            :scene {:fx/type :scene
                    :fill "#23282D"
                    :stylesheets [(::css/url bettercode.css/style)]
-                   :root {:fx/type bettercode.elements/editor-pane
-                          :tclient tclient
-                          :text ""
-                          :file-path "BetterCode"
-                          :style-class "root"}}}
+                   :root {:fx/type :v-box
+                          :children [{:fx/type :menu-bar
+                                      :max-height 10 ;somehow make the height actually work
+                                      :style-class "root-menu-bar"
+                                      :menus [{:fx/type :menu
+                                               :text "file"
+                                               :style-class "root-menu-bar-item"
+                                               :items [{:fx/type :menu-item
+                                                        :style-class "root-menu-bar-item-sub-item"
+                                                        :text "open"
+                                                        :on-action {:event/type :bettercode.events/openfex}}]}]}
+                                     {:fx/type bettercode.elements/editor-pane
+                                      :tclient tclient
+                                      :text ""
+                                      :file-path "BetterCode"
+                                      :style-class "root"}]}}}
           {:fx/type :stage
            :title "Files"
            :showing (fx/sub context :file-explorer-show)
            :width 500
            :height 350
            :resizable false
+           :always-on-top true
+           :modality :application-modal
            :scene {:fx/type :scene
                    :fill "#23282D"
                    :stylesheets [(::css/url bettercode.css/style)]
