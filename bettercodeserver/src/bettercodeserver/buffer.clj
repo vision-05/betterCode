@@ -2,6 +2,7 @@
   (:require [clojure.string :as str]))
 
 (defn remove-string [string index length]
+  (println "\nSTRING: " string "\nINDEX: " index "\nLENGTH: " length)
   (str (subs string 0 index) (subs string (+ index length))))
 
 (defn insert-string [string insert-str index]
@@ -31,9 +32,11 @@
 (defn del-char [agent-name full-file-path position]
   (send agent-name update-in [full-file-path] remove-char (- position 1)))
 
-(defn text-edit [agent-name full-file-path string index]
+(defn text-edit [agent-name full-file-path string index length]
+  (println "length:" length)
   (cond
-    (and (= string "\b") (> index 0)) (del-char agent-name full-file-path (+ index 1))
+    (and (= string "\b") (> index 0) (= nil length)) (del-char agent-name full-file-path (+ index 1))
+    (and (= string "\b") (> index 0)) (del-string agent-name full-file-path index length)
     (and (> index -1) (not= string "\b")) (add-string agent-name full-file-path (- index (count string)) string)
     :else false))
 

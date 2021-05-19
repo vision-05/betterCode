@@ -8,7 +8,9 @@
                  [aleph "0.4.6"]
                  [gloss "0.2.6"]
                  [manifold "0.1.9-alpha4"]
-                 [me.raynes/fs "1.4.6"]]
+                 [me.raynes/fs "1.4.6"]
+                 [org.bouncycastle/bcprov-jdk15on "1.68"]
+                 [org.bouncycastle/bcpkix-jdk15on "1.68"]]
   :main ^:skip-aot bettercodeserver.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all

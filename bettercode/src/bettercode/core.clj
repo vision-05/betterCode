@@ -67,6 +67,7 @@
 ;create file opening screen
 (defn -main [hostname & args]
   (Platform/setImplicitExit true)
+  (println "started")
   (let [c @(client (if hostname hostname "localhost") 8080)
         msg @(s/put! c ["get-dir"])
         dirs @(s/take! c)

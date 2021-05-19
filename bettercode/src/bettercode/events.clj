@@ -8,6 +8,8 @@
 (defmethod handle-event :default [e]
   (println "non event"))
 
+;TODO: send event for replacing highlighted text, send event for inserting text
+
 (defmethod handle-event ::newclick [{:keys [fx/event fx/context tclient]}]
   (let [msg @(s/put! tclient ["open-file" (str (fx/sub-val context :file-path))])]
     {:context (fx/swap-context context ;how the fuck do I do this
@@ -46,9 +48,15 @@
 
 (defmethod handle-event ::type-text [{:keys [fx/event fx/context tclient]}]
   (println event) ;get soruce of event, prefereably
-  @(s/put! tclient ["text-edit" (fx/sub-val context :file-path) (.getCharacter event) (.getCaretPosition (.getSource event))])
+  (let [message ["text-edit" (fx/sub-val context :file-path) (.getCharacter event) (.getCaretPosition (.getSource event))]
+        length (- (fx/sub-val context :anchor-pos) (fx/sub-val context :caret-pos))]
+    (println length (conj message length))
+    @(s/put! tclient (if (> length 0) (assoc (conj message length) 3 (.getAnchor (.getSource event))) message)))
   (println @(s/take! tclient))
-  {:context context})
+  {:context (fx/swap-context context
+                             assoc
+                             :anchor-pos (.getAnchor (.getSource event))
+                             :caret-pos (.getCaretPosition (.getSource event)))})
 
 (defmethod handle-event ::mouse-click [{:keys [fx/event fx/context tclient]}]
   (println (:fx/event event))

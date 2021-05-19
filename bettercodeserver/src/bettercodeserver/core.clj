@@ -5,7 +5,8 @@
   (:gen-class))
 
 (defn -main []
-  (def files (agent {"/home/tim/foo.txt" ""}))
-  (def serv (server/start-server
+  (println "started")
+  (let [files (agent {"/home/tim/foo.txt" ""})
+        serv (server/start-server
               (server/event-loop server/parse-request files)
-              8080)))
+              8080)]))
