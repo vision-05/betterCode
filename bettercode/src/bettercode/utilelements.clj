@@ -6,7 +6,8 @@
 (defn back-button [{:keys [fx/context tclient]}]
   {:fx/type :button
    :style-class "root-fsview-button"
-   :on-mouse-clicked {:event/type :bettercode.events/backclick}
+   :on-mouse-clicked {:event/type :bettercode.events/backclick
+                      :tclient tclient}
    :text "Back"})
 
 (defn new-button [{:keys [fx/context tclient]}]
@@ -39,5 +40,8 @@
   {:fx/type :v-box
    :children [{:fx/type file-view
                :tclient tclient}
+              {:fx/type :text-field
+               :on-key-typed {:event/type :bettercode.events/type-filename
+                              :fx/sync true}}
               {:fx/type button-layout
                :tclient tclient}]})

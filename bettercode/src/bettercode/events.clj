@@ -8,27 +8,45 @@
 (defmethod handle-event :default [e]
   (println "non event"))
 
-;TODO: send event for replacing highlighted text, send event for inserting text
-
-(defmethod handle-event ::newclick [{:keys [fx/event fx/context tclient]}]
-  (let [msg @(s/put! tclient ["open-file" (str (fx/sub-val context :file-path))])]
-    {:context (fx/swap-context context ;how the fuck do I do this
-                               assoc
-                               :text-editor "")}))
-
-(defmethod handle-event ::openfex [{:keys [fx/event fx/context]}]
-  {:context (fx/swap-context context
-                             assoc
-                             :file-explorer-show true)})
-
-(defmethod handle-event ::backclick [{:keys [fx/event fx/context tclient]}]
-  (let [prev-dir (fx/sub-val context :cur-path)
+(defn fex-back [context tclient]
+  (let [cur-dir (fx/sub-val context :cur-path)
+        prev-dir (clojure.string/join "/" (drop-last (clojure.string/split cur-dir #"/")))
         msg @(s/put! tclient ["get-dir" prev-dir]) ;get parent from :cur-path
         dir-contents @(s/take! tclient)]
     {:context (fx/swap-context context
                                assoc
                                :dir-contents dir-contents
                                :cur-path prev-dir)}))
+
+;TODO: send event for replacing highlighted text, send event for inserting text
+
+(defmethod handle-event ::type-filename [{:keys [fx/event fx/context]}]
+  {:context (fx/swap-context context
+                             assoc
+                             :file-name-entered (.getCharacters (.getSource event)))})
+
+(defmethod handle-event ::newclick [{:keys [fx/event fx/context tclient]}]
+  (let [file-name (fx/sub-val context :file-name-entered)
+        file-path-new (str (fx/sub-val context :cur-path) "/" (.toString file-name))
+        msg @(s/put! tclient ["open-file" file-path-new])]
+    (println "CUR-PATH: " (fx/sub-val context :cur-path))
+    {:context (fx/swap-context context ;how the fuck do I do this
+                               assoc
+                               :file-path file-path-new
+                               :text-editor ""
+                               :file-explorer-show false)}))
+
+(defmethod handle-event ::openfex [{:keys [fx/event fx/context]}]
+  {:context (fx/swap-context context
+                             assoc
+                             :file-explorer-show true)})
+
+(defmethod handle-event ::saveevent [{:keys [fx/event fx/context tclient]}]
+  @(s/put! tclient ["save-file" (fx/sub-val context :file-path)])
+  {:context context})
+
+(defmethod handle-event ::backclick [{:keys [fx/event fx/context tclient]}]
+  (fex-back context tclient))
 
 (defmethod handle-event ::fexclick [{:keys [fx/event fx/context tclient]}]
   (let [entry (.getText (.getTarget event))

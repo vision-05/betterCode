@@ -57,7 +57,12 @@
                                                :items [{:fx/type :menu-item
                                                         :style-class "root-menu-bar-item-sub-item"
                                                         :text "open"
-                                                        :on-action {:event/type :bettercode.events/openfex}}]}]}
+                                                        :on-action {:event/type :bettercode.events/openfex
+                                                                    :tclient tclient}}
+                                                       {:fx/type :menu-item
+                                                        :text "save"
+                                                        :on-action {:event/type :bettercode.events/saveevent
+                                                                    :tclient tclient}}]}]}
                                      {:fx/type bettercode.elements/editor-pane
                                       :tclient tclient
                                       :text ""
@@ -91,7 +96,8 @@
                              :text-editor ""
                              :dir-contents dirs
                              :cur-path "/home/tim/foo.txt"
-                             :file-explorer-show true}
+                             :file-explorer-show true
+                             :file-name-entered ""}
                             #(cache/lru-cache-factory % :threshold 4096)))]
     (fx/create-app *context
                    :event-handler bettercode.events/handle-event
