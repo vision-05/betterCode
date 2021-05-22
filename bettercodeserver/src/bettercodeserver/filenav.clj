@@ -3,5 +3,5 @@
 
 (defn get-folder-contents
   ([] (get-folder-contents fs/*cwd*))
-  ([folder-path] {:dirs (filter fs/directory? (fs/list-dir folder-path))
-                  :files (filter fs/file? (fs/list-dir folder-path))}))
+  ([folder-path] (into (map #(str "DIR: " (.getAbsolutePath %)) (filter fs/directory? (fs/list-dir folder-path)))
+                       (map #(str "FIL: " (.getAbsolutePath %)) (filter fs/file? (fs/list-dir folder-path))))))

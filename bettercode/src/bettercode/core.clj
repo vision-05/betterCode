@@ -11,7 +11,8 @@
             [clojure.edn :as edn]
             [bettercode.elements]
             [bettercode.css]
-            [bettercode.events])
+            [bettercode.events]
+            [bettercode.utilelements])
   (:import [javafx.application Platform]))
 
 (def protocol
@@ -33,36 +34,73 @@
   (d/chain (tcp/client {:host host :port port})
            #(wrap-duplex-stream protocol %)))
 
-(def *context
-  (atom
-   (fx/create-context {:title ""
-                       :file-path "/home/tim/foo.txt"
-                       :text-editor ""
-                       :anchor-pos 0
-                       :caret-pos 0
-                       :dir-contents {:dir-path ""
-                                      :directories []
-                                      :files []}}
-                      #(cache/lru-cache-factory % :threshold 4096))))
+(defn app [{:keys [fx/context tclient]}]
+  {:fx/type fx/ext-many
+   :desc [{:fx/type :stage
+           :title "BetterCode"
+           :showing true
+           :width 768
+           :height 1080
+           :min-width 768
+           :min-height 1080
+           :resizable true
+           :scene {:fx/type :scene
+                   :fill "#23282D"
+                   :stylesheets [(::css/url bettercode.css/style)]
+                   :root {:fx/type :v-box
+                          :children [{:fx/type :menu-bar
+                                      :max-height 10 ;somehow make the height actually work
+                                      :style-class "root-menu-bar"
+                                      :menus [{:fx/type :menu
+                                               :text "file"
+                                               :style-class "root-menu-bar-item"
+                                               :items [{:fx/type :menu-item
+                                                        :style-class "root-menu-bar-item-sub-item"
+                                                        :text "open"
+                                                        :on-action {:event/type :bettercode.events/openfex
+                                                                    :tclient tclient}}
+                                                       {:fx/type :menu-item
+                                                        :text "save"
+                                                        :on-action {:event/type :bettercode.events/saveevent
+                                                                    :tclient tclient}}]}]}
+                                     {:fx/type bettercode.elements/editor-pane
+                                      :tclient tclient
+                                      :text ""
+                                      :file-path "BetterCode"
+                                      :style-class "root"}]}}}
+          {:fx/type :stage
+           :title "Files"
+           :showing (fx/sub context :file-explorer-show)
+           :width 500
+           :height 350
+           :resizable false
+           :always-on-top true
+           :modality :application-modal
+           :scene {:fx/type :scene
+                   :fill "#23282D"
+                   :stylesheets [(::css/url bettercode.css/style)]
+                   :root {:fx/type bettercode.utilelements/file-window
+                          :tclient tclient}}}]})
 
 ;create file opening screen
-(defn -main []
+(defn -main [hostname & args]
   (Platform/setImplicitExit true)
-  (let [c @(client "localhost" 8080)]
+  (println "started")
+  (let [c @(client (if hostname hostname "localhost") 8080)
+        msg @(s/put! c ["get-dir"])
+        dirs @(s/take! c)
+        *context
+        (atom
+         (fx/create-context {:title "BetterCode"
+                             :file-path "/home/tim/foo.txt"
+                             :text-editor ""
+                             :dir-contents dirs
+                             :cur-path "/home/tim/foo.txt"
+                             :file-explorer-show true
+                             :file-name-entered ""}
+                            #(cache/lru-cache-factory % :threshold 4096)))]
     (fx/create-app *context
                    :event-handler bettercode.events/handle-event
                    :desc-fn (fn [_]
-                              {:fx/type :stage
-                               :title "BetterCode"
-                               :showing true
-                               :width 768
-                               :height 1080
-                               :min-width 768
-                               :min-height 1080
-                               :resizable true
-                               :scene {:fx/type :scene
-                                       :fill "#23282D"
-                                       :stylesheets [(::css/url bettercode.css/style)]
-                                       :root {:fx/type bettercode.elements/editor-pane
-                                              :tclient c
-                                              :style-class "root"}}}))))
+                              {:fx/type app
+                               :tclient c}))))
