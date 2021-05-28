@@ -31,7 +31,8 @@
 (defn line-numbers [{:keys [fx/context]}]
   {:fx/type :text-area
    :editable false
-   :pref-width 80
+   :text (fx/sub context :line-numbers)
+   :pref-width 40
    :pref-height 896
    :font "Roboto Mono"
    :style-class "root-text-area-numbers"})
@@ -52,7 +53,7 @@
    :spacing 28
    :children [{:fx/type line-numbers
                :h-box/vgrow :always}
-              {:fx/type text-edit
+              {:fx/type text-edit ;this doesn't expand downwards for some reason
                :tclient tclient
                :h-box/vgrow :always
                :h-box/hgrow :always}]})
@@ -61,7 +62,6 @@
   {:fx/type :v-box
    :pref-width 768
    :min-width 768
-   :pref-height 1080
    :min-height 1080
    :children [{:fx/type status-row
                :v-box/hgrow :always}

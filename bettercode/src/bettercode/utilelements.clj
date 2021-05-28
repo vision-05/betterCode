@@ -38,9 +38,12 @@
 
 (defn file-window [{:keys [fx/context tclient]}]
   {:fx/type :v-box
+   :padding 2
+   :spacing 4
    :children [{:fx/type file-view
                :tclient tclient}
               {:fx/type :text-field
+               :style-class "root-fsview-filename-input"
                :on-key-typed {:event/type :bettercode.events/type-filename
                               :fx/sync true}}
               {:fx/type button-layout

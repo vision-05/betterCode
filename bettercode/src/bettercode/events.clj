@@ -34,7 +34,8 @@
                                assoc
                                :file-path file-path-new
                                :text-editor ""
-                               :file-explorer-show false)}))
+                               :file-explorer-show false
+                               :line-numbers "1\n")}))
 
 (defmethod handle-event ::openfex [{:keys [fx/event fx/context]}]
   {:context (fx/swap-context context
@@ -61,13 +62,16 @@
                                                               :dir-contents dir-contents
                                                               :cur-path entry-name)}))
       (= entry-info "FIL: ") (do @(s/put! tclient ["open-file" entry-name])
-                                 (let [file-contents @(s/take! tclient)]
+                                 (let [file-contents @(s/take! tclient)
+                                       no-of-lines (+ 2 (count (re-seq #"\n" file-contents)))
+                                       line-numbers (apply str (map #(str % \newline) (range 1 no-of-lines)))]
                                    (println file-contents)
                                    {:context (fx/swap-context context
                                                               assoc
                                                               :file-path entry-name
                                                               :text-editor file-contents
-                                                              :file-explorer-show false)})))))
+                                                              :file-explorer-show false
+                                                              :line-numbers line-numbers)})))))
 
 (defmethod handle-event ::type-text [{:keys [fx/event fx/context tclient]}]
   (println event) ;get soruce of event, prefereably

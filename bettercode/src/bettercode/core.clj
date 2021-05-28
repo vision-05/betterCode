@@ -42,7 +42,7 @@
            :width 768
            :height 1080
            :min-width 768
-           :min-height 1080
+           :min-height 1140
            :resizable true
            :scene {:fx/type :scene
                    :fill "#23282D"
@@ -60,6 +60,7 @@
                                                         :on-action {:event/type :bettercode.events/openfex
                                                                     :tclient tclient}}
                                                        {:fx/type :menu-item
+                                                        :style-class "root-menu-bar-item-sub-item"
                                                         :text "save"
                                                         :on-action {:event/type :bettercode.events/saveevent
                                                                     :tclient tclient}}]}]}
@@ -97,7 +98,8 @@
                              :dir-contents dirs
                              :cur-path "/home/tim/foo.txt"
                              :file-explorer-show true
-                             :file-name-entered ""}
+                             :file-name-entered ""
+                             :line-numbers ""}
                             #(cache/lru-cache-factory % :threshold 4096)))]
     (fx/create-app *context
                    :event-handler bettercode.events/handle-event
