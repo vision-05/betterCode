@@ -20,13 +20,8 @@
    :font "Roboto Mono"
    :cursor :text
    :text (fx/sub context :text-editor)
-   :style-class "root-text-area-editor"
-   :on-key-typed {:event/type :bettercode.events/type-text
-                     :fx/sync true
-                     :tclient tclient}
-   :on-mouse-clicked {:event/type :bettercode.events/mouse-click
-                      :fx/sync true
-                      :tclient tclient}})
+   :on-key-typed {:event/type :bettercode.events/text-type}
+   :style-class "root-text-area-editor"})
 
 (defn line-numbers [{:keys [fx/context]}]
   {:fx/type :text-area

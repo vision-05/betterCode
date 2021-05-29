@@ -89,14 +89,14 @@
   (println "started")
   (let [c @(client (if hostname hostname "localhost") 8080)
         msg @(s/put! c ["get-dir"])
-        dirs @(s/take! c)
+        dirs (vec @(s/take! c))
         *context
         (atom
          (fx/create-context {:title "BetterCode"
-                             :file-path "/home/tim/foo.txt"
+                             :file-path ""
                              :text-editor ""
                              :dir-contents dirs
-                             :cur-path "/home/tim/foo.txt"
+                             :cur-path (bettercode.events/parent-dir (subs (dirs 0) 5))
                              :file-explorer-show true
                              :file-name-entered ""
                              :line-numbers ""}

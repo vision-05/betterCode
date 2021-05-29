@@ -29,10 +29,9 @@
   "This function parses the message and then calls the appropriate function from the command in the message"
   [message agent-name]
   (case (message 0)
-    "text-edit" (buffer/text-edit agent-name (message 1) (message 2) (message 3) (if (= 5 (count message)) (message 4) nil))
     "open-file" (buffer/add-file agent-name (message 1))
     "close-file" (buffer/remove-file agent-name (message 1))
-    "save-file" (buffer/save-file agent-name (message 1))
+    "save-file" (do (println message) (buffer/save-file agent-name (message 1) (message 2)))
     "save-all" (buffer/save-all-files agent-name)
     "get-dir" (if (> (count message) 1) (fnav/get-folder-contents (message 1))
                      (fnav/get-folder-contents))))

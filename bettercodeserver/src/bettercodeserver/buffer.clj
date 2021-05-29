@@ -23,25 +23,10 @@
 (defn remove-file [agent-name full-file-path]
   (send agent-name dissoc full-file-path))
 
-(defn add-string [agent-name full-file-path position insert-str]
-  (send agent-name update-in [full-file-path] insert-string insert-str position))
-
-(defn del-string [agent-name full-file-path position length]
-  (send agent-name update-in [full-file-path] remove-string position length))
-
-(defn del-char [agent-name full-file-path position]
-  (send agent-name update-in [full-file-path] remove-char (- position 1)))
-
-(defn text-edit [agent-name full-file-path string index length]
-  (println "length:" length)
-  (cond
-    (and (= string "\b") (> index 0) (= nil length)) (del-char agent-name full-file-path (+ index 1))
-    (and (= string "\b") (> index 0)) (del-string agent-name full-file-path index length)
-    (and (> index -1) (not= string "\b")) (add-string agent-name full-file-path (- index (count string)) string)
-    :else false))
-
-(defn save-file [agent-name full-file-path]
-  (spit full-file-path (@agent-name full-file-path)))
+(defn save-file [agent-name full-file-path text]
+  (send agent-name assoc full-file-path text)
+  (spit full-file-path (@agent-name full-file-path))
+  text)
 
 (defn save-all-files [agent-name]
   (let [all-files @agent-name]
