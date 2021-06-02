@@ -42,7 +42,7 @@
            :width 768
            :height 1080
            :min-width 768
-           :min-height 1080
+           :min-height 1140
            :resizable true
            :scene {:fx/type :scene
                    :fill "#23282D"
@@ -60,8 +60,14 @@
                                                         :on-action {:event/type :bettercode.events/openfex
                                                                     :tclient tclient}}
                                                        {:fx/type :menu-item
+                                                        :style-class "root-menu-bar-item-sub-item"
                                                         :text "save"
                                                         :on-action {:event/type :bettercode.events/saveevent
+                                                                    :tclient tclient}}
+                                                       {:fx/type :menu-item
+                                                        :style-class "root-menu-bar-item-sub-item"
+                                                        :text "close file"
+                                                        :on-action {:event/type :bettercode.events/close-file
                                                                     :tclient tclient}}]}]}
                                      {:fx/type bettercode.elements/editor-pane
                                       :tclient tclient
@@ -88,16 +94,18 @@
   (println "started")
   (let [c @(client (if hostname hostname "localhost") 8080)
         msg @(s/put! c ["get-dir"])
-        dirs @(s/take! c)
+        dirs (vec @(s/take! c))
         *context
         (atom
          (fx/create-context {:title "BetterCode"
-                             :file-path "/home/tim/foo.txt"
+                             :file-path ""
                              :text-editor ""
                              :dir-contents dirs
-                             :cur-path "/home/tim/foo.txt"
+                             :cur-path (bettercode.events/parent-dir (subs (dirs 0) 5))
                              :file-explorer-show true
-                             :file-name-entered ""}
+                             :file-name-entered ""
+                             :line-numbers ""
+                             :vscroll 0}
                             #(cache/lru-cache-factory % :threshold 4096)))]
     (fx/create-app *context
                    :event-handler bettercode.events/handle-event

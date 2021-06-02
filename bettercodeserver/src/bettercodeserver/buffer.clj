@@ -13,9 +13,11 @@
 
 (defn add-file
   ([agent-name full-file-path]
-   (try (let [contents (slurp full-file-path)]
-          (add-file agent-name full-file-path contents))
-        (catch java.io.FileNotFoundException e (add-file agent-name full-file-path ""))))
+   (await agent-name)
+   (if (not= nil (@agent-name full-file-path)) (@agent-name full-file-path)
+       (try (let [contents (slurp full-file-path)]
+              (add-file agent-name full-file-path contents))
+            (catch java.io.FileNotFoundException e (add-file agent-name full-file-path "")))))
   ([agent-name full-file-path string]
    (send agent-name assoc full-file-path string)
    string))
@@ -23,30 +25,19 @@
 (defn remove-file [agent-name full-file-path]
   (send agent-name dissoc full-file-path))
 
-(defn add-string [agent-name full-file-path position insert-str]
-  (send agent-name update-in [full-file-path] insert-string insert-str position))
+(defn update-buffer [agent-name full-file-path text]
+  (send agent-name assoc full-file-path text))
 
-(defn del-string [agent-name full-file-path position length]
-  (send agent-name update-in [full-file-path] remove-string position length))
+(defn save-file [agent-name full-file-path text]
+  (update-buffer agent-name full-file-path text)
+  (await agent-name)
+  (spit full-file-path (@agent-name full-file-path))
+  text)
 
-(defn del-char [agent-name full-file-path position]
-  (send agent-name update-in [full-file-path] remove-char (- position 1)))
-
-(defn text-edit [agent-name full-file-path string index length]
-  (println "length:" length)
-  (cond
-    (and (= string "\b") (> index 0) (= nil length)) (del-char agent-name full-file-path (+ index 1))
-    (and (= string "\b") (> index 0)) (del-string agent-name full-file-path index length)
-    (and (> index -1) (not= string "\b")) (add-string agent-name full-file-path (- index (count string)) string)
-    :else false))
-
-(defn save-file [agent-name full-file-path]
-  (spit full-file-path (@agent-name full-file-path)))
-
-(defn save-all-files [agent-name]
-  (let [all-files @agent-name]
-    (doseq [file-name all-files]
-      (save-file agent-name file-name))))
+;(defn save-all-files [agent-name]
+;  (let [all-files @agent-name]
+;    (doseq [file-name all-files]
+;      (save-file agent-name file-name))))
 
 (defn close-all-buffers []
   (shutdown-agents))

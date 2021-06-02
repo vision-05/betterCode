@@ -6,7 +6,7 @@
 
 (defn -main []
   (println "started")
-  (let [files (agent {"/home/tim/foo.txt" ""})
+  (let [files (agent {})
         serv (server/start-server
               (server/event-loop server/parse-request files)
               8080)]))

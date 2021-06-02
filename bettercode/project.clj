@@ -15,4 +15,5 @@
   :main ^:skip-aot bettercode.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all
+                       :injections [(javafx.application.Platform/exit)]
                        :jvm-opts ["-Dclojure.compiler.direct-linking=true"]}})
