@@ -47,13 +47,15 @@
                    (when-not (= ::none msg)
                      (d/let-flow [msg-two (d/future (f msg files-agent))
                                   result (cond
-                                           (= (class "") (class msg-two)) @(s/put! s msg-two)
+                                           (= java.lang.String (class msg-two)) @(s/put! s msg-two)
                                            (= clojure.lang.Cons (class msg-two)) @(s/put! s msg-two)
                                            (= clojure.lang.LazySeq (class msg-two)) @(s/put! s msg-two)
                                            (= clojure.lang.PersistentList (class msg-two)) @(s/put! s msg-two)
                                            :else @(s/put! s true))]
                                  (when result
+                                   (println "\n\n\n")
                                    (prn (class msg-two))
+                                   (prn "MSGTWO" msg-two "\n\n\n")
                                    (prn @files-agent)
                                    (d/recur)))))
        (d/catch

@@ -15,9 +15,9 @@
   ([agent-name full-file-path]
    (await agent-name)
    (if (not= nil (@agent-name full-file-path)) (@agent-name full-file-path)
-   (try (let [contents (slurp full-file-path)]
-          (add-file agent-name full-file-path contents))
-        (catch java.io.FileNotFoundException e (add-file agent-name full-file-path "")))))
+       (try (let [contents (slurp full-file-path)]
+              (add-file agent-name full-file-path contents))
+            (catch java.io.FileNotFoundException e (add-file agent-name full-file-path "")))))
   ([agent-name full-file-path string]
    (send agent-name assoc full-file-path string)
    string))

@@ -15,7 +15,8 @@
   (let [cur-dir (fx/sub-val context :cur-path)
         prev-dir (parent-dir cur-dir)
         msg @(s/put! tclient ["get-dir" prev-dir]) ;get parent from :cur-path
-        dir-contents @(s/take! tclient)]
+        result @(s/take! tclient)
+        dir-contents (if (= result true) @(s/take! tclient) result)]
     {:context (fx/swap-context context
                                assoc
                                :dir-contents dir-contents
@@ -51,7 +52,8 @@
 (defmethod handle-event ::newclick [{:keys [fx/event fx/context tclient]}]
   (let [file-name (fx/sub-val context :file-name-entered)
         file-path-new (str (fx/sub-val context :cur-path) "/" (.toString file-name))
-        msg @(s/put! tclient ["open-file" file-path-new])]
+        msg @(s/put! tclient ["open-file" file-path-new])
+        foo @(s/take! tclient)] ;open file will return a value even if we don't use it
     {:context (fx/swap-context context ;how the fuck do I do this
                                assoc
                                :file-path file-path-new
@@ -70,8 +72,8 @@
 (defmethod handle-event ::openfex [{:keys [fx/event fx/context tclient]}]
   (if (not= (fx/sub-val context :file-path) "") (do
                                                   @(s/put! tclient ["update-buffer" (fx/sub-val context :file-path) (get-current-text event)])
-                                                  @(s/take! tclient))
-      nil)
+                                                  (println "TAKING " @(s/take! tclient)))
+      (println "NOT"))
   {:context (fx/swap-context context
                              assoc
                              :file-explorer-show true)})
@@ -85,13 +87,17 @@
         entry-name (subs entry 5)]
     (cond
       (= entry-info "DIR: ") (do @(s/put! tclient ["get-dir" entry-name])
-                                 (let [dir-contents @(s/take! tclient)]
+                                 (let [result @(s/take! tclient)
+                                       dir-contents (if (= result true) @(s/take! tclient) result)
+                                       foo (println dir-contents)]
                                    {:context (fx/swap-context context
                                                               assoc
                                                               :dir-contents dir-contents
                                                               :cur-path entry-name)}))
       (= entry-info "FIL: ") (do @(s/put! tclient ["open-file" entry-name])
-                                 (let [file-contents @(s/take! tclient)
+                                 (let [result @(s/take! tclient)
+                                       file-contents (if (= result true) @(s/take! tclient) result)
+                                       foo (println file-contents)
                                        no-of-lines (+ 2 (count (re-seq #"\n" file-contents)))
                                        line-numbers (apply str (map #(str % \newline) (range 1 no-of-lines)))]
                                    {:context (fx/swap-context context
@@ -103,12 +109,12 @@
 
 (defmethod handle-event ::close-file [{:keys [fx/event fx/context tclient]}]
   @(s/put! tclient ["close-file" (fx/sub-val context :file-path)])
-  (:context (fx/swap-context context
+  {:context (fx/swap-context context
                              assoc
                              :text-editor ""
                              :line-numbers ""
                              :file-path ""
-                             :vscroll 0)))
+                             :vscroll 0)})
 
 (defmethod handle-event ::saveevent [{:keys [fx/event fx/context tclient]}]
   @(s/put! tclient ["save-file" (fx/sub-val context :file-path) (get-current-text event)])
