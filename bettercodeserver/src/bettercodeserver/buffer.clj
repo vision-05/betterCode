@@ -13,9 +13,11 @@
 
 (defn add-file
   ([agent-name full-file-path]
+   (await agent-name)
+   (if (not= nil (@agent-name full-file-path)) (@agent-name full-file-path)
    (try (let [contents (slurp full-file-path)]
           (add-file agent-name full-file-path contents))
-        (catch java.io.FileNotFoundException e (add-file agent-name full-file-path ""))))
+        (catch java.io.FileNotFoundException e (add-file agent-name full-file-path "")))))
   ([agent-name full-file-path string]
    (send agent-name assoc full-file-path string)
    string))
@@ -23,15 +25,19 @@
 (defn remove-file [agent-name full-file-path]
   (send agent-name dissoc full-file-path))
 
+(defn update-buffer [agent-name full-file-path text]
+  (send agent-name assoc full-file-path text))
+
 (defn save-file [agent-name full-file-path text]
-  (send agent-name assoc full-file-path text)
+  (update-buffer agent-name full-file-path text)
+  (await agent-name)
   (spit full-file-path (@agent-name full-file-path))
   text)
 
-(defn save-all-files [agent-name]
-  (let [all-files @agent-name]
-    (doseq [file-name all-files]
-      (save-file agent-name file-name))))
+;(defn save-all-files [agent-name]
+;  (let [all-files @agent-name]
+;    (doseq [file-name all-files]
+;      (save-file agent-name file-name))))
 
 (defn close-all-buffers []
   (shutdown-agents))

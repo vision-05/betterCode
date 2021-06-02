@@ -63,6 +63,11 @@
                                                         :style-class "root-menu-bar-item-sub-item"
                                                         :text "save"
                                                         :on-action {:event/type :bettercode.events/saveevent
+                                                                    :tclient tclient}}
+                                                       {:fx/type :menu-item
+                                                        :style-class "root-menu-bar-item-sub-item"
+                                                        :text "close file"
+                                                        :on-action {:event/type :bettercode.events/close-file
                                                                     :tclient tclient}}]}]}
                                      {:fx/type bettercode.elements/editor-pane
                                       :tclient tclient
@@ -99,7 +104,8 @@
                              :cur-path (bettercode.events/parent-dir (subs (dirs 0) 5))
                              :file-explorer-show true
                              :file-name-entered ""
-                             :line-numbers ""}
+                             :line-numbers ""
+                             :vscroll 0}
                             #(cache/lru-cache-factory % :threshold 4096)))]
     (fx/create-app *context
                    :event-handler bettercode.events/handle-event

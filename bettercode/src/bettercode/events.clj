@@ -38,6 +38,11 @@
 
 ;TODO: send event for replacing highlighted text, send event for inserting text
 
+(defmethod handle-event ::scroll [{:keys [fx/event fx/context]}]
+  {:context (fx/swap-context context
+                             assoc
+                             :vscroll (.getScrollTop (.getSource event)))})
+
 (defmethod handle-event ::type-filename [{:keys [fx/event fx/context]}]
   {:context (fx/swap-context context
                              assoc
@@ -47,7 +52,6 @@
   (let [file-name (fx/sub-val context :file-name-entered)
         file-path-new (str (fx/sub-val context :cur-path) "/" (.toString file-name))
         msg @(s/put! tclient ["open-file" file-path-new])]
-    (println "CUR-PATH: " (fx/sub-val context :cur-path))
     {:context (fx/swap-context context ;how the fuck do I do this
                                assoc
                                :file-path file-path-new
@@ -60,9 +64,14 @@
         line-numbers (apply str (map #(str % \newline) (range 1 no-of-lines)))]
     {:context (fx/swap-context context
                                assoc
-                               :line-numbers line-numbers)}))
+                               :line-numbers line-numbers
+                               :vscroll (.getScrollTop (.getSource event)))}))
 
-(defmethod handle-event ::openfex [{:keys [fx/event fx/context]}]
+(defmethod handle-event ::openfex [{:keys [fx/event fx/context tclient]}]
+  (if (not= (fx/sub-val context :file-path) "") (do
+                                                  @(s/put! tclient ["update-buffer" (fx/sub-val context :file-path) (get-current-text event)])
+                                                  @(s/take! tclient))
+      nil)
   {:context (fx/swap-context context
                              assoc
                              :file-explorer-show true)})
@@ -77,7 +86,6 @@
     (cond
       (= entry-info "DIR: ") (do @(s/put! tclient ["get-dir" entry-name])
                                  (let [dir-contents @(s/take! tclient)]
-                                   (println dir-contents)
                                    {:context (fx/swap-context context
                                                               assoc
                                                               :dir-contents dir-contents
@@ -86,7 +94,6 @@
                                  (let [file-contents @(s/take! tclient)
                                        no-of-lines (+ 2 (count (re-seq #"\n" file-contents)))
                                        line-numbers (apply str (map #(str % \newline) (range 1 no-of-lines)))]
-                                   (println file-contents)
                                    {:context (fx/swap-context context
                                                               assoc
                                                               :file-path entry-name
@@ -95,20 +102,22 @@
                                                               :line-numbers line-numbers)})))))
 
 (defmethod handle-event ::close-file [{:keys [fx/event fx/context tclient]}]
-  (println "requesting close file")
-  @(s/put! tclient ["close-file" (fx/sub-val context :file-path)]))
+  @(s/put! tclient ["close-file" (fx/sub-val context :file-path)])
+  (:context (fx/swap-context context
+                             assoc
+                             :text-editor ""
+                             :line-numbers ""
+                             :file-path ""
+                             :vscroll 0)))
 
 (defmethod handle-event ::saveevent [{:keys [fx/event fx/context tclient]}]
-  (println (get-current-text event))
   @(s/put! tclient ["save-file" (fx/sub-val context :file-path) (get-current-text event)])
   (let [sync-file @(s/take! tclient)]
-    (println sync-file)
     {:context (fx/swap-context context
                                assoc
                                :text-editor
                                sync-file)}))
 
 (defmethod handle-event ::save-all [{:keys [fx/event fx/context tclient]}]
-  (println "saving all buffers")
-  @(s/put! tclient ["save-all"])
+  @(s/put! tclient ["save-all" (fx/sub-val context :file-path (get-current-text event))])
   @(s/take! tclient))

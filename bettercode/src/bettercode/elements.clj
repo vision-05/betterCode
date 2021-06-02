@@ -21,6 +21,7 @@
    :cursor :text
    :text (fx/sub context :text-editor)
    :on-key-typed {:event/type :bettercode.events/text-type}
+   :on-scroll {:event/type :bettercode.events/scroll}
    :style-class "root-text-area-editor"})
 
 (defn line-numbers [{:keys [fx/context]}]
@@ -29,6 +30,7 @@
    :text (fx/sub context :line-numbers)
    :pref-width 40
    :pref-height 896
+   :scroll-top (fx/sub context :vscroll)
    :font "Roboto Mono"
    :style-class "root-text-area-numbers"})
 

@@ -8,8 +8,8 @@
                       text-color "#ECEFF4"
                       border-color "#4C566A"
                       background-color "#2E3440"
-                      scroll-color "#434C5E22"
-                      thumb-color "#4C566A44"
+                      scroll-color "#434C5E00"
+                      thumb-color "#4C566A22"
                       highlight-color "#4C566A"
                       line-no-color "#4C566A"]
                   {".root" {:-fx-background-color back-background-color
@@ -44,14 +44,14 @@
                                                           :-fx-text-fill text-color
                                                           :-fx-padding [4 4 4 4]
                                                           :-fx-border-radius 5}
-                                       "> .virtual-flow" {:-fx-background-color background-color
-                                                        :-fx-hbar-policy :as-needed
-                                                        :-fx-vbar-policy :as-needed
-                                                        "> .corner" {:fx-background-color scroll-color}
-                                                        "> .scroll-bar" {":horizontal" {:-fx-background-color scroll-color
-                                                                                       " .thumb" {:-fx-background-color thumb-color}}
-                                                                        ":vertical" {:-fx-background-color scroll-color
-                                                                                     " .thumb" {:-fx-background-color thumb-color}}}}}
+                                       "> .virtual-flow" {:-fx-background-color scroll-color
+                                                          :-fx-hbar-policy :as-needed
+                                                          :-fx-vbar-policy :as-needed
+                                                          "> .corner" {:fx-background-color scroll-color}
+                                                          "> .scroll-bar" {":horizontal" {:-fx-background-color scroll-color
+                                                                                          " .thumb" {:-fx-background-color thumb-color}}
+                                                                           ":vertical" {:-fx-background-color scroll-color
+                                                                                        " .thumb" {:-fx-background-color thumb-color}}}}}
                             "-text-area" {"-status" {:-fx-background-color back-background-color
                                                      :-fx-border-color border-color
                                                      :-fx-border-style [:hidden :hidden :solid :hidden]
@@ -62,13 +62,19 @@
                                                      :-fx-background-color back-background-color
                                                      ;:-fx-border-color border-color
                                                      " .content" {:-fx-background-color background-color}
-                                                     " .scroll-pane" {:-fx-background-color background-color
+                                                     " .scroll-pane" {:-fx-background-color :transparent
                                                                       :-fx-hbar-policy :as-needed
                                                                       :-fx-vbar-policy :as-needed
                                                                       "> .corner" {:-fx-background-color scroll-color}
-                                                                      " .scroll-bar" {":horizontal" {:-fx-background-color scroll-color
+                                                                      " .scroll-bar" {" .decrement-button" {:-fx-opacity 0}
+                                                                                      " .increment-button" {:-fx-opacity 0}
+                                                                                      ":horizontal" {:-fx-background-color :transparent
+                                                                                                     " .track" {:-fx-opacity 0}
+                                                                                                     " .track-background" {:-fx-opacity 0}
                                                                                                      " .thumb" {:-fx-background-color thumb-color}}
-                                                                                      ":vertical" {:-fx-background-color scroll-color
+                                                                                      ":vertical" {:-fx-background-color :transparent
+                                                                                                   " .track" {:-fx-opacity 0}
+                                                                                                   " .track-background" {:-fx-opacity 0}
                                                                                                    " .thumb" {:-fx-background-color thumb-color}}}}}
                                           "-numbers" {:-fx-text-fill line-no-color
                                                       :-fx-background-color background-color
