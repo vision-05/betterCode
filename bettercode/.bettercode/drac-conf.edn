@@ -1,0 +1,7 @@
+{:text-color "#F8F8F2"
+ :line-no-color "#6272A4"
+ :background-color "#282A36"
+ :highlight-color "#44475A"
+ :border-color "#44475A"
+ :button-hover-color "#44475A"
+ :scroll-color "#44475A"}
