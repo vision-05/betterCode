@@ -17,6 +17,20 @@
                   {".root" {:-fx-background-color background-color
                             :-fx-text-fill text-color
 
+                            "-color-picker" {:-fx-border-color border-color
+                                             :-fx-border-radius 5
+                                             :-fx-background-radius 5
+                                             :-fx-control-inner-background background-color
+                                             :-fx-background background-color
+
+                                             " .color-picker-label" {:-fx-text-fill text-color}
+
+                                             " .combo-box-popup" {:-fx-background-color background-color
+                                                                  :-fx-background background-color
+                                                                  :-fx-control-inner-background background-color}
+
+                                             ":hover" {:-fx-background-color highlight-color}}
+
                             "-menu-bar" {:-fx-background-color background-color
                                          :-fx-control-inner-background background-color
                                          :-fx-text-fill text-color

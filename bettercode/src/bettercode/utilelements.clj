@@ -35,7 +35,8 @@
                :tclient tclient}
               {:fx/type :text-field
                :style-class "root-fsview-filename-input"
-               :on-key-typed {:event/type :bettercode.events/type-filename
+               :on-key-typed {:event/type :bettercode.events/type-name
+                              :key :file-name-entered
                               :fx/sync true}}
               {:fx/type button-layout
                :tclient tclient
@@ -50,14 +51,19 @@
 
 (defn color-picker [{:keys [fx/context text item-key]}]
   {:fx/type :h-box
+   :spacing 5
    :children [{:fx/type :color-picker
+               :style-class "root-color-picker"
                :on-action {:event/type :bettercode.events/change-color
                            :key item-key}}
               {:fx/type :label
+               :style-class "root"
                :text text}]})
 
 (defn color-selection-menu [{:keys [fx/context]}]
   {:fx/type :v-box
+   :padding 7
+   :spacing 20
    :children [{:fx/type color-picker
                :text "background-color"
                :item-key :background-color}
@@ -78,7 +84,14 @@
                :item-key :scroll-color}
               {:fx/type color-picker
                :text "button-hover-color"
-               :item-key :button-hover-color}]})
+               :item-key :button-hover-color}
+              {:fx/type button-layout
+               :left-button {:fx/type new-button
+                             :text "Cancel"
+                             :event-type :bettercode.events/close-creator}
+               :right-button {:fx/type new-button
+                              :text "Confirm"
+                              :event-type :bettercode.events/change-style}}]})
 
 (defn fake-scroll-bar [{:keys [fx/context]}]
   {:fx/type :rectangle
@@ -134,17 +147,17 @@
   {:fx/type :v-box
    :style (str "-fx-background-color: " ((fx/sub-val context :colors) :background-color) "; ")
    :children [{:fx/type sample-status-row}
-              {:fx/type sample-editor-row}]})
+              {:fx/type sample-editor-row}
+              {:fx/type :text-field
+               :style-class "root-fsview-filename-input"
+               :pref-height 25
+               :pref-width 400
+               :on-key-typed {:event/type :bettercode.events/type-name
+                              :key :theme-name-entered}}]})
 
-(defn selection-row [{:keys [fx/context]}]
-  {:fx/type :h-box
-   :children [{:fx/type :text-field}
-              {:fx/type :button}
-              {:fx/type :button}]})
+
 
 (defn theme-creator [{:keys [fx/context]}]
-  {:fx/type :v-box
-   :children [{:fx/type :h-box
-               :children [{:fx/type sample-editor}
-                          {:fx/type color-selection-menu}]}
-              {:fx/type selection-row}]})
+  {:fx/type :h-box
+   :children [{:fx/type sample-editor}
+              {:fx/type color-selection-menu}]})
