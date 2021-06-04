@@ -39,6 +39,12 @@
 
 ;TODO: send event for replacing highlighted text, send event for inserting text
 
+(defmethod handle-event ::change-color [{:keys [fx/event fx/context key]}]
+  {:context (fx/swap-context context
+                             assoc-in
+                             [:colors key]
+                             (str "#" (subs (.toString (.getValue (.getSource event))) 2)))})
+
 (defmethod handle-event ::scroll [{:keys [fx/event fx/context]}]
   {:context (fx/swap-context context
                              assoc

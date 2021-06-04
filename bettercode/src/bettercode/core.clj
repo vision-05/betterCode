@@ -45,7 +45,7 @@
            :min-height 1140
            :resizable true
            :scene {:fx/type :scene
-                   :fill "#23282D"
+                   :fill ((fx/sub-val context :colors) :background-color)
                    :stylesheets [(::css/url bettercode.css/style)]
                    :root {:fx/type :v-box
                           :children [{:fx/type :menu-bar
@@ -76,17 +76,27 @@
                                       :style-class "root"}]}}}
           {:fx/type :stage
            :title "Files"
-           :showing (fx/sub context :file-explorer-show)
+           :showing (fx/sub-val context :file-explorer-show)
            :width 500
            :height 350
            :resizable false
            :always-on-top true
            :modality :application-modal
            :scene {:fx/type :scene
-                   :fill "#23282D"
+                   :fill ((fx/sub-val context :colors) :background-color)
                    :stylesheets [(::css/url bettercode.css/style)]
                    :root {:fx/type bettercode.utilelements/file-window
-                          :tclient tclient}}}]})
+                          :tclient tclient}}}
+          {:fx/type :stage
+           :title "Theme"
+           :showing (fx/sub-val context :theme-creator-show)
+           :width 700
+           :height 450
+           :resizable false
+           :scene {:fx/type :scene
+                   :fill ((fx/sub-val context :colors) :background-color)
+                   :stylesheets [(::css/url bettercode.css/style)]
+                   :root {:fx/type bettercode.utilelements/theme-creator}}}]})
 
 ;create file opening screen
 (defn -main [hostname & args]
@@ -103,9 +113,11 @@
                              :dir-contents dirs
                              :cur-path (bettercode.events/parent-dir (subs (dirs 0) 5))
                              :file-explorer-show true
+                             :theme-creator-show true
                              :file-name-entered ""
                              :line-numbers ""
-                             :vscroll 0}
+                             :vscroll 0
+                             :colors bettercode.css/colors}
                             #(cache/lru-cache-factory % :threshold 4096)))]
     (fx/create-app *context
                    :event-handler bettercode.events/handle-event
