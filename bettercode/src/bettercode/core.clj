@@ -78,7 +78,8 @@
                                                         :on-action {:event/type :bettercode.events/open-creator}}
                                                        {:fx/type :menu-item
                                                         :style-class "root-menu-bar-item-sub-item"
-                                                        :text "existing theme"}]}]}
+                                                        :text "existing theme"
+                                                        :on-action {:event/type :bettercode.events/open-selector}}]}]}
                                      {:fx/type bettercode.elements/editor-pane
                                       :tclient tclient
                                       :text ""
@@ -106,15 +107,25 @@
            :scene {:fx/type :scene
                    :fill ((fx/sub-val context :colors) :background-color)
                    :stylesheets [(::css/url (fx/sub-val context :style-sheet))]
-                   :root {:fx/type bettercode.utilelements/theme-creator}}}]})
+                   :root {:fx/type bettercode.utilelements/theme-creator}}}
+          {:fx/type :stage
+           :title "Theme Picker"
+           :showing (fx/sub-val context :theme-picker-show)
+           :width 700
+           :height 380
+           :resizable false
+           :scene {:fx/type :scene
+                   :fill ((fx/sub-val context :colors) :background-color)
+                   :stylesheets [(::css/url (fx/sub-val context :style-sheet))]
+                   :root {:fx/type bettercode.utilelements/themes-view}}}]})
 
-;create file opening screen
 (defn -main [hostname & args]
   (Platform/setImplicitExit true)
   (println "started")
   (let [c @(client (if hostname hostname "localhost") 8080)
         msg @(s/put! c ["get-dir"])
         dirs (vec @(s/take! c))
+        theme-dir-contents [] ;use raynes fs
         *context
         (atom
          (fx/create-context {:title "BetterCode"
@@ -124,12 +135,14 @@
                              :cur-path (bettercode.events/parent-dir (subs (dirs 0) 5))
                              :file-explorer-show true
                              :theme-creator-show false
+                             :theme-picker-show false
                              :theme-name-entered ""
                              :file-name-entered ""
                              :line-numbers ""
                              :vscroll 0
                              :style-sheet bettercode.css/style
-                             :colors bettercode.css/colors}
+                             :colors bettercode.css/colors
+                             :themes (bettercode.meta/get-themes)}
                             #(cache/lru-cache-factory % :threshold 4096)))]
     (fx/create-app *context
                    :event-handler bettercode.events/handle-event

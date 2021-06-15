@@ -161,3 +161,8 @@
   {:fx/type :h-box
    :children [{:fx/type sample-editor}
               {:fx/type color-selection-menu}]})
+
+(defn themes-view [{:keys [fx/context]}]
+  {:fx/type :list-view
+   :items (fx/sub-val context :themes)
+   :on-mouse-clicked {:event/type :bettercode.events/pick-theme}})

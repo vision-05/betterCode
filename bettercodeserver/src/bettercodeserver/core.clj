@@ -1,7 +1,8 @@
 (ns bettercodeserver.core
   (:require [manifold.stream :as s]
             [bettercodeserver.server :as server]
-            [bettercodeserver.buffer :as buffer])
+            [bettercodeserver.buffer :as buffer]
+            [bettercodeserver.rope :as rope])
   (:gen-class))
 
 (defn -main []

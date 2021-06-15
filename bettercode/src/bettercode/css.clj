@@ -1,8 +1,9 @@
 (ns bettercode.css
   (:require [cljfx.css :as css]
-            [clojure.edn :as edn]))
+            [clojure.edn :as edn]
+            [bettercode.meta]))
 
-(def colors (edn/read-string (slurp ".bettercode/conf.edn")))
+(def colors (edn/read-string (slurp (bettercode.meta/conf-info :theme-path))))
 
 (def style
   (css/register ::style

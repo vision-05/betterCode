@@ -5,7 +5,7 @@
 ; Happy coding! ♥️
 
 ; Jacking in...
-; Starting Jack-in Terminal: lein update-in :dependencies conj '[nrepl,"0.8.3"]' -- update-in :plugins conj '[cider/cider-nrepl,"0.25.10"]' -- update-in '[:repl-options,:nrepl-middleware]' conj '["cider.nrepl/cider-middleware"]' -- with-profile +uberjar repl :headless
+; Starting Jack-in Terminal: lein update-in :dependencies conj '[nrepl,"0.8.3"]' -- update-in :plugins conj '[cider/cider-nrepl,"0.26.0"]' -- update-in '[:repl-options,:nrepl-middleware]' conj '["cider.nrepl/cider-middleware"]' -- with-profile +uberjar repl :headless
 ; Hooking up nREPL sessions...
 ; Connected session: clj
 ; TIPS: 
@@ -15,6 +15,105 @@
 ;   - `alt+up` and `alt+down` traverse up and down the REPL command history
 ;      when the cursor is after the last contents at the prompt
 ;   - Clojure lines in stack traces are peekable and clickable.
-clj꞉bettercodeserver.core꞉>  ; Use `alt+enter` to evaluate
+clj꞉bettercodeserver.core꞉> 
 ; Jack-in done.
+clj꞉bettercodeserver.core꞉> 
+(def foo (rope/rope "something"))
+#'bettercodeserver.core/foo
+clj꞉bettercodeserver.core꞉> 
+(prn foo)
+something
+nil
+clj꞉bettercodeserver.core꞉> 
+foo
+something
+clj꞉bettercodeserver.core꞉> 
+foo
+something
+clj꞉bettercodeserver.core꞉> 
+#multifn[print-dup 0xb70089a]
+clj꞉bettercodeserver.rope꞉> 
+#multifn[print-method 0x48c2199c]
+clj꞉bettercodeserver.rope꞉> 
+foo
+; Syntax error compiling at (.calva/output-window/output.calva-repl:1:7949).
+; Unable to resolve symbol: foo in this context
+clj꞉bettercodeserver.rope꞉> 
+(in-ns 'bettercodeserver.core)
+#namespace[bettercodeserver.core]
+clj꞉bettercodeserver.core꞉> 
+foo
+#rope "something"
+clj꞉bettercodeserver.core꞉> 
+(str foo)
+"something"
+clj꞉bettercodeserver.core꞉> 
+(println foo)
+#rope "something"
+nil
+clj꞉bettercodeserver.core꞉> 
+(with-meta foo)
+; Execution error (ArityException) at bettercodeserver.core/eval7405 (form-init18411422748176013216.clj:55).
+; Wrong number of args (1) passed to: clojure.core/with-meta--5420
+clj꞉bettercodeserver.core꞉> 
+(with-meta foo {})
+; Execution error (ClassCastException) at bettercodeserver.core/eval7407 (form-init18411422748176013216.clj:59).
+; class bettercodeserver.rope.Rope cannot be cast to class clojure.lang.IObj (bettercodeserver.rope.Rope and clojure.lang.IObj are in unnamed module of loader 'app')
+clj꞉bettercodeserver.core꞉> 
+#'bettercodeserver.rope/rope
+; Reflection warning, /home/tim/betterCode/bettercodeserver/src/bettercodeserver/rope.clj:27:63 - reference to field meta on java.lang.Object can't be resolved.
+clj꞉bettercodeserver.rope꞉> 
+(in-ns 'bettercodeserver.core)
+#namespace[bettercodeserver.core]
+clj꞉bettercodeserver.core꞉> 
+(def bar (rope/rope "something"))
+#'bettercodeserver.core/bar
+clj꞉bettercodeserver.core꞉> 
+(with-meta bar {})
+#rope "something"
+clj꞉bettercodeserver.core꞉> 
+(meta *1)
+{}
+clj꞉bettercodeserver.core꞉> 
+#'bettercodeserver.rope/rope
+; Reflection warning, /home/tim/betterCode/bettercodeserver/src/bettercodeserver/rope.clj:27:63 - reference to field meta on java.lang.Object can't be resolved.
+clj꞉bettercodeserver.rope꞉> 
+(in-ns 'bettercodeserver.core)
+#namespace[bettercodeserver.core]
+clj꞉bettercodeserver.core꞉> 
+(def baz (rope/rope "elsething"))
+#'bettercodeserver.core/baz
+clj꞉bettercodeserver.core꞉> 
+(nth baz 4)
+; Execution error (AbstractMethodError) at bettercodeserver.rope.Rope/nth (form-init18411422748176013216.clj:78).
+; Receiver class bettercodeserver.rope.Rope does not define or inherit an implementation of the resolved method 'abstract java.lang.Object valAt(java.lang.Object)' of interface clojure.lang.ILookup.
+clj꞉bettercodeserver.core꞉> 
+(get baz 2)
+; Execution error (AbstractMethodError) at bettercodeserver.core/eval7629 (form-init18411422748176013216.clj:91).
+; Receiver class bettercodeserver.rope.Rope does not define or inherit an implementation of the resolved method 'abstract java.lang.Object valAt(java.lang.Object)' of interface clojure.lang.ILookup.
+clj꞉bettercodeserver.core꞉> 
+#'bettercodeserver.rope/rope
+; Reflection warning, /home/tim/betterCode/bettercodeserver/src/bettercodeserver/rope.clj:27:57 - reference to field meta on java.lang.Object can't be resolved.
+clj꞉bettercodeserver.rope꞉> 
+(in-ns 'bettercodeserver.core)
+#namespace[bettercodeserver.core]
+clj꞉bettercodeserver.core꞉> 
+(def quux (rope/rope "skdahgoheg"))
+#'bettercodeserver.core/quux
+clj꞉bettercodeserver.core꞉> 
+(nth quux 3)
+; Execution error (ClassCastException) at bettercodeserver.rope.Rope/nth (form-init18411422748176013216.clj:76).
+; class java.lang.Character cannot be cast to class clojure.lang.IFn (java.lang.Character is in module java.base of loader 'bootstrap'; clojure.lang.IFn is in unnamed module of loader 'app')
+clj꞉bettercodeserver.core꞉> 
+#'bettercodeserver.rope/rope
+; Reflection warning, /home/tim/betterCode/bettercodeserver/src/bettercodeserver/rope.clj:27:57 - reference to field meta on java.lang.Object can't be resolved.
+clj꞉bettercodeserver.rope꞉> 
+(in-ns 'bettercodeserver.core)
+#namespace[bettercodeserver.core]
+clj꞉bettercodeserver.core꞉> 
+(def asd (rope/rope "foo bar"))
+#'bettercodeserver.core/asd
+clj꞉bettercodeserver.core꞉> 
+(nth asd 3)
+\space
 clj꞉bettercodeserver.core꞉> 
