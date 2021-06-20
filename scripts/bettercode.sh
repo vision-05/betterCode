@@ -1,10 +1,10 @@
 #!/bin/sh
 checkDeps() {
-
+	echo "hi"
 }
 
 checkBetterCode() {
-
+	echo "hi"
 }
 
 installDeps() {
@@ -19,8 +19,10 @@ install() {
 	echo "Running installer"
 	mkdir "$HOME/.bc"
 	cd "$HOME/.bc"
-	curl -s https://api.github.com/repos/vision-05/betterCode/releases/latest | grep "browser_download_url.*tar.gz" | cut -d : -f 2,3 | tr -d \" | wget -qi -
-	tar -xvf bettercode.tar.gz #this archive is in the release with installer
+	curl -s https://api.github.com/repos/vision-05/betterCode/releases/latest | grep "tarball_url" | cut -d : -f 2,3 | tr -d \" | tr -d ',' > url.txt
+	curl -L -o bettercode.tar.gz $(cat url.txt)
+	mkdir betterCode
+	tar -xvf bettercode.tar.gz -C betterCode --strip-components 1 #this archive is in the release with installer
 }
 
 clean() {
@@ -42,20 +44,23 @@ uninstall() {
 	rm server.sh
 }
 
-runClient() {
-	client
+client() {
+	cd "$HOME/.bc/betterCode/bettercode"
+	#this is where ssh port forwarding
+	lein run localhost
 }
 
-runServer() {
-	server &
+server() {
+	cd "$HOME/.bc/betterCode/bettercodeserver"
+	lein run
 }
 
 run() {
-	runServer
-	runClient
+	server &
+	client
 }
 
-runHelp() {
+help() {
 	echo "BetterCode options:"
 	
 	echo "Install program: install"
@@ -67,26 +72,4 @@ runHelp() {
 	echo "Run server only: server"
 }
 
-parseArgs() {
-	if [$1 = "run"] then
-		run
-	elif [$1 = "client"] then
-		runClient
-	elif [$1 = "server"] then
-		runServer
-	elif [$1 = "install"] then
-		installDeps
-		install
-	elif [$1 = "update"] then
-		update
-	elif [$1 = "uninstall"] then
-		uninstall
-	elif [$1 = "help"] then
-		runHelp
-	else
-		echo "Invalid command, run bettercode help to see all arguments"
-	fi
-
-}
-
-parseArgs
+$1
