@@ -45,8 +45,8 @@
            :min-height 1140
            :resizable true
            :scene {:fx/type :scene
-                   :fill "#23282D"
-                   :stylesheets [(::css/url bettercode.css/style)]
+                   :fill ((fx/sub-val context :colors) :background-color)
+                   :stylesheets [(::css/url (fx/sub-val context :style-sheet))]
                    :root {:fx/type :v-box
                           :children [{:fx/type :menu-bar
                                       :max-height 10 ;somehow make the height actually work
@@ -68,7 +68,18 @@
                                                         :style-class "root-menu-bar-item-sub-item"
                                                         :text "close file"
                                                         :on-action {:event/type :bettercode.events/close-file
-                                                                    :tclient tclient}}]}]}
+                                                                    :tclient tclient}}]}
+                                              {:fx/type :menu
+                                               :text "theme"
+                                               :style-class "root-menu-bar-item"
+                                               :items [{:fx/type :menu-item
+                                                        :style-class "root-menu-bar-item-sub-item"
+                                                        :text "new theme"
+                                                        :on-action {:event/type :bettercode.events/open-creator}}
+                                                       {:fx/type :menu-item
+                                                        :style-class "root-menu-bar-item-sub-item"
+                                                        :text "existing theme"
+                                                        :on-action {:event/type :bettercode.events/open-selector}}]}]}
                                      {:fx/type bettercode.elements/editor-pane
                                       :tclient tclient
                                       :text ""
@@ -76,25 +87,45 @@
                                       :style-class "root"}]}}}
           {:fx/type :stage
            :title "Files"
-           :showing (fx/sub context :file-explorer-show)
+           :showing (fx/sub-val context :file-explorer-show)
            :width 500
            :height 350
            :resizable false
            :always-on-top true
            :modality :application-modal
            :scene {:fx/type :scene
-                   :fill "#23282D"
-                   :stylesheets [(::css/url bettercode.css/style)]
+                   :fill ((fx/sub-val context :colors) :background-color)
+                   :stylesheets [(::css/url (fx/sub-val context :style-sheet))]
                    :root {:fx/type bettercode.utilelements/file-window
-                          :tclient tclient}}}]})
+                          :tclient tclient}}}
+          {:fx/type :stage
+           :title "Theme"
+           :showing (fx/sub-val context :theme-creator-show)
+           :width 700
+           :height 380
+           :resizable false
+           :scene {:fx/type :scene
+                   :fill ((fx/sub-val context :colors) :background-color)
+                   :stylesheets [(::css/url (fx/sub-val context :style-sheet))]
+                   :root {:fx/type bettercode.utilelements/theme-creator}}}
+          {:fx/type :stage
+           :title "Theme Picker"
+           :showing (fx/sub-val context :theme-picker-show)
+           :width 700
+           :height 380
+           :resizable false
+           :scene {:fx/type :scene
+                   :fill ((fx/sub-val context :colors) :background-color)
+                   :stylesheets [(::css/url (fx/sub-val context :style-sheet))]
+                   :root {:fx/type bettercode.utilelements/themes-view}}}]})
 
-;create file opening screen
 (defn -main [hostname & args]
   (Platform/setImplicitExit true)
   (println "started")
   (let [c @(client (if hostname hostname "localhost") 8080)
         msg @(s/put! c ["get-dir"])
         dirs (vec @(s/take! c))
+        theme-dir-contents [] ;use raynes fs
         *context
         (atom
          (fx/create-context {:title "BetterCode"
@@ -103,9 +134,15 @@
                              :dir-contents dirs
                              :cur-path (bettercode.events/parent-dir (subs (dirs 0) 5))
                              :file-explorer-show true
+                             :theme-creator-show false
+                             :theme-picker-show false
+                             :theme-name-entered ""
                              :file-name-entered ""
                              :line-numbers ""
-                             :vscroll 0}
+                             :vscroll 0
+                             :style-sheet bettercode.css/style
+                             :colors bettercode.css/colors
+                             :themes (bettercode.meta/get-themes)}
                             #(cache/lru-cache-factory % :threshold 4096)))]
     (fx/create-app *context
                    :event-handler bettercode.events/handle-event

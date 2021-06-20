@@ -19,7 +19,7 @@
    :pref-height 896
    :font "Roboto Mono"
    :cursor :text
-   :text (fx/sub context :text-editor)
+   :text (fx/sub-val context :text-editor)
    :on-key-typed {:event/type :bettercode.events/text-type}
    :on-scroll {:event/type :bettercode.events/scroll}
    :style-class "root-text-area-editor"})
@@ -27,10 +27,10 @@
 (defn line-numbers [{:keys [fx/context]}]
   {:fx/type :text-area
    :editable false
-   :text (fx/sub context :line-numbers)
+   :text (fx/sub-val context :line-numbers)
    :pref-width 40
    :pref-height 896
-   :scroll-top (fx/sub context :vscroll)
+   :scroll-top (fx/sub-val context :vscroll)
    :font "Roboto Mono"
    :style-class "root-text-area-numbers"})
 
@@ -39,7 +39,7 @@
    :min-width 768
    :padding 14
    :children [{:fx/type status-bar
-               :file-path (fx/sub context :file-path)
+               :file-path (fx/sub-val context :file-path)
                :h-box/hgrow :always}]})
 
 (defn editor-row [{:keys [fx/context tclient]}]

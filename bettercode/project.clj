@@ -10,10 +10,13 @@
                  [aleph "0.4.6"]
                  [gloss "0.2.6"]
                  [manifold "0.1.9-alpha4"]
+                 [me.raynes/fs "1.4.6"]
                  [org.openjfx/javafx-base "15.0.1"]
+                 [org.openjfx/javafx-graphics "15.0.1"]
                  [org.fxmisc.richtext/richtextfx "0.10.6"]]
   :main ^:skip-aot bettercode.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all
                        :injections [(javafx.application.Platform/exit)]
-                       :jvm-opts ["-Dclojure.compiler.direct-linking=true"]}})
+                       :jvm-opts ["-Dclojure.compiler.direct-linking=true"
+                                  "-Xmx50m"]}})
