@@ -23,6 +23,7 @@ install() {
 	curl -L -o bettercode.tar.gz $(cat url.txt)
 	mkdir betterCode
 	tar -xvf bettercode.tar.gz -C betterCode --strip-components 1 #this archive is in the release with installer
+	echo "{:theme-path \"$HOME/.bc/betterCode/bettercode/.bettercode/synth-conf.edn\", :plugins {}}" > "$HOME/.bc/betterCode/bettercode/.bettercode/meta.edn"
 }
 
 clean() {
@@ -39,9 +40,6 @@ update() {
 
 uninstall() {
 	rm -rf "$HOME/.bc"
-	rm bettercode.sh
-	rm client.sh
-	rm server.sh
 }
 
 client() {
