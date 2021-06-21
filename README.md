@@ -16,5 +16,10 @@ Client server based model, a text server backend will deal with editing and file
 <h1> Install & Run </h1>
 <h2> Linux </h2>
 <h4> First of all you need to download [Leinigen website](https://leiningen.org/ "Leinigen"). You should be able to download it from your distros' repositories. 
-  * Ubuntu/Debain based: sudo  apt install leinigen
-  * Arch: sudo pacman -S lenigen
+ - Ubuntu/Debain based: sudo apt install leinigen
+ - Arch: sudo pacman -S lenigen
+
+Then open a terimnal, and navigate the the directory.
+To run the server, go to the `bettercodeserver` directory, and use the `lein run` command there
+To run the client, go to the `bettercode` folder in the project, and run `lein run [insert ip address]`
+Note: You may have to fix the meta.edn file
