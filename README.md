@@ -12,3 +12,9 @@ Status: WIP, development still continuing. 16/02/2021
 New architecture:
 
 Client server based model, a text server backend will deal with editing and file IO while a client frontend is in charge of handling events and displaying to the user. The decoupling of the UI from the functionality will allow more flexibility and customisability, as well as the option to write custom clients in any language and remote editing.
+
+<h1> Install & Run </h1>
+<h2> Linux </h2>
+<h4> First of all you need to download [Leinigen website](https://leiningen.org/ "Leinigen"). You should be able to download it from your distros' repositories. 
+  * Ubuntu/Debain based: sudo  apt install leinigen
+  * Arch: sudo pacman -S lenigen
