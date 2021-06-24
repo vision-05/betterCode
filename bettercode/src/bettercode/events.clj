@@ -5,7 +5,8 @@
             [clojure.edn :as edn]
             [clojure.string]
             [manifold.stream :as s]
-            [bettercode.meta]))
+            [bettercode.meta])
+  (:import [javafx.scene.input Clipboard]))
 
 (defn parent-dir [path]
   (clojure.string/join "/" (drop-last (clojure.string/split path #"/"))))
@@ -181,6 +182,9 @@
   {:context (fx/swap-context context
                              #(apply assoc-fn % key value kvs))})
 
+(defn handle-text-input [{:keys [context event tclient]}]
+  (println event))
+
 (def event-handlers (atom {:theme-pick (fn [{:keys [event context]}] (let [filename (.getText (.getTarget event))
                                                                            color-map (edn/read-string (slurp filename))]
                                                                        (spit ".bettercode/meta.edn" (str (assoc bettercode.meta/conf-info :theme-path filename)))
@@ -234,6 +238,7 @@
                                                                                                                      (mutate-context context assoc :file-path entry-name :text-editor file-contents :file-explorer-show false :line-numbers line-numbers))))))
 
                            :type-text (fn [{:keys [context event tclient]}]
+                                        (println event)
                                         (let [no-of-lines (+ 2 (count (re-seq #"\n" (.getText (.getSource event)))))
                                               line-numbers (apply str (map #(str % \newline) (range 1 no-of-lines)))
                                               event-char (get-event-characters event)
@@ -242,10 +247,30 @@
                                               cur-cursor-pos (get-current-cursor event)
                                               cur-anchor-pos (get-current-anchor event)]
                                           (if (= event-char "\b") @(s/put! tclient ["remove-text" (fx/sub-val context :file-path) cur-cursor-pos (if (= cur-cursor-pos prev-cursor-pos) prev-anchor-pos prev-cursor-pos)])
-                                              nil)
+                                              (handle-text-input {:context context :event event :tclient tclient}))
                                           (mutate-context context assoc :line-numbers line-numbers :vscroll (.getScrollTop (.getSource event)) :cursor-pos cur-cursor-pos :anchor-pos cur-anchor-pos)))
                            :text-click (fn [{:keys [context event]}]
-                                    (mutate-context context assoc :cursor-pos (get-current-cursor event) :anchor-pos (get-current-anchor event)))
+                                         (mutate-context context assoc :cursor-pos (get-current-cursor event) :anchor-pos (get-current-anchor event)))
+
+                           :key-press (fn [{:keys [context event tclient]}]
+                                        (let [text (.getText event)
+                                              shortcut? (.isShortcutDown event)
+                                              code (.getCode event)
+                                              code-name (.getName code)
+                                              character? (or (.isDigitKey code) (.isLetterKey code) (.isWhitespaceKey code))]
+                                          (println text shortcut? code code-name)
+                                          (cond
+                                            (and character? (not shortcut?)) (let [prev-cursor-pos (fx/sub-val context :cursor-pos)]
+                                                                               @(s/put! tclient ["insert-text" (fx/sub-val context :file-path) text prev-cursor-pos]))
+                                            (or (and shortcut? (= "X" code-name)) (and (not shortcut?) (= "Backspace" code-name))) (let [prev-cursor-pos (fx/sub-val context :cursor-pos)
+                                                                                                  prev-anchor-pos (fx/sub-val context :anchor-pos)
+                                                                                                  cur-cursor-pos (get-current-cursor event)]
+                                                                                              @(s/put! tclient ["remove-text" (fx/sub-val context :file-path) cur-cursor-pos (if (= cur-cursor-pos prev-cursor-pos) prev-anchor-pos prev-cursor-pos)]))
+                                            (and shortcut? (= "V" code-name)) (let [contents @(fx/on-fx-thread (.getString (Clipboard/getSystemClipboard)))
+                                                                                    prev-cursor-pos (fx/sub-val context :cursor-pos)]
+                                                                                (println "CONTENTS: " contents)
+                                                                                @(s/put! tclient ["insert-text" (fx/sub-val context :file-path) contents prev-cursor-pos])))
+                                          (mutate-context context assoc :cursor-pos (get-current-cursor event) :anchor-pos (get-current-anchor event))))
 
                            :save-file (fn [{:keys [fx/context tclient]}]
                                         @(s/put! tclient ["save-file" (fx/sub-val context :file-path)])

@@ -20,8 +20,8 @@
    :font "Roboto Mono"
    :cursor :text
    :text (fx/sub-val context :text-editor)
-   :on-key-typed {:event/type :type-text
-                  :tclient tclient}
+   :on-key-pressed {:event/type :key-press
+                    :tclient tclient}
    :on-scroll {:event/type :scroll}
    :on-mouse-clicked {:event/type :text-click}
    :style-class "root-text-area-editor"})

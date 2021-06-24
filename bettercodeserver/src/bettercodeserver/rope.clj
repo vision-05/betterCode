@@ -24,7 +24,7 @@
                   [(Rope. left r1 weight nil meta) r2])))
 
   (concat [rope1 rope2]
-    (Rope. rope1 rope2 (.-weight rope1) nil (merge meta (.-meta rope2))))
+    (Rope. rope1 rope2 (count rope1) nil (merge meta (.-meta rope2))))
 
   (remove [rope start end]
     (let [[begin remaining] (split rope start)

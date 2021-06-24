@@ -17,7 +17,7 @@
   (send agent-name dissoc full-file-path))
 
 (defn insert-text [agent-name full-file-path text position]
-  (send agent-name assoc-in [full-file-path] position text))
+  (send agent-name assoc-in [full-file-path position] text))
 
 (defn remove-text [agent-name full-file-path start end]
   (send agent-name update-in [full-file-path] #(rope/remove % start end)))
