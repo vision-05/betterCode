@@ -23,7 +23,7 @@
   {:fx/type :list-view
    :items (fx/sub-val context :dir-contents)
    :style-class "root-fsview"
-   :on-mouse-clicked {:event/type :bettercode.events/fexclick
+   :on-mouse-clicked {:event/type :select-file-click
                       :fx/sync true
                       :tclient tclient}})
 
@@ -35,7 +35,7 @@
                :tclient tclient}
               {:fx/type :text-field
                :style-class "root-fsview-filename-input"
-               :on-key-typed {:event/type :bettercode.events/type-name
+               :on-key-typed {:event/type :type-input
                               :key :file-name-entered
                               :fx/sync true}}
               {:fx/type button-layout
@@ -43,18 +43,18 @@
                :left-button {:fx/type new-button
                              :tclient tclient
                              :text "Back"
-                             :event-type :bettercode.events/backclick}
+                             :event-type :back-file-click}
                :right-button {:fx/type new-button
                               :tclient tclient
                               :text "New"
-                              :event-type :bettercode.events/newclick}}]})
+                              :event-type :new-file-click}}]})
 
 (defn color-picker [{:keys [fx/context text item-key]}]
   {:fx/type :h-box
    :spacing 5
    :children [{:fx/type :color-picker
                :style-class "root-color-picker"
-               :on-action {:event/type :bettercode.events/change-color
+               :on-action {:event/type :color-change
                            :key item-key}}
               {:fx/type :label
                :style-class "root"
@@ -88,10 +88,10 @@
               {:fx/type button-layout
                :left-button {:fx/type new-button
                              :text "Cancel"
-                             :event-type :bettercode.events/close-creator}
+                             :event-type :close-theme-creator}
                :right-button {:fx/type new-button
                               :text "Confirm"
-                              :event-type :bettercode.events/change-style}}]})
+                              :event-type :style-change}}]})
 
 (defn fake-scroll-bar [{:keys [fx/context]}]
   {:fx/type :rectangle
@@ -152,7 +152,7 @@
                :style-class "root-fsview-filename-input"
                :pref-height 25
                :pref-width 400
-               :on-key-typed {:event/type :bettercode.events/type-name
+               :on-key-typed {:event/type :type-input
                               :key :theme-name-entered}}]})
 
 
@@ -165,4 +165,4 @@
 (defn themes-view [{:keys [fx/context]}]
   {:fx/type :list-view
    :items (fx/sub-val context :themes)
-   :on-mouse-clicked {:event/type :bettercode.events/pick-theme}})
+   :on-mouse-clicked {:event/type :theme-pick}})

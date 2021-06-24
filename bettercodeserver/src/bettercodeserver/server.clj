@@ -31,9 +31,9 @@
   (case (message 0)
     "open-file" (buffer/add-file agent-name (message 1))
     "close-file" (buffer/remove-file agent-name (message 1))
-    "update-buffer" (buffer/update-buffer agent-name (message 1) (message 2))
-    "save-file" (do (println message) (buffer/save-file agent-name (message 1) (message 2)))
-    ;"save-all" (buffer/save-all-files agent-name)
+    "save-file" (buffer/save-file agent-name (message 1))
+    "insert-text" (buffer/insert-text agent-name (message 1) (message 2) (message 3))
+    "remove-text" (buffer/remove-text agent-name (message 1) (message 2) (message 3))
     "get-dir" (if (> (count message) 1) (fnav/get-folder-contents (message 1))
                      (fnav/get-folder-contents))))
 
