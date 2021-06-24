@@ -5,26 +5,11 @@
             [clojure.edn :as edn]
             [clojure.string]
             [manifold.stream :as s]
-            [bettercode.meta]))
-
-(defmulti handle-event :event/type)
-
-(defmethod handle-event :default [e]
-  (println "non event"))
+            [bettercode.meta])
+  (:import [javafx.scene.input Clipboard]))
 
 (defn parent-dir [path]
   (clojure.string/join "/" (drop-last (clojure.string/split path #"/"))))
-
-(defn fex-back [context tclient]
-  (let [cur-dir (fx/sub-val context :cur-path)
-        prev-dir (parent-dir cur-dir)
-        msg @(s/put! tclient ["get-dir" prev-dir]) ;get parent from :cur-path
-        result @(s/take! tclient)
-        dir-contents (if (= result true) @(s/take! tclient) result)]
-    {:context (fx/swap-context context
-                               assoc
-                               :dir-contents dir-contents
-                               :cur-path prev-dir)}))
 
 (defn get-current-text [event]
   (-> event
@@ -40,6 +25,20 @@
       (.getChildren)
       (.get 1)
       (.getText)))
+
+(defn get-event-characters [event]
+  (-> event
+      (.getCharacter)))
+
+(defn get-current-cursor [event]
+  (-> event
+      (.getSource)
+      (.getCaretPosition)))
+
+(defn get-current-anchor [event]
+  (-> event
+      (.getSource)
+      (.getAnchor)))
 
 (defn make-style-sheet [colors]
   (css/register :bettercode.css/style
@@ -93,6 +92,7 @@
                                                                          :-fx-background-radius 5}}}}
 
                             "-fsview" {:-fx-control-inner-background background-color
+                                       :-fx-text-fill text-color
 
                                        "-button" {:-fx-background-color background-color
                                                   :-fx-border-color border-color
@@ -173,141 +173,116 @@
                                                                        :-fx-vbar-policy :never
                                                                        :-fx-background-color background-color}}}}})))
 
-(defmethod handle-event ::pick-theme [{:keys [fx/event fx/context]}]
-  (let [filename (.getText (.getTarget event))
-        color-map (edn/read-string (slurp filename))]
-    (spit ".bettercode/meta.edn" (str (assoc bettercode.meta/conf-info :theme-path filename)))
-    {:context (fx/swap-context context
-                               assoc
-                               :style-sheet
-                               (make-style-sheet color-map)
-                               :colors
-                               color-map
-                               :theme-picker-show
-                               false)}))
+(defn map-run [atom-map key args]
+  ((@atom-map key) args))
+(defn validate-handler [handler]
+  true) ;make sure handler returns a map
 
-(defmethod handle-event ::open-selector [{:keys [fx/event fx/context]}]
+(defn mutate-context [context assoc-fn key value & kvs]
   {:context (fx/swap-context context
-                             assoc
-                             :theme-picker-show
-                             true)})
+                             #(apply assoc-fn % key value kvs))})
 
-(defmethod handle-event ::open-creator [{:keys [fx/event fx/context]}]
-  {:context (fx/swap-context context
-                             assoc
-                             :theme-creator-show
-                             true)})
+(defn handle-text-input [{:keys [context event tclient]}]
+  (println event))
 
-(defmethod handle-event ::close-creator [{:keys [fx/event fx/context]}]
-  {:context (fx/swap-context context
-                             assoc
-                             :theme-creator-show
-                             false)})
+(def event-handlers (atom {:theme-pick (fn [{:keys [event context]}] (let [filename (.getText (.getTarget event))
+                                                                           color-map (edn/read-string (slurp filename))]
+                                                                       (spit ".bettercode/meta.edn" (str (assoc bettercode.meta/conf-info :theme-path filename)))
+                                                                       (mutate-context context assoc :style-sheet (make-style-sheet color-map) :colors color-map :theme-picker-show false)))
 
-(defmethod handle-event ::change-style [{:keys [fx/event fx/context]}]
-  (let [filename (str ".bettercode/" (fx/sub-val context :theme-name-entered) ".edn")]
-    (spit filename (str (fx/sub-val context :colors)))
-    (spit ".bettercode/meta.edn" (str (assoc bettercode.meta/conf-info :theme-path filename)))
-    {:context (fx/swap-context context
-                               assoc
-                               :theme-name-entered
-                               ""
-                               :theme-creator-show
-                               false
-                               :style-sheet
-                               (make-style-sheet (fx/sub-val context :colors)))}))
+                           :open-theme-selector (fn [{:keys [context]}] (mutate-context context assoc :theme-picker-show true))
 
-(defmethod handle-event ::change-color [{:keys [fx/event fx/context key]}]
-  {:context (fx/swap-context context
-                             assoc-in
-                             [:colors key]
-                             (str "#" (subs (.toString (.getValue (.getSource event))) 2)))})
+                           :open-theme-creator (fn [{:keys [context]}] (mutate-context context assoc :theme-creator-show true))
+                           :close-theme-creator (fn [{:keys [context]}] (mutate-context context assoc :theme-creator-show false))
 
-(defmethod handle-event ::scroll [{:keys [fx/event fx/context]}]
-  {:context (fx/swap-context context
-                             assoc
-                             :vscroll (.getScrollTop (.getSource event)))})
+                           :open-file-explorer (fn [{:keys [context tclient]}] (if (not= (fx/sub-val context :file-path) "") @(s/put! tclient ["save-file" (fx/sub-val context :file-path)])
+                                                                                   (println "NOT"))
+                                                 (mutate-context context assoc :file-explorer-show true))
 
-(defmethod handle-event ::type-name [{:keys [fx/event fx/context key]}]
-  {:context (fx/swap-context context
-                             assoc
-                             key (.getCharacters (.getSource event)))})
+                           :style-change (fn [{:keys [context]}] (let [filename (str ".bettercode/" (fx/sub-val context :theme-name-entered) ".edn")]
+                                                                   (spit filename (str (fx/sub-val context :colors)))
+                                                                   (spit ".bettercode/meta.edn" (str (assoc bettercode.meta/conf-info :theme-path filename)))
+                                                                   (mutate-context context assoc :theme-name-entered "" :theme-creator-show false :style-sheet (make-style-sheet (fx/sub-val context :colors)))))
 
-(defmethod handle-event ::newclick [{:keys [fx/event fx/context tclient]}]
-  (let [file-name (fx/sub-val context :file-name-entered)
-        file-path-new (str (fx/sub-val context :cur-path) "/" (.toString file-name))
-        msg @(s/put! tclient ["open-file" file-path-new])
-        foo @(s/take! tclient)] ;open file will return a value even if we don't use it
-    {:context (fx/swap-context context ;how the fuck do I do this
-                               assoc
-                               :file-path file-path-new
-                               :text-editor ""
-                               :file-explorer-show false
-                               :line-numbers "1\n")}))
+                           :color-change (fn [{:keys [context key event]}] (mutate-context context assoc-in [:colors key] (str "#" (subs (.toString (.getValue (.getSource event))) 2))))
 
-(defmethod handle-event ::text-type [{:keys [fx/event fx/context]}]
-  (let [no-of-lines (+ 2 (count (re-seq #"\n" (.getText (.getSource event)))))
-        line-numbers (apply str (map #(str % \newline) (range 1 no-of-lines)))]
-    {:context (fx/swap-context context
-                               assoc
-                               :line-numbers line-numbers
-                               :vscroll (.getScrollTop (.getSource event)))}))
+                           :scroll (fn [{:keys [context event]}] (mutate-context context assoc :vscroll (.getScrollTop (.getSource event))))
 
-(defmethod handle-event ::openfex [{:keys [fx/event fx/context tclient]}]
-  (if (not= (fx/sub-val context :file-path) "") (do
-                                                  @(s/put! tclient ["update-buffer" (fx/sub-val context :file-path) (get-current-text event)])
-                                                  (println "TAKING " @(s/take! tclient)))
-      (println "NOT"))
-  {:context (fx/swap-context context
-                             assoc
-                             :file-explorer-show true)})
+                           :type-input (fn [{:keys [context key event]}] (mutate-context context assoc key (.getCharacters (.getSource event))))
 
-(defmethod handle-event ::backclick [{:keys [fx/event fx/context tclient]}]
-  (fex-back context tclient))
+                           :new-file-click (fn [{:keys [context tclient]}] (let [file-name (fx/sub-val context :file-name-entered)
+                                                                                 file-path-new (str (fx/sub-val context :cur-path) "/" (.toString file-name))
+                                                                                 msg @(s/put! tclient ["open-file" file-path-new])
+                                                                                 foo @(s/take! tclient)] ;open file will return a value even if we don't use it
+                                                                             (mutate-context context assoc :file-path file-path-new :text-editor "" :file-explorer-show false :line-numbers "1\n")))
+                           :back-file-click (fn [{:keys [context tclient]}] (let [cur-dir (fx/sub-val context :cur-path)
+                                                                                  prev-dir (parent-dir cur-dir)
+                                                                                  msg @(s/put! tclient ["get-dir" prev-dir]) ;get parent from :cur-path
+                                                                                  result @(s/take! tclient)
+                                                                                  dir-contents (if (= result true) @(s/take! tclient) result)]
+                                                                              (println dir-contents)
+                                                                              (mutate-context context assoc :dir-contents dir-contents :cur-path prev-dir)))
+                           :select-file-click (fn [{:keys [context event tclient]}] (let [entry (.getText (.getTarget event))
+                                                                                          entry-info (subs entry 0 5)
+                                                                                          entry-name (subs entry 5)]
+                                                                                      (cond
+                                                                                        (= entry-info "DIR: ") (do @(s/put! tclient ["get-dir" entry-name])
+                                                                                                                   (let [result @(s/take! tclient)
+                                                                                                                         dir-contents (if (= result true) @(s/take! tclient) result)]
+                                                                                                                     (mutate-context context assoc :dir-contents dir-contents :cur-path entry-name)))
+                                                                                        (= entry-info "FIL: ") (do @(s/put! tclient ["open-file" entry-name])
+                                                                                                                   (let [result @(s/take! tclient)
+                                                                                                                         file-contents (if (= result true) @(s/take! tclient) result)
+                                                                                                                         no-of-lines (+ 2 (count (re-seq #"\n" file-contents)))
+                                                                                                                         line-numbers (apply str (map #(str % \newline) (range 1 no-of-lines)))]
+                                                                                                                     (mutate-context context assoc :file-path entry-name :text-editor file-contents :file-explorer-show false :line-numbers line-numbers))))))
 
-(defmethod handle-event ::fexclick [{:keys [fx/event fx/context tclient]}]
-  (let [entry (.getText (.getTarget event))
-        entry-info (subs entry 0 5)
-        entry-name (subs entry 5)]
-    (cond
-      (= entry-info "DIR: ") (do @(s/put! tclient ["get-dir" entry-name])
-                                 (let [result @(s/take! tclient)
-                                       dir-contents (if (= result true) @(s/take! tclient) result)
-                                       foo (println dir-contents)]
-                                   {:context (fx/swap-context context
-                                                              assoc
-                                                              :dir-contents dir-contents
-                                                              :cur-path entry-name)}))
-      (= entry-info "FIL: ") (do @(s/put! tclient ["open-file" entry-name])
-                                 (let [result @(s/take! tclient)
-                                       file-contents (if (= result true) @(s/take! tclient) result)
-                                       foo (println file-contents)
-                                       no-of-lines (+ 2 (count (re-seq #"\n" file-contents)))
-                                       line-numbers (apply str (map #(str % \newline) (range 1 no-of-lines)))]
-                                   {:context (fx/swap-context context
-                                                              assoc
-                                                              :file-path entry-name
-                                                              :text-editor file-contents
-                                                              :file-explorer-show false
-                                                              :line-numbers line-numbers)})))))
+                           :type-text (fn [{:keys [context event tclient]}]
+                                        (println event)
+                                        (let [no-of-lines (+ 2 (count (re-seq #"\n" (.getText (.getSource event)))))
+                                              line-numbers (apply str (map #(str % \newline) (range 1 no-of-lines)))
+                                              event-char (get-event-characters event)
+                                              prev-cursor-pos (fx/sub-val context :cursor-pos)
+                                              prev-anchor-pos (fx/sub-val context :anchor-pos)
+                                              cur-cursor-pos (get-current-cursor event)
+                                              cur-anchor-pos (get-current-anchor event)]
+                                          (if (= event-char "\b") @(s/put! tclient ["remove-text" (fx/sub-val context :file-path) cur-cursor-pos (if (= cur-cursor-pos prev-cursor-pos) prev-anchor-pos prev-cursor-pos)])
+                                              (handle-text-input {:context context :event event :tclient tclient}))
+                                          (mutate-context context assoc :line-numbers line-numbers :vscroll (.getScrollTop (.getSource event)) :cursor-pos cur-cursor-pos :anchor-pos cur-anchor-pos)))
+                           :text-click (fn [{:keys [context event]}]
+                                         (mutate-context context assoc :cursor-pos (get-current-cursor event) :anchor-pos (get-current-anchor event)))
 
-(defmethod handle-event ::close-file [{:keys [fx/event fx/context tclient]}]
-  @(s/put! tclient ["close-file" (fx/sub-val context :file-path)])
-  {:context (fx/swap-context context
-                             assoc
-                             :text-editor ""
-                             :line-numbers ""
-                             :file-path ""
-                             :vscroll 0)})
+                           :key-press (fn [{:keys [context event tclient]}]
+                                        (let [text (.getText event)
+                                              shortcut? (.isShortcutDown event)
+                                              code (.getCode event)
+                                              code-name (.getName code)
+                                              character? (or (.isDigitKey code) (.isLetterKey code) (.isWhitespaceKey code))]
+                                          (println text shortcut? code code-name)
+                                          (cond
+                                            (and character? (not shortcut?)) (let [prev-cursor-pos (fx/sub-val context :cursor-pos)]
+                                                                               @(s/put! tclient ["insert-text" (fx/sub-val context :file-path) text prev-cursor-pos]))
+                                            (or (and shortcut? (= "X" code-name)) (and (not shortcut?) (= "Backspace" code-name))) (let [prev-cursor-pos (fx/sub-val context :cursor-pos)
+                                                                                                  prev-anchor-pos (fx/sub-val context :anchor-pos)
+                                                                                                  cur-cursor-pos (get-current-cursor event)]
+                                                                                              @(s/put! tclient ["remove-text" (fx/sub-val context :file-path) cur-cursor-pos (if (= cur-cursor-pos prev-cursor-pos) prev-anchor-pos prev-cursor-pos)]))
+                                            (and shortcut? (= "V" code-name)) (let [contents @(fx/on-fx-thread (.getString (Clipboard/getSystemClipboard)))
+                                                                                    prev-cursor-pos (fx/sub-val context :cursor-pos)]
+                                                                                (println "CONTENTS: " contents)
+                                                                                @(s/put! tclient ["insert-text" (fx/sub-val context :file-path) contents prev-cursor-pos])))
+                                          (mutate-context context assoc :cursor-pos (get-current-cursor event) :anchor-pos (get-current-anchor event))))
 
-(defmethod handle-event ::saveevent [{:keys [fx/event fx/context tclient]}]
-  @(s/put! tclient ["save-file" (fx/sub-val context :file-path) (get-current-text event)])
-  (let [sync-file @(s/take! tclient)]
-    {:context (fx/swap-context context
-                               assoc
-                               :text-editor
-                               sync-file)}))
+                           :save-file (fn [{:keys [fx/context tclient]}]
+                                        @(s/put! tclient ["save-file" (fx/sub-val context :file-path)])
+                                        {:context context})
+                           :close-file (fn [{:keys [context tclient]}]
+                                         @(s/put! tclient ["close-file" (fx/sub-val context :file-path)])
+                                         (mutate-context context assoc :text-editor "" :line-numbers "" :file-path "" :vscroll 0))
 
-(defmethod handle-event ::save-all [{:keys [fx/event fx/context tclient]}]
-  @(s/put! tclient ["save-all" (fx/sub-val context :file-path (get-current-text event))])
-  @(s/take! tclient))
+                           :save-all-files (fn [{:keys [fx/event fx/context tclient]}]
+                                             @(s/put! tclient ["save-all" (fx/sub-val context :file-path (get-current-text event))])
+                                             @(s/take! tclient)
+                                             {:context context})})) ;store event handlers in a map. this is as atom so changeable at runtime, allowing custom handlers
+
+(defn event-handler [{:keys [fx/event fx/context event/type key tclient]}]
+  (map-run event-handlers type {:event event :context context :key key :tclient tclient}))

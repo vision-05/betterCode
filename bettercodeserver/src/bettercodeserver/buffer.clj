@@ -1,15 +1,6 @@
 (ns bettercodeserver.buffer
-  (:require [clojure.string :as str]))
-
-(defn remove-string [string index length]
-  (println "\nSTRING: " string "\nINDEX: " index "\nLENGTH: " length)
-  (str (subs string 0 index) (subs string (+ index length))))
-
-(defn insert-string [string insert-str index]
-  (str (subs string 0 index) insert-str (subs string index)))
-
-(defn remove-char [string index]
-  (str (subs string 0 index) (subs string (inc index))))
+  (:require [clojure.string :as str]
+            [bettercodeserver.rope :as rope]))
 
 (defn add-file
   ([agent-name full-file-path]
@@ -17,27 +8,23 @@
    (if (not= nil (@agent-name full-file-path)) (@agent-name full-file-path)
        (try (let [contents (slurp full-file-path)]
               (add-file agent-name full-file-path contents))
-            (catch java.io.FileNotFoundException e (add-file agent-name full-file-path "")))))
+            (catch java.io.FileNotFoundException e (add-file agent-name full-file-path (rope/rope ""))))))
   ([agent-name full-file-path string]
-   (send agent-name assoc full-file-path string)
+   (send agent-name assoc full-file-path (rope/rope string))
    string))
 
 (defn remove-file [agent-name full-file-path]
   (send agent-name dissoc full-file-path))
 
-(defn update-buffer [agent-name full-file-path text]
-  (send agent-name assoc full-file-path text))
+(defn insert-text [agent-name full-file-path text position]
+  (send agent-name assoc-in [full-file-path position] text))
 
-(defn save-file [agent-name full-file-path text]
-  (update-buffer agent-name full-file-path text)
+(defn remove-text [agent-name full-file-path start end]
+  (send agent-name update-in [full-file-path] #(rope/remove % start end)))
+
+(defn save-file [agent-name full-file-path]
   (await agent-name)
-  (spit full-file-path (@agent-name full-file-path))
-  text)
-
-;(defn save-all-files [agent-name]
-;  (let [all-files @agent-name]
-;    (doseq [file-name all-files]
-;      (save-file agent-name file-name))))
+  (spit full-file-path (@agent-name full-file-path)))
 
 (defn close-all-buffers []
   (shutdown-agents))

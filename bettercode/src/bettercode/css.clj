@@ -57,6 +57,7 @@
                                                                          :-fx-background-radius 5}}}}
 
                             "-fsview" {:-fx-control-inner-background background-color
+                                       :-fx-text-fill text-color
 
                                        "-button" {:-fx-background-color background-color
                                                   :-fx-border-color border-color

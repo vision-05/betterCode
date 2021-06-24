@@ -57,17 +57,17 @@
                                                :items [{:fx/type :menu-item
                                                         :style-class "root-menu-bar-item-sub-item"
                                                         :text "open"
-                                                        :on-action {:event/type :bettercode.events/openfex
+                                                        :on-action {:event/type :open-file-explorer
                                                                     :tclient tclient}}
                                                        {:fx/type :menu-item
                                                         :style-class "root-menu-bar-item-sub-item"
                                                         :text "save"
-                                                        :on-action {:event/type :bettercode.events/saveevent
+                                                        :on-action {:event/type :save-file
                                                                     :tclient tclient}}
                                                        {:fx/type :menu-item
                                                         :style-class "root-menu-bar-item-sub-item"
                                                         :text "close file"
-                                                        :on-action {:event/type :bettercode.events/close-file
+                                                        :on-action {:event/type :close-file
                                                                     :tclient tclient}}]}
                                               {:fx/type :menu
                                                :text "theme"
@@ -75,11 +75,11 @@
                                                :items [{:fx/type :menu-item
                                                         :style-class "root-menu-bar-item-sub-item"
                                                         :text "new theme"
-                                                        :on-action {:event/type :bettercode.events/open-creator}}
+                                                        :on-action {:event/type :open-theme-creator}}
                                                        {:fx/type :menu-item
                                                         :style-class "root-menu-bar-item-sub-item"
                                                         :text "existing theme"
-                                                        :on-action {:event/type :bettercode.events/open-selector}}]}]}
+                                                        :on-action {:event/type :open-theme-selector}}]}]}
                                      {:fx/type bettercode.elements/editor-pane
                                       :tclient tclient
                                       :text ""
@@ -122,7 +122,7 @@
 (defn -main [hostname & args]
   (Platform/setImplicitExit true)
   (println "started")
-  (let [c @(client (if hostname hostname "localhost") 8080)
+  (let [c @(client (if hostname hostname "localhost") 8080) ;allow connecting to multiple servers later on
         msg @(s/put! c ["get-dir"])
         dirs (vec @(s/take! c))
         theme-dir-contents [] ;use raynes fs
@@ -140,12 +140,14 @@
                              :file-name-entered ""
                              :line-numbers ""
                              :vscroll 0
+                             :cursor-pos 0
+                             :anchor-pos 0
                              :style-sheet bettercode.css/style
                              :colors bettercode.css/colors
                              :themes (bettercode.meta/get-themes)}
                             #(cache/lru-cache-factory % :threshold 4096)))]
     (fx/create-app *context
-                   :event-handler bettercode.events/handle-event
+                   :event-handler bettercode.events/event-handler
                    :desc-fn (fn [_]
                               {:fx/type app
                                :tclient c}))))
