@@ -1,5 +1,6 @@
 (ns bettercodeserver.rope
   (:refer-clojure :exclude [concat remove])
+  (:require [clojure.string :as string])
   (:import [clojure.lang Associative IPersistentCollection]
            [java.io Writer]))
 
@@ -12,14 +13,16 @@
   (remove [rope start end]))
 
 (declare leaf-node?)
+(declare print-rope)
 
 (deftype Rope
          [left right weight data meta]
   IRope
-  (split [rope index]
+  (split [rope index] ;something up with this function? write tests and find out
+    (print-rope rope)
     (cond (leaf-node? rope) [(Rope. nil nil index (subs data 0 index) meta) (Rope. nil nil (- (count data) index) (subs data index) meta)]
           (< index weight) (let [[r1 r2] (split left index)]
-                             [r1 (Rope. r2 right (.-weight ^Rope r2) nil meta)])
+                             [r1 (Rope. r2 right (count ^Rope r2) nil meta)])
           :else (let [[r1 r2] (split right (- index weight))]
                   [(Rope. left r1 weight nil meta) r2])))
 
@@ -84,12 +87,12 @@
           (some? left) (.entryAt ^Associative left key)
           :else (nth data key)))
   (valAt [this key not-found]
-         (if (< key (count this)) (.valAt this key)
-             not-found))
-  
+    (if (< key (count this)) (.valAt this key)
+        not-found))
+
   clojure.lang.Seqable
   (seq [this]
-       (seq (str this))))
+    (seq (str this))))
 
 (defn ^:private leaf-node? [rope]
   (some? (.-data ^Rope rope)))
@@ -102,3 +105,14 @@
 
 (defn rope [string]
   (Rope. nil nil (count string) string nil))
+
+(def spaces (map #(if (not= % nil) " " " ") (range 1000000)))
+(defn stringify-rope [^Rope rope indent]
+  (let [left (.-left rope)
+        right (.-right rope)
+        space (string/join "" (take indent spaces))]
+  (if (leaf-node? rope) (str " <" (.-weight rope) " \"" (string/replace (string/replace (.-data rope) #"\n" "n") #" " "s") "\">")
+      (str "\n" space "(" (.-weight rope) " " (when (not= left nil) (stringify-rope left (inc indent))) " " (when (not= right nil) (stringify-rope right (inc indent))) ")\n"))))
+
+(defn print-rope [^Rope rope]
+  (println (stringify-rope rope 0)))

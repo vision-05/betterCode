@@ -8,7 +8,8 @@
             [clojure.edn :as edn]
             [clojure.string :as str]
             [bettercodeserver.buffer :as buffer]
-            [bettercodeserver.filenav :as fnav]))
+            [bettercodeserver.filenav :as fnav]
+            [bettercodeserver.rope :as rope]))
 
 (def protocol
   (gloss/compile-frame
@@ -53,10 +54,11 @@
                                            (= clojure.lang.PersistentList (class msg-two)) @(s/put! s msg-two)
                                            :else @(s/put! s true))]
                                  (when result
-                                   (println "\n\n\n")
-                                   (prn (class msg-two))
-                                   (prn "MSGTWO" msg-two "\n\n\n")
-                                   (prn @files-agent)
+                                   (when (first @files-agent) (rope/print-rope ((first @files-agent) 1)))
+                                   ;(println "\n\n\n")
+                                   ;(prn (class msg-two))
+                                   ;(prn "MSGTWO" msg-two "\n\n\n")
+                                   ;(prn (str @files-agent))
                                    (d/recur)))))
        (d/catch
         (fn [exception]
