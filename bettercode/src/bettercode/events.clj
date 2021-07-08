@@ -5,6 +5,7 @@
             [clojure.edn :as edn]
             [clojure.string]
             [manifold.stream :as s]
+            [bettercode.css]
             [bettercode.meta])
   (:import [javafx.scene.input Clipboard]))
 
@@ -40,138 +41,6 @@
       (.getSource)
       (.getAnchor)))
 
-(defn make-style-sheet [colors]
-  (css/register :bettercode.css/style
-                (let [text-color (colors :text-color)
-                      border-color (colors :border-color)
-                      background-color (colors :background-color)
-                      invisible "#00000000"
-                      thumb-color (colors :scroll-color)
-                      highlight-color (colors :highlight-color)
-                      line-no-color (colors :line-no-color)
-                      button-hover-color (colors :button-hover-color)]
-                  {".root" {:-fx-background-color background-color
-                            :-fx-text-fill text-color
-
-                            "-color-picker" {:-fx-border-color border-color
-                                             :-fx-border-radius 5
-                                             :-fx-background-radius 5
-                                             :-fx-control-inner-background background-color
-                                             :-fx-background background-color
-
-                                             " .color-picker-label" {:-fx-text-fill text-color}
-
-                                             " .combo-box-popup" {:-fx-background-color background-color
-                                                                  :-fx-background background-color
-                                                                  :-fx-control-inner-background background-color}
-
-                                             ":hover" {:-fx-background-color highlight-color}}
-
-                            "-menu-bar" {:-fx-background-color background-color
-                                         :-fx-control-inner-background background-color
-                                         :-fx-text-fill text-color
-
-                                         " .label" {:-fx-text-fill text-color
-                                                    :-fx-font-size 12}
-
-                                         "-item" {:-fx-background-color background-color
-                                                  :-fx-control-inner-background background-color
-                                                  :-fx-border-color border-color
-                                                  :-fx-text-fill text-color
-
-                                                  " .label" {:-fx-text-fill text-color
-                                                             :-fx-font-size 10}
-
-                                                  "-sub-item" {:-fx-background-color background-color
-                                                               :-fx-control-inner-background background-color
-                                                               :-fx-text-fill text-color
-                                                               :-fx-padding [4 4 4 4]
-                                                               :-fx-border-radius 5
-
-                                                               ":hover" {:-fx-background-color button-hover-color
-                                                                         :-fx-background-radius 5}}}}
-
-                            "-fsview" {:-fx-control-inner-background background-color
-                                       :-fx-text-fill text-color
-
-                                       "-button" {:-fx-background-color background-color
-                                                  :-fx-border-color border-color
-                                                  :-fx-text-fill text-color
-                                                  :-fx-padding [4 4 4 4]
-                                                  :-fx-border-radius 5
-
-                                                  ":hover" {:-fx-background-color button-hover-color
-                                                            :-fx-background-radius 5}}
-
-                                       "-filename-input" {:-fx-background-color background-color
-                                                          :-fx-border-color border-color
-                                                          :-fx-text-fill text-color
-                                                          :-fx-padding [4 4 4 4]
-                                                          :-fx-border-radius 5}
-
-                                       "> .virtual-flow" {:-fx-background-color invisible
-                                                          :-fx-hbar-policy :as-needed
-                                                          :-fx-vbar-policy :as-needed
-
-                                                          "> .corner" {:fx-background-color invisible}
-
-                                                          "> .scroll-bar" {":horizontal" {:-fx-background-color invisible
-
-                                                                                          " .thumb" {:-fx-background-color thumb-color}}
-
-                                                                           ":vertical" {:-fx-background-color invisible
-
-                                                                                        " .thumb" {:-fx-background-color thumb-color}}}}}
-
-                            "-text-area" {"-status" {:-fx-background-color background-color
-                                                     :-fx-border-color border-color
-                                                     :-fx-border-style [:hidden :hidden :solid :hidden]
-                                                     :-fx-text-fill text-color
-                                                     :-fx-highlight-fill highlight-color}
-
-                                          "-editor" {:-fx-background-color background-color
-                                                     :-fx-text-fill text-color
-                                                     :-fx-highlight-fill highlight-color
-
-                                                     " .content" {:-fx-background-color background-color}
-
-                                                     " .scroll-pane" {:-fx-background-color :transparent
-                                                                      :-fx-hbar-policy :as-needed
-                                                                      :-fx-vbar-policy :as-needed
-
-                                                                      "> .corner" {:-fx-background-color invisible}
-
-                                                                      " .scroll-bar" {" .decrement-button" {:-fx-opacity 0}
-
-                                                                                      " .increment-button" {:-fx-opacity 0}
-
-                                                                                      ":horizontal" {:-fx-background-color :transparent
-
-                                                                                                     " .track" {:-fx-opacity 0}
-
-                                                                                                     " .track-background" {:-fx-opacity 0}
-
-                                                                                                     " .thumb" {:-fx-background-color thumb-color}}
-
-                                                                                      ":vertical" {:-fx-background-color :transparent
-
-                                                                                                   " .track" {:-fx-opacity 0}
-
-                                                                                                   " .track-background" {:-fx-opacity 0}
-
-                                                                                                   " .thumb" {:-fx-background-color thumb-color}}}}}
-
-                                          "-numbers" {:-fx-background-color background-color
-                                                      :-fx-text-fill line-no-color
-                                                      :-fx-highlight-fill background-color
-
-                                                      " *.text" {:-fx-text-alignment :right}
-
-                                                      " .content" {:-fx-background-color background-color}
-
-                                                      " .scroll-pane" {:-fx-hbar-policy :never
-                                                                       :-fx-vbar-policy :never
-                                                                       :-fx-background-color background-color}}}}})))
 
 (defn map-run [atom-map key args]
   ((@atom-map key) args))
@@ -190,7 +59,7 @@
 (def event-handlers (atom {:theme-pick (fn [{:keys [event context]}] (let [filename (.getText (.getTarget event))
                                                                            color-map (edn/read-string (slurp filename))]
                                                                        (spit ".bettercode/meta.edn" (str (assoc bettercode.meta/conf-info :theme-path filename)))
-                                                                       (mutate-context context assoc :style-sheet (make-style-sheet color-map) :colors color-map :theme-picker-show false)))
+                                                                       (mutate-context context assoc :style-sheet (bettercode.css/make-style-sheet color-map) :colors color-map :theme-picker-show false)))
 
                            :open-theme-selector (fn [{:keys [context]}] (mutate-context context assoc :theme-picker-show true))
 
@@ -204,7 +73,7 @@
                            :style-change (fn [{:keys [context]}] (let [filename (str ".bettercode/" (fx/sub-val context :theme-name-entered) ".edn")]
                                                                    (spit filename (str (fx/sub-val context :colors)))
                                                                    (spit ".bettercode/meta.edn" (str (assoc bettercode.meta/conf-info :theme-path filename)))
-                                                                   (mutate-context context assoc :theme-name-entered "" :theme-creator-show false :style-sheet (make-style-sheet (fx/sub-val context :colors)))))
+                                                                   (mutate-context context assoc :theme-name-entered "" :theme-creator-show false :style-sheet (bettercode.css/make-style-sheet (fx/sub-val context :colors)))))
 
                            :color-change (fn [{:keys [context key event]}] (mutate-context context assoc-in [:colors key] (str "#" (subs (.toString (.getValue (.getSource event))) 2))))
 

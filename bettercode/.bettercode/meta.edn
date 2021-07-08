@@ -1,1 +1,1 @@
-{:theme-path "/home/tim/betterCode/bettercode/.bettercode/conf.edn", :plugins {}}
+{:theme-path ".bettercode/test-foo.edn", :plugins {}}
