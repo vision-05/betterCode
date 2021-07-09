@@ -17,6 +17,7 @@
   (send agent-name dissoc full-file-path))
 
 (defn insert-text [agent-name full-file-path text position]
+  (println "POS: " position " LEN: " (count (@agent-name full-file-path)))
   (if (= (count (@agent-name full-file-path)) position) (send agent-name update full-file-path #(rope/concat % (rope/rope text)))
       (send agent-name assoc-in [full-file-path position] text)))
 
