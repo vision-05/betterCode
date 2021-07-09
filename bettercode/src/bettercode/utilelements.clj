@@ -164,5 +164,6 @@
 
 (defn themes-view [{:keys [fx/context]}]
   {:fx/type :list-view
+   :style-class "root-fsview"
    :items (fx/sub-val context :themes)
    :on-mouse-clicked {:event/type :theme-pick}})
