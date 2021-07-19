@@ -1,5 +1,6 @@
 (ns bettercode.stages
-  (:require [cljfx.api :as fx]))
+  (:require [cljfx.api :as fx]
+            [cljfx.css :as css]))
 
 (defn main-app [{:keys [fx/context tclient]}]
   {:fx/type :stage
