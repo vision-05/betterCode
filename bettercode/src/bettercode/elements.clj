@@ -7,7 +7,6 @@
   {:fx/type :text-field
    :min-height 32
    :max-height 32
-   :min-width 740
    :editable false
    :alignment :center
    :text file-path
@@ -38,7 +37,7 @@
 
 (defn status-row [{:keys [fx/context]}]
   {:fx/type :h-box
-   :min-width 768
+   :pref-width 768
    :padding 14
    :children [{:fx/type status-bar
                :file-path (fx/sub-val context :file-path)
@@ -47,7 +46,6 @@
 (defn editor-row [{:keys [fx/context tclient]}]
   {:fx/type :h-box
    :pref-width 768
-   :min-width 768
    :padding 14
    :spacing 28
    :children [{:fx/type line-numbers
@@ -60,8 +58,6 @@
 (defn editor-pane [{:keys [fx/context tclient]}]
   {:fx/type :v-box
    :pref-width 768
-   :min-width 768
-   :min-height 1080
    :children [{:fx/type status-row
                :v-box/hgrow :always}
               {:fx/type editor-row

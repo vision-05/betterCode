@@ -54,11 +54,8 @@
                                            (= clojure.lang.PersistentList (class msg-two)) @(s/put! s msg-two)
                                            :else @(s/put! s true))]
                                  (when result
-                                   (when (first @files-agent) (rope/print-rope ((first @files-agent) 1)))
-                                   ;(println "\n\n\n")
-                                   ;(prn (class msg-two))
-                                   ;(prn "MSGTWO" msg-two "\n\n\n")
-                                   ;(prn (str @files-agent))
+                                   (when-let [file-name (first @files-agent)]
+                                     (rope/print-rope (file-name 1)))
                                    (d/recur)))))
        (d/catch
         (fn [exception]
