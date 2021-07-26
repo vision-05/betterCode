@@ -14,7 +14,8 @@
             [bettercode.events]
             [bettercode.utilelements]
             [bettercode.images]
-            [bettercode.stages])
+            [bettercode.stages]
+            [bettercode.utils])
   (:import [javafx.application Platform]
            [javafx.scene.image Image]))
 
@@ -61,7 +62,7 @@
                              :file-path ""
                              :text-editor ""
                              :dir-contents dirs
-                             :cur-path (bettercode.events/parent-dir (subs (dirs 0) 5))
+                             :cur-path (bettercode.utils/parent-dir (subs (dirs 0) 5))
                              :file-explorer-show true
                              :theme-creator-show false
                              :theme-picker-show false
