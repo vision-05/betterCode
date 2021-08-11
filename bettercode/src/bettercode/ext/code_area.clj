@@ -2,9 +2,11 @@
   (:require [cljfx.lifecycle :as lifecycle]
             [cljfx.prop :as prop]
             [cljfx.mutator :as mutator]
+            [cljfx.composite :as composite]
             [cljfx.coerce :as coerce])
   (:import [javafx.util Callback]
-           [org.fxmisc.richtext CodeArea]))
+           [org.fxmisc.richtext CodeArea]
+           [org.fxmisc.richtext LineNumberFactory]))
 
 (set! *warn-on-reflection* true)
 
@@ -17,12 +19,15 @@
   - `:text`, the text content of the area
   - `:read-only`, the read only property of the area
   - `:wrap-text`, the wrap property of the area
-  - `:style-sheet`, the starting style of the area
+  - `:line-number`, the line number property of the area
+  - `:style-class`, the starting style of the area
   - `:style-spans`, the vector of style spans for the area
   - `:on-text-changed`, the event handler map for text change
   - `:on-key-pressed`, the event handler map for a keypress
   - `:on-scroll`, the event handler map for a scroll this might be useless as line numbers included in this text area
-  - `:on-mouse-clicked` the event handler map for a mouse click"
+  - `:on-mouse-clicked` the event handler map for a mouse click
+  - `:pref-height` the vgrow policy
+  - `:pref-width` the hgrow policy"
   (lifecycle/make-ext-with-props lifecycle/dynamic
                                  {:text (prop/make
                                          (mutator/setter
@@ -37,10 +42,16 @@
                                               (mutator/setter
                                                #(.setWrapText %1 %2))
                                               lifecycle/scalar)
-                                  :style-sheet (prop/make
+                                  :line-number (prop/make
                                                 (mutator/setter
-                                                 #(.setStyleClass %1 0 0 %2))
-                                                lifecycle/scalar)
+                                                 #(when (= %2 true)
+                                                    (.setParagraphGraphicFactory %1 (LineNumberFactory/get %1))))
+                                                 lifecycle/scalar)
+                                  :style-class (prop/make
+                                                (mutator/observable-list
+                                                 (composite/observable-list CodeArea :style-class))
+                                                lifecycle/scalar
+                                                :coerce coerce/style-class)
                                   :on-text-changed (prop/make
                                                     (mutator/property-change-listener
                                                      #(.textProperty %1 %2))
