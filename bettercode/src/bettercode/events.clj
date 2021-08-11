@@ -14,6 +14,7 @@
   "function that runs the corresponding fn in the event handler map with the correct args"
   [atom-map key args]
   ((@atom-map key) args))
+
 (defn validate-handler [handler]
   true) ;make sure handler returns a map
 

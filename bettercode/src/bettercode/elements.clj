@@ -1,7 +1,8 @@
 (ns bettercode.elements
   (:require [cljfx.api :as fx]
             [bettercode.css]
-            [bettercode.events])
+            [bettercode.events]
+            [bettercode.ext.code-area :as code-area])
   (:import [org.fxmisc.richtext CodeArea]))
 
 (defn status-bar [{:keys [fx/context file-path]}]
@@ -14,17 +15,17 @@
    :style-class "root-text-area-status"})
 
 (defn text-edit [{:keys [fx/context tclient]}]
-  {:fx/type :text-area
-   :pref-width 632
-   :pref-height 896
-   :font "Roboto Mono"
-   :cursor :text
+  {:fx/type code-area/with-richtext-props
+   :desc {:fx/type fx/ext-instance-factory
+          :create #(CodeArea.)}
+   :props {
    :text (fx/sub-val context :text-editor)
    :on-key-pressed {:event/type :key-press
                     :tclient tclient}
    :on-scroll {:event/type :scroll}
-   :on-mouse-clicked {:event/type :text-click}
-   :style-class "root-text-area-editor"})
+   :on-mouse-clicked {:event/type :text-click} }
+                                        ;:style-class "root-text-area-editor"
+   })
 
 (defn line-numbers [{:keys [fx/context]}]
   {:fx/type :text-area
