@@ -52,6 +52,10 @@
                                                  (composite/observable-list CodeArea :style-class))
                                                 lifecycle/scalar
                                                 :coerce coerce/style-class)
+                                  :style-spans (prop/make
+                                                (mutator/setter
+                                                 #(.setStyleClass %1 (%2 :start) (%2 :end) (%2 :style))) ;I have to do a CSS file for this
+                                                lifecycle/scalar)
                                   :on-text-changed (prop/make
                                                     (mutator/property-change-listener
                                                      #(.textProperty %1 %2))

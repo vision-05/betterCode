@@ -97,7 +97,7 @@
   {:fx/type :rectangle
    :height 46
    :width 10
-   :fill ((fx/sub-val context :colors) :scroll-color)})
+   :fill (((fx/sub-val context :colors) :scroll-color) 0)})
 
 (defn sample-status-row [{:keys [fx/context]}]
   {:fx/type :h-box
@@ -107,10 +107,10 @@
                :pref-width 400
                :editable false
                :alignment :center
-               :style (str "-fx-text-fill: " ((fx/sub-val context :colors) :text-color) "; "
-                           "-fx-background-color: " ((fx/sub-val context :colors) :background-color) "; "
-                           "-fx-highlight-fill: " ((fx/sub-val context :colors) :highlight-color) "; "
-                           "-fx-border-color: " ((fx/sub-val context :colors) :border-color) "; "
+               :style (str "-fx-text-fill: " (((fx/sub-val context :colors) :text-color) 0) "; "
+                           "-fx-background-color: " (((fx/sub-val context :colors) :background-color) 0) "; "
+                           "-fx-highlight-fill: " (((fx/sub-val context :colors) :highlight-color) 0) "; "
+                           "-fx-border-color: " (((fx/sub-val context :colors) :border-color) 0) "; "
                            "-fx-border-style: hidden hidden solid hidden; ")
                :text "/home/foo/bar/baz.txt"}]})
 
@@ -119,33 +119,21 @@
    :padding 22
    :children [{:fx/type :text-area
                :editable false
-               :text "1\n2\n3\n4\n5\n6\n7\n"
-               :pref-width 16
-               :max-width 16
-               :pref-height 230
-               :font "Roboto Mono"
-               :style (str "-fx-text-fill: " ((fx/sub-val context :colors) :line-no-color) "; "
-                           "-fx-control-inner-background: " ((fx/sub-val context :colors) :background-color) "; "
-                           "-fx-background-color: " ((fx/sub-val context :colors) :background-color) "; "
-                           "-fx-border-color: " ((fx/sub-val context :colors) :background-color) "; "
-                           "-fx-highlight-fill: " ((fx/sub-val context :colors) :highlight-color) "; ")}
-              {:fx/type :text-area
-               :editable false
                :pref-width 330
                :pref-height 230
                :font "Roboto Mono"
                :cursor :text
                :text "Put your test text here"
-               :style (str "-fx-text-fill: " ((fx/sub-val context :colors) :text-color) "; "
-                           "-fx-control-inner-background: " ((fx/sub-val context :colors) :background-color) "; "
-                           "-fx-background-color: " ((fx/sub-val context :colors) :background-color) "; "
-                           "-fx-border-color: " ((fx/sub-val context :colors) :background-color) "; "
-                           "-fx-highlight-fill: " ((fx/sub-val context :colors) :highlight-color) "; ")}
+               :style (str "-fx-text-fill: " (((fx/sub-val context :colors) :text-color) 0) "; "
+                           "-fx-control-inner-background: " (((fx/sub-val context :colors) :background-color) 0) "; "
+                           "-fx-background-color: " (((fx/sub-val context :colors) :background-color) 0) "; "
+                           "-fx-border-color: " (((fx/sub-val context :colors) :background-color) 0) "; "
+                           "-fx-highlight-fill: " (((fx/sub-val context :colors) :highlight-color) 0) "; ")}
               {:fx/type fake-scroll-bar}]})
 
 (defn sample-editor [{:keys [fx/context]}]
   {:fx/type :v-box
-   :style (str "-fx-background-color: " ((fx/sub-val context :colors) :background-color) "; ")
+   :style (str "-fx-background-color: " (((fx/sub-val context :colors) :background-color) 0) "; ")
    :children [{:fx/type sample-status-row}
               {:fx/type sample-editor-row}
               {:fx/type :text-field

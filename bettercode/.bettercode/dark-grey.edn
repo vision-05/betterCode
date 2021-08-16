@@ -1,1 +1,1 @@
-{:text-color "#e6e6e6ff", :line-no-color "#999999ff", :background-color "#333333ff", :highlight-color "#334D4DFF", :border-color "#4d4d4dff", :button-hover-color "#808080ff", :scroll-color "#666666ff"}
+{:text-color ["#e6e6e6ff" "normal"], :line-no-color ["#999999ff" "normal"], :background-color ["#333333ff" "normal"], :highlight-color ["#334D4DFF" "normal"], :border-color ["#4d4d4dff" "normal"], :button-hover-color ["#808080ff" "normal"], :scroll-color ["#666666ff" "normal"]}

@@ -10,7 +10,7 @@
            :height 1080
            :resizable true
            :scene {:fx/type :scene
-                   :fill ((fx/sub-val context :colors) :background-color)
+                   :fill (((fx/sub-val context :colors) :background-color) 0)
                    :stylesheets [(::css/url (fx/sub-val context :style-sheet))]
                    :root {:fx/type :v-box
                           :children [{:fx/type :menu-bar
@@ -64,7 +64,7 @@
    :always-on-top true
    :modality :application-modal
    :scene {:fx/type :scene
-           :fill ((fx/sub-val context :colors) :background-color)
+           :fill (((fx/sub-val context :colors) :background-color) 0)
            :stylesheets [(::css/url (fx/sub-val context :style-sheet))]
            :root {:fx/type bettercode.utilelements/file-window
                   :tclient tclient}}})
@@ -77,7 +77,7 @@
    :height 380
    :resizable false
    :scene {:fx/type :scene
-           :fill ((fx/sub-val context :colors) :background-color)
+           :fill (((fx/sub-val context :colors) :background-color) 0)
            :stylesheets [(::css/url (fx/sub-val context :style-sheet))]
            :root {:fx/type bettercode.utilelements/theme-creator}}})
 
@@ -89,7 +89,7 @@
    :height 380
    :resizable false
    :scene {:fx/type :scene
-           :fill ((fx/sub-val context :colors) :background-color)
+           :fill (((fx/sub-val context :colors) :background-color) 0)
            :stylesheets [(::css/url (fx/sub-val context :style-sheet))]
            :root {:fx/type bettercode.utilelements/themes-view}}})
 

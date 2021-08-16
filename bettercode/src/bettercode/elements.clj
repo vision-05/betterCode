@@ -16,14 +16,17 @@
 
 (defn text-edit [{:keys [fx/context tclient]}]
   {:fx/type code-area/with-richtext-props
-   :desc {:fx/type fx/ext-instance-factory
-          :create #(CodeArea.)}
-   :props {:text (fx/sub-val context :text-editor)
-           :line-number true
-           :style-class "root-text-area-editor"
-           :on-text-changed {:event/type :key-press ;figure out this event thing
-                            :tclient tclient}
-           :on-mouse-clicked {:event/type :text-click}}})
+   :desc {:fx/type fx/ext-on-instance-lifecycle
+          :on-created () ;here add the CSS stylesheet to rtextfx style
+          :desc {:fx/type fx/ext-instance-factory
+                 :create #(CodeArea.)}
+          :props {:text (fx/sub-val context :text-editor)
+                  :line-number false
+                  :style-spans (fx/sub-val context :spans)
+                  :style-class "root-text-area-editor"
+                  :on-key-pressed {:event/type :key-press ;figure out this event thing
+                                   :tclient tclient}
+                  :on-mouse-clicked {:event/type :text-click}}}})
 
 (defn status-row [{:keys [fx/context]}]
   {:fx/type :h-box

@@ -76,7 +76,8 @@
                              :colors bettercode.css/colors
                              :images {:file @(fx/on-fx-thread (Image. bettercode.images/file-icon))
                                       :folder @(fx/on-fx-thread (Image. bettercode.images/folder-icon))}
-                             :themes (bettercode.meta/get-themes)}
+                             :themes (bettercode.meta/get-themes)
+                             :spans {:start 0 :end 0 :style ".text-color"}}
                             #(cache/lru-cache-factory % :threshold 4096)))]
     (fx/create-app *context
                    :event-handler bettercode.events/event-handler
