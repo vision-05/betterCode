@@ -16,8 +16,6 @@
 
 (defn text-edit [{:keys [fx/context tclient]}]
   {:fx/type code-area/with-richtext-props
-   :desc {:fx/type fx/ext-on-instance-lifecycle
-          :on-created () ;here add the CSS stylesheet to rtextfx style
           :desc {:fx/type fx/ext-instance-factory
                  :create #(CodeArea.)}
           :props {:text (fx/sub-val context :text-editor)
@@ -26,7 +24,7 @@
                   :style-class "root-text-area-editor"
                   :on-key-pressed {:event/type :key-press ;figure out this event thing
                                    :tclient tclient}
-                  :on-mouse-clicked {:event/type :text-click}}}})
+                  :on-mouse-clicked {:event/type :text-click}}})
 
 (defn status-row [{:keys [fx/context]}]
   {:fx/type :h-box

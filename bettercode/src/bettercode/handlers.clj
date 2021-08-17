@@ -80,7 +80,7 @@
                                                                                                            :line-numbers line-numbers
                                                                                                            :spans {:start 0
                                                                                                                    :end (count file-contents)
-                                                                                                                   :style ".text-color"}))))))
+                                                                                                                   :style "text-color"}))))))
 
 (defn text-click [{:keys [context event]}]
   (mutate-context context assoc :cursor-pos (get-current-cursor event) :anchor-pos (get-current-anchor event)))
