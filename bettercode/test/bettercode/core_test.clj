@@ -1,7 +1,6 @@
 (ns bettercode.core-test
   (:require [clojure.test :refer :all]
-            [bettercode.core :refer :all]
-            [bettercode.css :refer :all]))
+            [bettercode.core :as core]))
 
 (deftest a-test
   (testing "FIXME, I fail."
