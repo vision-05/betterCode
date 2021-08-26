@@ -80,7 +80,9 @@
                              :spans {:start 0 :end 0 :style "text-color"}}
                             #(cache/lru-cache-factory % :threshold 4096)))]
     (fx/create-app *context
-                   :event-handler bettercode.events/event-handler
+                   :event-handler (-> bettercode.events/event-handler
+                                      (fx/wrap-co-effects
+                                       {:fx/context (fx/make-deref-co-effect *context)}))
                    :desc-fn (fn [_]
                               {:fx/type app
                                :tclient c}))))

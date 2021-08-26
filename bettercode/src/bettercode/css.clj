@@ -49,7 +49,7 @@
 (defn root
   "function that returns the root CSS map"
   [{:keys [background-color text-color]}]
-  {".root" (conj (background background-color) (text text-color))})
+  (conj (background background-color) (text text-color)))
 
 (defn color-picker
   "function which returns the color-picker CSS map"
@@ -171,32 +171,54 @@
 (defn make-text-colors [color-map]
   (reduce-kv #(assoc %1 (str "." (symbol %2)) (text-colors %3)) {} color-map))
 
-(defn compose-style-map [color-map] ;this function should also be able to partially reconstruct a map
-  (-> (conj (root color-map)
-            (make-text-colors color-map))
-      (assoc-in [".root" "-color-picker"] (color-picker color-map))
-      (assoc-in [".root" "-color-picker" " .color-picker-label"] (color-picker-label color-map))
-      (assoc-in [".root" "-color-picker" " .combo-box-popup"] (color-picker-combo-popup color-map))
-
-      (assoc-in [".root" "-menu-bar"] (menu-bar color-map))
-      (assoc-in [".root" "-menu-bar" " .label"] (menu-bar-label color-map))
-      (assoc-in [".root" "-menu-bar" "-item"] (menu-bar-item color-map))
-      (assoc-in [".root" "-menu-bar" "-item" " .label"] (menu-bar-item-label color-map))
-      (assoc-in [".root" "-menu-bar" "-item" "-sub-item"] (menu-bar-sub-item color-map))
-
-      (assoc-in [".root" "-fsview"] (fsview color-map))
-      (assoc-in [".root" "-fsview" "-button"] (fsview-button color-map))
-      (assoc-in [".root" "-fsview" "-filename-input"] (fsview-filename-input color-map))
-      (assoc-in [".root" "-fsview" "> .virtual-flow"] (fsview-vflow color-map))
-      (assoc-in [".root" "-fsview" "> .virtual-flow" "> .corner"] (fsview-vflow-corner color-map))
-      (assoc-in [".root" "-fsview" "> .virtual-flow" "> .scroll-bar"] (fsview-vflow-scroll-bar color-map))
-
-      (assoc-in [".root" "-text-area" "-status"] (text-area-status color-map))
-      (assoc-in [".root" "-text-area" "-editor"] (text-area-editor color-map))
-      (assoc-in [".root" "-text-area" "-editor" " .content"] (text-area-editor-content color-map))
-      (assoc-in [".root" "-text-area" "-editor" " .scroll-pane"] (text-area-editor-scroll-pane color-map))
-      (assoc-in [".root" "-text-area" "-editor" " .scroll-pane" "> .corner"] (text-area-editor-scroll-pane-corner color-map))
-      (assoc-in [".root" "-text-area" "-editor" " .scroll-pane" " .scroll-bar"] (text-area-editor-scroll-pane-scroll-bar color-map))))
+(defn compose-style-map
+  "make a style map"
+  [color-map]
+  (assoc (make-text-colors color-map)
+         ".root"
+         (-> (root color-map)
+             (assoc "-color-picker"
+                    (assoc (color-picker color-map)
+                           " .color-picker-label"
+                           (color-picker-label color-map)
+                           " .combo-box-popup"
+                           (color-picker-combo-popup color-map)))
+             (assoc "-menu-bar"
+                    (assoc (menu-bar color-map)
+                           " .label"
+                           (menu-bar-label color-map)
+                           "-item"
+                           (assoc (menu-bar-item color-map)
+                                  " .label"
+                                  (menu-bar-item-label color-map)
+                                  "-sub-item"
+                                  (menu-bar-sub-item color-map))))
+             (assoc "-fsview"
+                    (assoc (fsview color-map)
+                           "-button"
+                           (fsview-button color-map)
+                           "-filename-input"
+                           (fsview-filename-input color-map)
+                           "> .virtual-flow"
+                           (assoc (fsview-vflow color-map)
+                                  "> .corner"
+                                  (fsview-vflow-corner color-map)
+                                  "> .scroll-bar"
+                                  (fsview-vflow-scroll-bar color-map))))
+             (assoc "-text-area"
+                    (assoc {}
+                           "-status"
+                           (text-area-status color-map)
+                           "-editor"
+                           (assoc (text-area-editor color-map)
+                                  " .content"
+                                  (text-area-editor-content color-map)
+                                  " .scroll-pane"
+                                  (assoc (text-area-editor-scroll-pane color-map)
+                                         "> .corner"
+                                         (text-area-editor-scroll-pane-corner color-map)
+                                         " .scroll-bar"
+                                         (text-area-editor-scroll-pane-scroll-bar color-map))))))))
 
 (defn make-style-sheet [color-map]
   (css/register ::style (compose-style-map color-map)))

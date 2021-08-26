@@ -22,8 +22,7 @@
 (defn close-theme-creator [{:keys [context]}] (mutate-context context assoc :theme-creator-show false))
 
 (defn open-file-explorer [{:keys [context tclient]}]
-  (if (not= (fx/sub-val context :file-path) "") @(s/put! tclient ["save-file" (fx/sub-val context :file-path)])
-      (println "NOT"))
+  (when (not= (fx/sub-val context :file-path) "") @(s/put! tclient ["save-file" (fx/sub-val context :file-path)]))
   (mutate-context context assoc :file-explorer-show true))
 
 (defn style-change [{:keys [context]}]
