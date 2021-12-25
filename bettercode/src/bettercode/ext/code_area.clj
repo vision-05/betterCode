@@ -12,7 +12,14 @@
 
 (defn- coerce-text [x]
   (cond (string? x) x
+        (vector? x) x
         :else (coerce/fail `coerce-text x)))
+
+(defn- coerce-span [spans]
+  (cond (and (vector? spans) (= '() (filter false? (for [span spans
+                                   :let [ks (keys span)]]
+                               (= ks '(:start :end :style)))))) spans
+        :else (coerce/fail `coerce-span spans)))
 
 (def with-richtext-props
   "Extension lifecycle for a richtext area. Supported keys: (maybe add more later)
@@ -31,7 +38,9 @@
   (lifecycle/make-ext-with-props lifecycle/dynamic
                                  {:text (prop/make
                                          (mutator/setter
-                                          #(.replace %1 0 0 %2 ""))
+                                          #(when-not (= (.getText %1) %2)
+                                             (prn "text: " %2)
+                                             (.replace %1 0 0 %2 "")))
                                          lifecycle/scalar
                                          :coerce coerce-text)
                                   :read-only (prop/make
@@ -54,13 +63,16 @@
                                                 :coerce coerce/style-class)
                                   :style-spans (prop/make
                                                 (mutator/setter #(doseq [style %2]
-                                                                   (println %1 (.getLength %1) (style :end) %2)
+                                                                   (println "highlight: " %1 (.getLength %1) (style :end) %2)
                                                                    (.setStyleClass %1 (style :start) (style :end) (style :style)))) ;I have to do a CSS file for this
-                                                lifecycle/scalar)
-                                  ;:on-text-changed (prop/make
-                                   ;                 (mutator/property-change-listener
-                                    ;                 #(.textProperty %1 %2))
-                                     ;               lifecycle/change-listener)
+                                                lifecycle/scalar
+                                                :coerce coerce-span)
+                                  :on-text-changed (prop/make
+                                                   (mutator/property-change-listener
+                                                    #(do
+                                                       (prn "   " %1 "%%%")
+                                                       (.textProperty %1 %2)))
+                                                 lifecycle/change-listener)
                                   :on-key-pressed (prop/make
                                                    (mutator/setter
                                                     #(.setOnKeyPressed %1 %2))

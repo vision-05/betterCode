@@ -111,7 +111,7 @@
     (prn (.getLength (.getSource event)))
     (prn (.getSource event))
     ;;FIXME invalid ranges for some reason. Figure out cause. Refactor this function
-    (mutate-context context assoc :spans [(assoc ((fx/sub-val context :spans) 0) :end (.getLength (.getSource event)))] :cursor-pos (get-current-cursor event) :anchor-pos (get-current-anchor event) :line-numbers line-numbers)))
+    (mutate-context context assoc :spans [(assoc ((fx/sub-val context :spans) 0) :end (.getLength (.getSource event)))] :cursor-pos (get-current-cursor event) :anchor-pos (get-current-anchor event) :line-numbers line-numbers :text-editor (.getText (.getSource event)))))
 
 (defn save-file [{:keys [context tclient]}]
   (if (not= (fx/sub-val context :file-path) "") @(s/put! tclient ["save-file" (fx/sub-val context :file-path)])
