@@ -53,13 +53,14 @@
                                                 lifecycle/scalar
                                                 :coerce coerce/style-class)
                                   :style-spans (prop/make
-                                                (mutator/setter
-                                                 #(.setStyleClass %1 (%2 :start) (%2 :end) (%2 :style))) ;I have to do a CSS file for this
+                                                (mutator/setter #(doseq [style %2]
+                                                                   (println %1 (.getLength %1) (style :end) %2)
+                                                                   (.setStyleClass %1 (style :start) (style :end) (style :style)))) ;I have to do a CSS file for this
                                                 lifecycle/scalar)
-                                  :on-text-changed (prop/make
-                                                    (mutator/property-change-listener
-                                                     #(.textProperty %1 %2))
-                                                    lifecycle/change-listener)
+                                  ;:on-text-changed (prop/make
+                                   ;                 (mutator/property-change-listener
+                                    ;                 #(.textProperty %1 %2))
+                                     ;               lifecycle/change-listener)
                                   :on-key-pressed (prop/make
                                                    (mutator/setter
                                                     #(.setOnKeyPressed %1 %2))

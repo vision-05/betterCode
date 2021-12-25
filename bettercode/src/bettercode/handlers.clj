@@ -78,9 +78,10 @@
                                                                                                            :text-editor file-contents
                                                                                                            :file-explorer-show false
                                                                                                            :line-numbers line-numbers
-                                                                                                           :spans {:start 0
+                                                                                                           :spans [{:start 0
                                                                                                                    :end (count file-contents)
-                                                                                                                   :style "text-color"}))))))
+                                                                                                                   :style "text-color"}]))))))
+
 
 (defn text-click [{:keys [context event]}]
   (mutate-context context assoc :cursor-pos (get-current-cursor event) :anchor-pos (get-current-anchor event)))
@@ -107,8 +108,10 @@
                                               prev-cursor-pos (fx/sub-val context :cursor-pos)]
                                           (println "CONTENTS: " contents)
                                           @(s/put! tclient ["insert-text" (fx/sub-val context :file-path) contents prev-cursor-pos])))
-    (prn (.getText (.getSource event)))
-    (mutate-context context assoc :cursor-pos (get-current-cursor event) :anchor-pos (get-current-anchor event) :line-numbers line-numbers)))
+    (prn (.getLength (.getSource event)))
+    (prn (.getSource event))
+    ;;FIXME invalid ranges for some reason. Figure out cause. Refactor this function
+    (mutate-context context assoc :spans [(assoc ((fx/sub-val context :spans) 0) :end (.getLength (.getSource event)))] :cursor-pos (get-current-cursor event) :anchor-pos (get-current-anchor event) :line-numbers line-numbers)))
 
 (defn save-file [{:keys [context tclient]}]
   (if (not= (fx/sub-val context :file-path) "") @(s/put! tclient ["save-file" (fx/sub-val context :file-path)])
