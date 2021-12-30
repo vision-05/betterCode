@@ -14,10 +14,12 @@
    :text file-path
    :style-class "root-text-area-status"})
 
-(defn text-edit [{:keys [fx/context tclient]}]
+(def create-codearea (constantly (CodeArea.)))
+
+(defn text-edit [{:keys [fx/context tclient]}] ;these subscriptions replace entire component, not for textarea
   {:fx/type code-area/with-richtext-props
-          :desc {:fx/type fx/ext-instance-factory
-                 :create #(CodeArea.)}
+   :desc {:fx/type fx/ext-instance-factory
+          :create create-codearea}
           :props {:text (fx/sub-val context :text-editor)
                   :line-number false
                   :style-spans (fx/sub-val context :spans)
