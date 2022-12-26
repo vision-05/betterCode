@@ -42,9 +42,10 @@
       (concat begin end)))
 
   Object
-  (toString [this]
-    (if (leaf-node? this) data
-        (str left right)))
+  (toString [this] ;get working with nil case
+    (cond (leaf-node? this) data
+          (and (nil? data) (nil? left) (nil? right)) ""
+          :else (do (prn left) (prn right) (str (str left) (str right))))) ;this function is failing on new document for some reason aaaaaaaaa!!!!!!!!!!!!!!
 
   Associative
   (assoc [this index val]
@@ -72,7 +73,10 @@
     (Rope. nil nil 0 "" nil))
 
   (equiv [this rope2]
-    (= (str this) (str rope2)))
+    (prn data right left weight (leaf-node? this))
+    (let [f (str this) ;issue with this stringify on empty document...
+          s (str rope2)]
+    (= f s)))
 
   clojure.lang.IObj
   (withMeta [this map-arg]
